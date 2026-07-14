@@ -15,6 +15,7 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="CV | Naufal Murtadho - Software Engineer & Strategic Investor">
     <meta property="og:description" content="Professional CV and Resume of Naufal Murtadho - 17-year-old Software Engineer, Pencak Silat National Athlete, and Strategic Investor.">
+    <meta property="og:image" content="https://i.ibb.co.com/L0Hd5z2/naufal-photo.jpg">
     
     <title>CV | Naufal Murtadho - Software Engineer & Strategic Investor</title>
     
@@ -172,6 +173,23 @@
             box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
         }
         
+        /* Profile Photo */
+        .profile-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid rgba(16, 185, 129, 0.4);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .profile-photo:hover {
+            transform: scale(1.05) rotate(-2deg);
+            border-color: #10b981;
+            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.3);
+        }
+        
         /* Print Styles */
         @media print {
             body {
@@ -220,6 +238,12 @@
                 print-color-adjust: exact;
                 -webkit-print-color-adjust: exact;
             }
+            
+            .profile-photo {
+                border: 3px solid #10b981 !important;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
         }
         
         /* Custom scrollbar */
@@ -252,11 +276,20 @@
         /* Loading State */
         .loading {
             opacity: 0;
-            animation: fadeIn 0.5s ease forwards;
+            animation: fadeIn 0.6s ease forwards;
         }
         
         @keyframes fadeIn {
             to { opacity: 1; }
+        }
+
+        /* Project card hover */
+        .project-card {
+            transition: all 0.25s ease;
+        }
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px -8px rgba(0, 0, 0, 0.08);
         }
     </style>
 </head>
@@ -264,7 +297,7 @@
     
     <!-- Navigation Buttons (Print Friendly) -->
     <div class="max-w-6xl mx-auto mb-6 no-print flex justify-center gap-4 flex-wrap">
-        <a href="index.html" class="inline-flex items-center gap-2 px-6 py-3 bg-gray-800 text-white rounded-xl hover:bg-gray-700 transition-all shadow-md transform hover:-translate-y-0.5 active:translate-y-0" rel="noopener noreferrer">
+        <a href="https://konssultasiweb.vercel.app/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-3 bg-gray-800 text-white rounded-xl hover:bg-gray-700 transition-all shadow-md transform hover:-translate-y-0.5 active:translate-y-0">
             <i class="fas fa-arrow-left"></i> Back to Portfolio
         </a>
         <button onclick="window.print()" class="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-md transform hover:-translate-y-0.5 active:translate-y-0">
@@ -279,31 +312,49 @@
     <div class="cv-container loading">
         <!-- Header Section -->
         <div class="cv-header">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div>
-                    <h1 class="text-4xl md:text-5xl font-bold tracking-tight">Naufal Murtadho</h1>
-                    <p class="text-xl text-emerald-300 mt-2 font-medium">Software Engineer · Strategic Investor · Pencak Silat National Athlete</p>
-                    <p class="text-gray-300 text-sm mt-1">Born: May 19, 2008 | Based in Indonesia</p>
+            <div class="flex flex-col md:flex-row justify-between items-center md:items-start gap-6">
+                <!-- Left: Name & Title -->
+                <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
+                    <!-- Profile Photo -->
+                    <img 
+                        src="https://i.ibb.co.com/L0Hd5z2/naufal-photo.jpg" 
+                        alt="Naufal Murtadho - Profile Photo" 
+                        class="profile-photo"
+                        loading="lazy"
+                    >
+                    <div class="text-center md:text-left">
+                        <h1 class="text-4xl md:text-5xl font-bold tracking-tight">Naufal Murtadho</h1>
+                        <p class="text-xl text-emerald-300 mt-2 font-medium">Software Engineer · Strategic Investor · Pencak Silat National Athlete</p>
+                        <p class="text-gray-300 text-sm mt-1">Born: May 19, 2008 | Based in Jakarta, Indonesia</p>
+                        <!-- Quick contact badge for mobile -->
+                        <div class="flex flex-wrap justify-center md:justify-start gap-3 mt-3 text-sm text-gray-200">
+                            <span class="flex items-center gap-1"><i class="fas fa-phone-alt text-emerald-400 text-xs"></i> +62 857 1078 5244</span>
+                            <span class="flex items-center gap-1"><i class="fas fa-map-marker-alt text-emerald-400 text-xs"></i> Jakarta</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="text-left md:text-right space-y-1 text-gray-200">
-                    <p class="flex items-center md:justify-end gap-2">
+                <!-- Right: Contact Info -->
+                <div class="text-left md:text-right space-y-1 text-gray-200 w-full md:w-auto">
+                    <p class="flex items-center md:justify-end gap-2 text-sm">
                         <i class="fas fa-envelope w-5 text-emerald-400"></i> 
                         <a href="mailto:nmurtadho1905@gmail.com" class="hover:text-emerald-300 transition" rel="noopener noreferrer">nmurtadho1905@gmail.com</a>
                     </p>
-                    <p class="flex items-center md:justify-end gap-2">
-                        <i class="fas fa-map-marker-alt w-5 text-emerald-400"></i> 
-                        Indonesia
-                    </p>
-                    <p class="flex items-center md:justify-end gap-2">
+                    <p class="flex items-center md:justify-end gap-2 text-sm">
                         <i class="fab fa-linkedin w-5 text-emerald-400"></i>
-                        <a href="https://www.linkedin.com/in/naufal-murtadho-0ab587358" target="_blank" rel="noopener noreferrer" class="text-emerald-300 hover:text-emerald-200 transition inline-flex items-center gap-1">
-                            LinkedIn Profile <i class="fas fa-external-link-alt text-xs"></i>
+                        <a href="https://www.linkedin.com/in/naufal-murtadho-0ab587358" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-300 transition inline-flex items-center gap-1">
+                            LinkedIn <i class="fas fa-external-link-alt text-xs"></i>
                         </a>
                     </p>
-                    <p class="flex items-center md:justify-end gap-2">
+                    <p class="flex items-center md:justify-end gap-2 text-sm">
                         <i class="fab fa-github w-5 text-emerald-400"></i>
-                        <a href="https://github.com/Naufal192008" target="_blank" rel="noopener noreferrer" class="text-emerald-300 hover:text-emerald-200 transition inline-flex items-center gap-1">
-                            GitHub Portfolio <i class="fas fa-external-link-alt text-xs"></i>
+                        <a href="https://github.com/Naufal192008" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-300 transition inline-flex items-center gap-1">
+                            GitHub <i class="fas fa-external-link-alt text-xs"></i>
+                        </a>
+                    </p>
+                    <p class="flex items-center md:justify-end gap-2 text-sm">
+                        <i class="fas fa-globe w-5 text-emerald-400"></i>
+                        <a href="https://konssultasiweb.vercel.app/" target="_blank" rel="noopener noreferrer" class="hover:text-emerald-300 transition inline-flex items-center gap-1">
+                            Portfolio <i class="fas fa-external-link-alt text-xs"></i>
                         </a>
                     </p>
                 </div>
@@ -318,7 +369,7 @@
                 <p class="text-gray-700 leading-relaxed">
                     A highly disciplined and creative <span class="font-semibold text-gray-900">Software Engineer born in 2008</span>, combining the rigorous mindset of a competitive 
                     <span class="font-semibold text-gray-900">Pencak Silat national athlete</span> with active financial literacy in the stock and gold markets. Specialized in Web Development 
-                    and Mobile Engineering (<span class="text-emerald-600 font-medium">Kotlin, React</span>), constantly driven to architect aesthetic, scalable, and intelligent digital 
+                    and Mobile Engineering (<span class="text-emerald-600 font-medium">React, Node.js, Kotlin</span>), constantly driven to architect aesthetic, scalable, and intelligent digital 
                     solutions. Possesses strong communication skills certified by <span class="font-semibold text-gray-900">UKBI</span> and proven problem-solving abilities from 
                     competitive martial arts.
                 </p>
@@ -334,15 +385,17 @@
                             <div>
                                 <p class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
                                     <i class="fas fa-code text-emerald-500 text-sm"></i>
-                                    Programming Languages
+                                    Web & Mobile
                                 </p>
                                 <div class="flex flex-wrap gap-2">
-                                    <span class="skill-tag">Kotlin</span>
-                                    <span class="skill-tag">Java</span>
                                     <span class="skill-tag">React.js</span>
-                                    <span class="skill-tag">JavaScript</span>
+                                    <span class="skill-tag">Next.js</span>
+                                    <span class="skill-tag">Node.js</span>
+                                    <span class="skill-tag">Express.js</span>
+                                    <span class="skill-tag">TypeScript</span>
+                                    <span class="skill-tag">Kotlin</span>
+                                    <span class="skill-tag">Tailwind CSS</span>
                                     <span class="skill-tag">HTML5/CSS3</span>
-                                    <span class="skill-tag">TypeScript (Learning)</span>
                                 </div>
                             </div>
                             <div>
@@ -352,13 +405,12 @@
                                 </p>
                                 <div class="flex flex-wrap gap-2">
                                     <span class="skill-tag">Git/GitHub</span>
-                                    <span class="skill-tag">Tailwind CSS</span>
-                                    <span class="skill-tag">Room Database</span>
-                                    <span class="skill-tag">MVVM Architecture</span>
                                     <span class="skill-tag">REST APIs</span>
                                     <span class="skill-tag">Figma</span>
                                     <span class="skill-tag">Android Studio</span>
                                     <span class="skill-tag">VS Code</span>
+                                    <span class="skill-tag">3ds Max</span>
+                                    <span class="skill-tag">MaxScript</span>
                                 </div>
                             </div>
                             <div>
@@ -408,7 +460,7 @@
                                 complex systems and handling high-pressure development environments.
                             </p>
                             <div class="mt-3 flex flex-wrap gap-2">
-                                <span class="text-xs bg-gradient-to-r from-red-50 to-red-100 text-red-700 px-2 py-1 rounded-full border border-red-200">🏆 National Level Competitor</span>
+                                <span class="text-xs bg-gradient-to-r from-red-50 to-red-100 text-red-700 px-2 py-1 rounded-full border border-red-200">🏆 National Gold Medalist (Kemenpora RI Cup 2025)</span>
                                 <span class="text-xs bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 px-2 py-1 rounded-full border border-amber-200">🥇 Regional Champion</span>
                                 <span class="text-xs bg-gradient-to-r from-emerald-50 to-emerald-100 text-emerald-700 px-2 py-1 rounded-full border border-emerald-200">🎯 Strategic Mindset</span>
                             </div>
@@ -421,18 +473,18 @@
                         <div class="space-y-3">
                             <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg transition">
                                 <span class="font-medium text-gray-700">Indonesian</span>
-                                <span class="text-sm text-emerald-600 font-semibold bg-emerald-50 px-3 py-1 rounded-full">Native / Bilingual</span>
+                                <span class="text-sm text-emerald-600 font-semibold bg-emerald-50 px-3 py-1 rounded-full">Native · UKBI Unggul</span>
                             </div>
                             <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg transition">
                                 <span class="font-medium text-gray-700">English</span>
-                                <span class="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">Professional Working</span>
+                                <span class="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">Professional (TBI 88%)</span>
                             </div>
                             <div class="mt-4 p-4 bg-gradient-to-r from-emerald-50 to-emerald-50/50 rounded-xl border border-emerald-100">
                                 <div class="flex items-start gap-2">
                                     <i class="fas fa-certificate text-emerald-500 mt-0.5"></i>
                                     <div>
                                         <p class="text-sm font-semibold text-emerald-800">UKBI Certified</p>
-                                        <p class="text-xs text-emerald-700 mt-0.5">High Proficiency in Indonesian Language</p>
+                                        <p class="text-xs text-emerald-700 mt-0.5">High Proficiency in Indonesian Language (Score 583)</p>
                                         <a href="https://drive.google.com/file/d/1ZszvtWofweoTckAR8zJdadhwvktb9oZ0/view?usp=drivesdk" target="_blank" rel="noopener noreferrer" class="text-xs text-emerald-600 hover:underline inline-flex items-center gap-1 mt-2 external-link">
                                             View Certificate <i class="fas fa-external-link-alt text-[10px]"></i>
                                         </a>
@@ -452,9 +504,9 @@
                             <div class="flex items-start gap-2">
                                 <i class="fas fa-graduation-cap text-emerald-500 mt-1"></i>
                                 <div>
-                                    <p class="font-bold text-gray-800">Software Engineering Academy</p>
-                                    <p class="text-sm text-emerald-600 mb-1">Dicoding · 2024 - Present</p>
-                                    <p class="text-gray-600 text-sm">Intensive program covering Kotlin, Android development, clean architecture, and industry best practices.</p>
+                                    <p class="font-bold text-gray-800">Full-Stack Developer Graduate</p>
+                                    <p class="text-sm text-emerald-600 mb-1">Coding Camp 2026 · DBS Foundation & Dicoding</p>
+                                    <p class="text-gray-600 text-sm">Intensive full-stack program covering React, Node.js, and software engineering best practices.</p>
                                 </div>
                             </div>
                         </div>
@@ -462,9 +514,9 @@
                             <div class="flex items-start gap-2">
                                 <i class="fas fa-laptop-code text-emerald-500 mt-1"></i>
                                 <div>
-                                    <p class="font-bold text-gray-800">Coding Paradigm & Logic</p>
-                                    <p class="text-sm text-emerald-600 mb-1">Markoding · 2023 - 2024</p>
-                                    <p class="text-gray-600 text-sm">Graduated with distinction in foundational programming, algorithms, and computational thinking.</p>
+                                    <p class="font-bold text-gray-800">Software Engineering Academy</p>
+                                    <p class="text-sm text-emerald-600 mb-1">Dicoding · 2024 - Present</p>
+                                    <p class="text-gray-600 text-sm">Comprehensive program covering Kotlin, Android development, clean architecture, and industry practices.</p>
                                 </div>
                             </div>
                         </div>
@@ -472,10 +524,74 @@
                             <div class="flex items-start gap-2">
                                 <i class="fas fa-school text-emerald-500 mt-1"></i>
                                 <div>
-                                    <p class="font-bold text-gray-800">Senior High School</p>
-                                    <p class="text-sm text-emerald-600 mb-1">2023 - Present</p>
-                                    <p class="text-gray-600 text-sm">Science major with focus on mathematics and computer science fundamentals.</p>
+                                    <p class="font-bold text-gray-800">SMKN 24 Jakarta · Software Engineering (RPL)</p>
+                                    <p class="text-sm text-emerald-600 mb-1">2024 - 2026</p>
+                                    <p class="text-gray-600 text-sm">Specialized in software engineering with focus on full-stack development and system architecture.</p>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="flex items-start gap-2">
+                                <i class="fas fa-flag text-emerald-500 mt-1"></i>
+                                <div>
+                                    <p class="font-bold text-gray-800">Pencak Silat Athlete & Coach</p>
+                                    <p class="text-sm text-emerald-600 mb-1">Since 2017</p>
+                                    <p class="text-gray-600 text-sm">Managing branch finances and training members, demonstrating accountability and discipline.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Featured Projects -->
+                    <div>
+                        <h2 class="section-title">Featured Projects</h2>
+                        <div class="space-y-4">
+                            <div class="project-card p-4 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition border border-gray-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i class="fas fa-chart-line text-emerald-500"></i>
+                                    <h3 class="font-bold text-gray-800">Fintrix (Finance & Matrix)</h3>
+                                </div>
+                                <p class="text-gray-600 text-sm">Fintech solution for youth financial literacy. Engineered RESTful APIs with Node.js and interactive interfaces with React/Next.js.</p>
+                                <div class="flex flex-wrap gap-1 mt-3">
+                                    <span class="skill-tag">React</span>
+                                    <span class="skill-tag">Next.js</span>
+                                    <span class="skill-tag">Node.js</span>
+                                    <span class="skill-tag">REST API</span>
+                                </div>
+                                <a href="#" class="text-emerald-600 text-sm hover:underline inline-flex items-center gap-1 mt-2 external-link">
+                                    View Project <i class="fas fa-external-link-alt text-xs"></i>
+                                </a>
+                            </div>
+                            
+                            <div class="project-card p-4 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition border border-gray-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i class="fab fa-android text-emerald-500"></i>
+                                    <h3 class="font-bold text-gray-800">Mobile Inventory Management App</h3>
+                                </div>
+                                <p class="text-gray-600 text-sm">Kotlin-based Android app utilizing Room Database and MVVM architecture for real-time inventory tracking and management.</p>
+                                <div class="flex flex-wrap gap-1 mt-3">
+                                    <span class="skill-tag">Kotlin</span>
+                                    <span class="skill-tag">Room DB</span>
+                                    <span class="skill-tag">MVVM</span>
+                                    <span class="skill-tag">Coroutines</span>
+                                </div>
+                            </div>
+                            
+                            <div class="project-card p-4 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition border border-gray-100">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <i class="fas fa-utensils text-emerald-500"></i>
+                                    <h3 class="font-bold text-gray-800">Restoran Senayan & TB Mobile Solution</h3>
+                                </div>
+                                <p class="text-gray-600 text-sm">Delivered robust UI/UX solutions for business and social impact (UNICEF/Markoding Challenge) with a focus on accessibility.</p>
+                                <div class="flex flex-wrap gap-1 mt-3">
+                                    <span class="skill-tag">React</span>
+                                    <span class="skill-tag">Tailwind</span>
+                                    <span class="skill-tag">Figma</span>
+                                    <span class="skill-tag">UI/UX</span>
+                                </div>
+                                <a href="https://bomboniofficial.vercel.app/" target="_blank" rel="noopener noreferrer" class="text-emerald-600 text-sm hover:underline inline-flex items-center gap-1 mt-2 external-link">
+                                    Live Demo <i class="fas fa-external-link-alt text-xs"></i>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -489,15 +605,15 @@
                                     <div class="flex items-start gap-2">
                                         <i class="fas fa-code text-emerald-500 text-sm mt-1"></i>
                                         <div>
-                                            <h3 class="font-bold text-gray-800">Software Engineering Academy</h3>
-                                            <p class="text-sm text-gray-500">Dicoding · 2024</p>
+                                            <h3 class="font-bold text-gray-800">Full-Stack Developer Graduate</h3>
+                                            <p class="text-sm text-gray-500">DBS Foundation & Dicoding · 2026</p>
                                         </div>
                                     </div>
-                                    <a href="https://drive.google.com/drive/folders/1aknytYBvYJ7gC05OpOLj0Sq1nQk69ON2?usp=sharing" target="_blank" rel="noopener noreferrer" class="text-emerald-600 text-sm hover:underline flex items-center gap-1 external-link">
+                                    <a href="#" class="text-emerald-600 text-sm hover:underline flex items-center gap-1 external-link">
                                         View <i class="fas fa-external-link-alt text-xs"></i>
                                     </a>
                                 </div>
-                                <p class="text-gray-600 text-sm mt-2">Completed rigorous training with final project validation in Android development.</p>
+                                <p class="text-gray-600 text-sm mt-2">Completed intensive full-stack program with final project validation.</p>
                             </div>
                             
                             <div class="cert-card">
@@ -521,61 +637,31 @@
                                     <div class="flex items-start gap-2">
                                         <i class="fas fa-language text-emerald-500 text-sm mt-1"></i>
                                         <div>
+                                            <h3 class="font-bold text-gray-800">English for Business Communication</h3>
+                                            <p class="text-sm text-gray-500">TBI & Dicoding · 2025</p>
+                                        </div>
+                                    </div>
+                                    <a href="#" class="text-emerald-600 text-sm hover:underline flex items-center gap-1 external-link">
+                                        View <i class="fas fa-external-link-alt text-xs"></i>
+                                    </a>
+                                </div>
+                                <p class="text-gray-600 text-sm mt-2">Achieved 88% proficiency in business English communication.</p>
+                            </div>
+                            
+                            <div class="cert-card">
+                                <div class="flex justify-between items-start flex-wrap gap-2">
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-language text-emerald-500 text-sm mt-1"></i>
+                                        <div>
                                             <h3 class="font-bold text-gray-800">Uji Kemahiran Berbahasa Indonesia (UKBI)</h3>
-                                            <p class="text-sm text-gray-500">Language Proficiency Certification · 2024</p>
+                                            <p class="text-sm text-gray-500">Language Proficiency · 2024</p>
                                         </div>
                                     </div>
                                     <a href="https://drive.google.com/file/d/1ZszvtWofweoTckAR8zJdadhwvktb9oZ0/view?usp=drivesdk" target="_blank" rel="noopener noreferrer" class="text-emerald-600 text-sm hover:underline flex items-center gap-1 external-link">
                                         View <i class="fas fa-external-link-alt text-xs"></i>
                                     </a>
                                 </div>
-                                <p class="text-gray-600 text-sm mt-2">Achieved high proficiency in Indonesian language standardization and effective communication.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Featured Projects -->
-                    <div>
-                        <h2 class="section-title">Featured Projects</h2>
-                        <div class="space-y-4">
-                            <div class="p-4 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <i class="fab fa-android text-emerald-500"></i>
-                                    <h3 class="font-bold text-gray-800">Mobile Inventory Management App</h3>
-                                </div>
-                                <p class="text-gray-600 text-sm">Kotlin-based application with Room database, MVVM architecture, and real-time stock tracking. Features include CRUD operations, search, and data visualization.</p>
-                                <div class="flex flex-wrap gap-1 mt-3">
-                                    <span class="skill-tag">Kotlin</span>
-                                    <span class="skill-tag">Room DB</span>
-                                    <span class="skill-tag">MVVM</span>
-                                    <span class="skill-tag">Coroutines</span>
-                                </div>
-                            </div>
-                            <div class="p-4 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <i class="fab fa-react text-emerald-500"></i>
-                                    <h3 class="font-bold text-gray-800">Investment Portfolio Dashboard</h3>
-                                </div>
-                                <p class="text-gray-600 text-sm">React + Tailwind dashboard with interactive charts for tracking gold and stock investments. Real-time price updates and portfolio performance metrics.</p>
-                                <div class="flex flex-wrap gap-1 mt-3">
-                                    <span class="skill-tag">React</span>
-                                    <span class="skill-tag">Chart.js</span>
-                                    <span class="skill-tag">Tailwind</span>
-                                    <span class="skill-tag">REST API</span>
-                                </div>
-                            </div>
-                            <div class="p-4 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <i class="fas fa-chart-line text-emerald-500"></i>
-                                    <h3 class="font-bold text-gray-800">Financial Literacy Hub</h3>
-                                </div>
-                                <p class="text-gray-600 text-sm">Educational platform explaining stock investment strategies, gold trading fundamentals, and personal finance management with interactive calculators.</p>
-                                <div class="flex flex-wrap gap-1 mt-3">
-                                    <span class="skill-tag">HTML5/CSS3</span>
-                                    <span class="skill-tag">JavaScript</span>
-                                    <span class="skill-tag">Responsive</span>
-                                    <span class="skill-tag">LocalStorage</span>
-                                </div>
+                                <p class="text-gray-600 text-sm mt-2">Achieved "Unggul" (Superior) predicate with a score of 583.</p>
                             </div>
                         </div>
                     </div>
@@ -628,7 +714,8 @@
     <!-- Footer Note -->
     <div class="max-w-6xl mx-auto mt-6 text-center text-gray-500 text-xs no-print">
         <p>© 2025 Naufal Murtadho — Last updated: March 2026 | 
-            <a href="index.html" class="text-emerald-500 hover:underline">Back to Portfolio</a>
+            <a href="https://konssultasiweb.vercel.app/" target="_blank" rel="noopener noreferrer" class="text-emerald-500 hover:underline">Back to Portfolio</a> |
+            <a href="https://bomboniofficial.vercel.app/" target="_blank" rel="noopener noreferrer" class="text-emerald-500 hover:underline">Bomboni Official</a>
         </p>
     </div>
     
