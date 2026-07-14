@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -173,10 +173,10 @@
             box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
         }
         
-        /* Profile Photo - FIXED: Full visible, centered, no cutoff */
+        /* Profile Photo - FIXED: Full visible, no cutoff, centered */
         .profile-photo-wrapper {
-            width: 130px;
-            height: 130px;
+            width: 140px;
+            height: 140px;
             flex-shrink: 0;
             border-radius: 50%;
             border: 4px solid rgba(16, 185, 129, 0.4);
@@ -199,7 +199,45 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            object-position: center center;
+            object-position: center 20%;
+            display: block;
+        }
+        
+        /* Language Toggle Button */
+        .lang-btn {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            padding: 0.5rem 1.25rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            border: 2px solid transparent;
+        }
+        
+        .lang-btn.active {
+            background: #10b981;
+            color: white;
+            border-color: #10b981;
+        }
+        
+        .lang-btn.inactive {
+            background: transparent;
+            color: #94a3b8;
+            border-color: #334155;
+        }
+        
+        .lang-btn.inactive:hover {
+            background: rgba(16, 185, 129, 0.1);
+            color: #e2e8f0;
+            border-color: #10b981;
+        }
+        
+        /* Hide language content */
+        .lang-content {
+            display: none;
+        }
+        
+        .lang-content.active {
             display: block;
         }
         
@@ -263,8 +301,8 @@
                 border: 3px solid #10b981 !important;
                 print-color-adjust: exact;
                 -webkit-print-color-adjust: exact;
-                width: 110px !important;
-                height: 110px !important;
+                width: 120px !important;
+                height: 120px !important;
             }
             
             .cv-container > .p-8 {
@@ -281,6 +319,10 @@
             
             .timeline-item {
                 margin-bottom: 1rem !important;
+            }
+            
+            .lang-content {
+                display: block !important;
             }
         }
         
@@ -346,6 +388,16 @@
         </a>
     </div>
     
+    <!-- Language Toggle -->
+    <div class="max-w-6xl mx-auto mb-6 no-print flex justify-center gap-3">
+        <button id="langId" class="lang-btn active" onclick="switchLanguage('id')">
+            <i class="fas fa-flag"></i> Bahasa Indonesia
+        </button>
+        <button id="langEn" class="lang-btn inactive" onclick="switchLanguage('en')">
+            <i class="fas fa-flag-usa"></i> English
+        </button>
+    </div>
+    
     <!-- CV Container -->
     <div class="cv-container loading">
         <!-- Header Section -->
@@ -353,10 +405,10 @@
             <div class="flex flex-col md:flex-row justify-between items-center md:items-start gap-6">
                 <!-- Left: Photo + Name -->
                 <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
-                    <!-- Profile Photo - Now fully visible and centered -->
+                    <!-- Profile Photo - Fully visible, no cutoff -->
                     <div class="profile-photo-wrapper">
                         <img 
-                            src="e.jpeg" 
+                            src="https://i.ibb.co.com/L0Hd5z2/naufal-photo.jpg" 
                             alt="Naufal Murtadho - Profile Photo" 
                             class="profile-photo"
                             loading="lazy"
@@ -364,7 +416,10 @@
                     </div>
                     <div class="text-center md:text-left">
                         <h1 class="text-4xl md:text-5xl font-bold tracking-tight">Naufal Murtadho</h1>
-                        <p class="text-xl text-emerald-300 mt-2 font-medium">Software Engineer · Strategic Investor · Pencak Silat National Athlete</p>
+                        <!-- Indonesian Title -->
+                        <p id="titleId" class="text-xl text-emerald-300 mt-2 font-medium lang-content active">Software Engineer · Investor Strategis · Atlet Pencak Silat Nasional</p>
+                        <!-- English Title -->
+                        <p id="titleEn" class="text-xl text-emerald-300 mt-2 font-medium lang-content">Software Engineer · Strategic Investor · Pencak Silat National Athlete</p>
                         <p class="text-gray-300 text-sm mt-1">Born: May 19, 2008 | Based in Jakarta, Indonesia</p>
                         <!-- Quick contact badge for mobile -->
                         <div class="flex flex-wrap justify-center md:justify-start gap-3 mt-3 text-sm text-gray-200">
@@ -403,131 +458,334 @@
         
         <!-- Main Content -->
         <div class="p-8 md:p-10">
-            <!-- Professional Summary -->
-            <div class="mb-10">
-                <h2 class="section-title">Professional Summary</h2>
-                <p class="text-gray-700 leading-relaxed">
-                    A highly disciplined and creative <span class="font-semibold text-gray-900">Software Engineer born in 2008</span>, combining the rigorous mindset of a competitive 
-                    <span class="font-semibold text-gray-900">Pencak Silat national athlete</span> with active financial literacy in the stock and gold markets. Specialized in Web Development 
-                    and Mobile Engineering (<span class="text-emerald-600 font-medium">React, Node.js, Kotlin</span>), constantly driven to architect aesthetic, scalable, and intelligent digital 
-                    solutions. Possesses strong communication skills certified by <span class="font-semibold text-gray-900">UKBI</span> and proven problem-solving abilities from 
-                    competitive martial arts.
-                </p>
-            </div>
             
-            <div class="grid md:grid-cols-3 gap-10">
-                <!-- Left Column: Skills & Athletics -->
-                <div class="space-y-8">
-                    <!-- Core Skills -->
-                    <div>
-                        <h2 class="section-title">Core Skills</h2>
-                        <div class="space-y-4">
-                            <div>
-                                <p class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                                    <i class="fas fa-code text-emerald-500 text-sm"></i>
-                                    Web & Mobile
-                                </p>
-                                <div class="flex flex-wrap gap-2">
-                                    <span class="skill-tag">React.js</span>
-                                    <span class="skill-tag">Next.js</span>
-                                    <span class="skill-tag">Node.js</span>
-                                    <span class="skill-tag">Express.js</span>
-                                    <span class="skill-tag">TypeScript</span>
-                                    <span class="skill-tag">Kotlin</span>
-                                    <span class="skill-tag">Tailwind CSS</span>
-                                    <span class="skill-tag">HTML5/CSS3</span>
+            <!-- ========== BAHASA INDONESIA ========== -->
+            <div id="contentId" class="lang-content active">
+                <!-- Professional Summary - ID -->
+                <div class="mb-10">
+                    <h2 class="section-title">Ringkasan Profesional</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        Seorang <span class="font-semibold text-gray-900">Insinyur Perangkat Lunak</span> yang sangat disiplin dan kreatif, lahir tahun 2008, 
+                        menggabungkan pola pikir atlet <span class="font-semibold text-gray-900">Pencak Silat nasional</span> dengan literasi keuangan aktif di pasar saham dan emas. 
+                        Spesialisasi dalam Pengembangan Web dan Mobile (<span class="text-emerald-600 font-medium">React, Node.js, Kotlin</span>), 
+                        terus terdorong untuk merancang solusi digital yang estetis, skalabel, dan cerdas. 
+                        Memiliki kemampuan komunikasi yang kuat yang disertifikasi oleh <span class="font-semibold text-gray-900">UKBI</span> dan kemampuan pemecahan masalah 
+                        yang terbukti dari olahraga bela diri kompetitif.
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-10">
+                    <!-- Left Column: Skills & Athletics -->
+                    <div class="space-y-8">
+                        <!-- Core Skills - ID -->
+                        <div>
+                            <h2 class="section-title">Keahlian Utama</h2>
+                            <div class="space-y-4">
+                                <div>
+                                    <p class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                        <i class="fas fa-code text-emerald-500 text-sm"></i>
+                                        Web & Mobile
+                                    </p>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="skill-tag">React.js</span>
+                                        <span class="skill-tag">Next.js</span>
+                                        <span class="skill-tag">Node.js</span>
+                                        <span class="skill-tag">Express.js</span>
+                                        <span class="skill-tag">TypeScript</span>
+                                        <span class="skill-tag">Kotlin</span>
+                                        <span class="skill-tag">Tailwind CSS</span>
+                                        <span class="skill-tag">HTML5/CSS3</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                        <i class="fas fa-tools text-emerald-500 text-sm"></i>
+                                        Alat & Teknologi
+                                    </p>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="skill-tag">Git/GitHub</span>
+                                        <span class="skill-tag">REST APIs</span>
+                                        <span class="skill-tag">Figma</span>
+                                        <span class="skill-tag">Android Studio</span>
+                                        <span class="skill-tag">VS Code</span>
+                                        <span class="skill-tag">3ds Max</span>
+                                        <span class="skill-tag">MaxScript</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                        <i class="fas fa-chart-pie text-emerald-500 text-sm"></i>
+                                        Literasi Keuangan
+                                    </p>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="skill-tag">Investasi Saham (IDX)</span>
+                                        <span class="skill-tag">Trading Emas</span>
+                                        <span class="skill-tag">Analisis Pasar</span>
+                                        <span class="skill-tag">Manajemen Portofolio</span>
+                                        <span class="skill-tag">Penilaian Risiko</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                        <i class="fas fa-users text-emerald-500 text-sm"></i>
+                                        Soft Skills
+                                    </p>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="skill-tag">Disiplin</span>
+                                        <span class="skill-tag">Pemecahan Masalah</span>
+                                        <span class="skill-tag">Komunikasi</span>
+                                        <span class="skill-tag">Kolaborasi Tim</span>
+                                        <span class="skill-tag">Kepemimpinan</span>
+                                        <span class="skill-tag">Manajemen Waktu</span>
+                                        <span class="skill-tag">Adaptabilitas</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div>
-                                <p class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                                    <i class="fas fa-tools text-emerald-500 text-sm"></i>
-                                    Tools & Technologies
+                        </div>
+                        
+                        <!-- Athletics - ID -->
+                        <div>
+                            <h2 class="section-title">Atletik & Disiplin</h2>
+                            <div class="bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <div class="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
+                                        <i class="fas fa-fist-raised text-xl text-red-500"></i>
+                                    </div>
+                                    <h3 class="font-bold text-gray-800">Atlet Pencak Silat</h3>
+                                </div>
+                                <p class="text-gray-600 text-sm leading-relaxed">
+                                    Kompetitor aktif di kejuaraan regional dan nasional. Terlatih dalam ketahanan mental yang tinggi, 
+                                    pemikiran strategis, dan eksekusi yang disiplin. Kualitas ini secara langsung diterjemahkan ke dalam 
+                                    debugging sistem yang kompleks dan menangani lingkungan pengembangan bertekanan tinggi.
                                 </p>
-                                <div class="flex flex-wrap gap-2">
-                                    <span class="skill-tag">Git/GitHub</span>
-                                    <span class="skill-tag">REST APIs</span>
-                                    <span class="skill-tag">Figma</span>
-                                    <span class="skill-tag">Android Studio</span>
-                                    <span class="skill-tag">VS Code</span>
-                                    <span class="skill-tag">3ds Max</span>
-                                    <span class="skill-tag">MaxScript</span>
+                                <div class="mt-3 flex flex-wrap gap-2">
+                                    <span class="text-xs bg-gradient-to-r from-red-50 to-red-100 text-red-700 px-2 py-1 rounded-full border border-red-200">🏆 Medali Emas Nasional (Kemenpora RI Cup 2025)</span>
+                                    <span class="text-xs bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 px-2 py-1 rounded-full border border-amber-200">🥇 Juara Regional</span>
+                                    <span class="text-xs bg-gradient-to-r from-emerald-50 to-emerald-100 text-emerald-700 px-2 py-1 rounded-full border border-emerald-200">🎯 Pola Pikir Strategis</span>
                                 </div>
                             </div>
-                            <div>
-                                <p class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                                    <i class="fas fa-chart-pie text-emerald-500 text-sm"></i>
-                                    Financial Literacy
-                                </p>
-                                <div class="flex flex-wrap gap-2">
-                                    <span class="skill-tag">Stock Investment (IDX)</span>
-                                    <span class="skill-tag">Gold Trading</span>
-                                    <span class="skill-tag">Market Analysis</span>
-                                    <span class="skill-tag">Portfolio Management</span>
-                                    <span class="skill-tag">Risk Assessment</span>
+                        </div>
+                        
+                        <!-- Languages - ID -->
+                        <div>
+                            <h2 class="section-title">Bahasa</h2>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg transition">
+                                    <span class="font-medium text-gray-700">Indonesia</span>
+                                    <span class="text-sm text-emerald-600 font-semibold bg-emerald-50 px-3 py-1 rounded-full">Asli · UKBI Unggul</span>
                                 </div>
-                            </div>
-                            <div>
-                                <p class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                                    <i class="fas fa-users text-emerald-500 text-sm"></i>
-                                    Soft Skills
-                                </p>
-                                <div class="flex flex-wrap gap-2">
-                                    <span class="skill-tag">Discipline</span>
-                                    <span class="skill-tag">Problem Solving</span>
-                                    <span class="skill-tag">Communication</span>
-                                    <span class="skill-tag">Team Collaboration</span>
-                                    <span class="skill-tag">Leadership</span>
-                                    <span class="skill-tag">Time Management</span>
-                                    <span class="skill-tag">Adaptability</span>
+                                <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg transition">
+                                    <span class="font-medium text-gray-700">Inggris</span>
+                                    <span class="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">Profesional (TBI 88%)</span>
+                                </div>
+                                <div class="mt-4 p-4 bg-gradient-to-r from-emerald-50 to-emerald-50/50 rounded-xl border border-emerald-100">
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-certificate text-emerald-500 mt-0.5"></i>
+                                        <div>
+                                            <p class="text-sm font-semibold text-emerald-800">Bersertifikat UKBI</p>
+                                            <p class="text-xs text-emerald-700 mt-0.5">Kemahiran Tinggi Bahasa Indonesia (Skor 583)</p>
+                                            <a href="https://drive.google.com/file/d/1ZszvtWofweoTckAR8zJdadhwvktb9oZ0/view?usp=drivesdk" target="_blank" rel="noopener noreferrer" class="text-xs text-emerald-600 hover:underline inline-flex items-center gap-1 mt-2 external-link">
+                                                Lihat Sertifikat <i class="fas fa-external-link-alt text-[10px]"></i>
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Athletics -->
-                    <div>
-                        <h2 class="section-title">Athletics & Discipline</h2>
-                        <div class="bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 border border-gray-100 shadow-sm">
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
-                                    <i class="fas fa-fist-raised text-xl text-red-500"></i>
-                                </div>
-                                <h3 class="font-bold text-gray-800">Pencak Silat Athlete</h3>
-                            </div>
-                            <p class="text-gray-600 text-sm leading-relaxed">
-                                Active competitor in regional and national championships. Trained in high mental resilience, 
-                                strategic thinking, and disciplined execution. These qualities directly translate to debugging 
-                                complex systems and handling high-pressure development environments.
-                            </p>
-                            <div class="mt-3 flex flex-wrap gap-2">
-                                <span class="text-xs bg-gradient-to-r from-red-50 to-red-100 text-red-700 px-2 py-1 rounded-full border border-red-200">🏆 National Gold Medalist (Kemenpora RI Cup 2025)</span>
-                                <span class="text-xs bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 px-2 py-1 rounded-full border border-amber-200">🥇 Regional Champion</span>
-                                <span class="text-xs bg-gradient-to-r from-emerald-50 to-emerald-100 text-emerald-700 px-2 py-1 rounded-full border border-emerald-200">🎯 Strategic Mindset</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Languages -->
-                    <div>
-                        <h2 class="section-title">Languages</h2>
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg transition">
-                                <span class="font-medium text-gray-700">Indonesian</span>
-                                <span class="text-sm text-emerald-600 font-semibold bg-emerald-50 px-3 py-1 rounded-full">Native · UKBI Unggul</span>
-                            </div>
-                            <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg transition">
-                                <span class="font-medium text-gray-700">English</span>
-                                <span class="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">Professional (TBI 88%)</span>
-                            </div>
-                            <div class="mt-4 p-4 bg-gradient-to-r from-emerald-50 to-emerald-50/50 rounded-xl border border-emerald-100">
+                    <!-- Right Column: Experience, Education, Certifications -->
+                    <div class="md:col-span-2 space-y-8">
+                        <!-- Education - ID -->
+                        <div>
+                            <h2 class="section-title">Pendidikan & Pelatihan</h2>
+                            <div class="timeline-item">
                                 <div class="flex items-start gap-2">
-                                    <i class="fas fa-certificate text-emerald-500 mt-0.5"></i>
+                                    <i class="fas fa-graduation-cap text-emerald-500 mt-1"></i>
                                     <div>
-                                        <p class="text-sm font-semibold text-emerald-800">UKBI Certified</p>
-                                        <p class="text-xs text-emerald-700 mt-0.5">High Proficiency in Indonesian Language (Score 583)</p>
-                                        <a href="https://drive.google.com/file/d/1ZszvtWofweoTckAR8zJdadhwvktb9oZ0/view?usp=drivesdk" target="_blank" rel="noopener noreferrer" class="text-xs text-emerald-600 hover:underline inline-flex items-center gap-1 mt-2 external-link">
-                                            View Certificate <i class="fas fa-external-link-alt text-[10px]"></i>
+                                        <p class="font-bold text-gray-800">Lulusan Full-Stack Developer</p>
+                                        <p class="text-sm text-emerald-600 mb-1">Coding Camp 2026 · DBS Foundation & Dicoding</p>
+                                        <p class="text-gray-600 text-sm">Program full-stack intensif yang mencakup React, Node.js, dan praktik terbaik rekayasa perangkat lunak.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-laptop-code text-emerald-500 mt-1"></i>
+                                    <div>
+                                        <p class="font-bold text-gray-800">Akademi Rekayasa Perangkat Lunak</p>
+                                        <p class="text-sm text-emerald-600 mb-1">Dicoding · 2024 - Sekarang</p>
+                                        <p class="text-gray-600 text-sm">Program komprehensif yang mencakup Kotlin, pengembangan Android, arsitektur bersih, dan praktik industri.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-school text-emerald-500 mt-1"></i>
+                                    <div>
+                                        <p class="font-bold text-gray-800">SMKN 24 Jakarta · Rekayasa Perangkat Lunak (RPL)</p>
+                                        <p class="text-sm text-emerald-600 mb-1">2024 - 2026</p>
+                                        <p class="text-gray-600 text-sm">Spesialisasi dalam rekayasa perangkat lunak dengan fokus pada pengembangan full-stack dan arsitektur sistem.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-flag text-emerald-500 mt-1"></i>
+                                    <div>
+                                        <p class="font-bold text-gray-800">Atlet & Pelatih Pencak Silat</p>
+                                        <p class="text-sm text-emerald-600 mb-1">Sejak 2017</p>
+                                        <p class="text-gray-600 text-sm">Mengelola keuangan cabang dan melatih anggota, menunjukkan akuntabilitas dan disiplin.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Featured Projects - ID -->
+                        <div>
+                            <h2 class="section-title">Proyek Unggulan</h2>
+                            <div class="space-y-4">
+                                <div class="project-card p-4 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition border border-gray-100">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <i class="fas fa-chart-line text-emerald-500"></i>
+                                        <h3 class="font-bold text-gray-800">Fintrix (Finance & Matrix)</h3>
+                                    </div>
+                                    <p class="text-gray-600 text-sm">Solusi fintech untuk literasi keuangan pemuda. Membangun RESTful API dengan Node.js dan antarmuka interaktif dengan React/Next.js.</p>
+                                    <div class="flex flex-wrap gap-1 mt-3">
+                                        <span class="skill-tag">React</span>
+                                        <span class="skill-tag">Next.js</span>
+                                        <span class="skill-tag">Node.js</span>
+                                        <span class="skill-tag">REST API</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="project-card p-4 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition border border-gray-100">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <i class="fab fa-android text-emerald-500"></i>
+                                        <h3 class="font-bold text-gray-800">Aplikasi Manajemen Inventaris Mobile</h3>
+                                    </div>
+                                    <p class="text-gray-600 text-sm">Aplikasi Android berbasis Kotlin menggunakan Room Database dan arsitektur MVVM untuk pelacakan inventaris real-time.</p>
+                                    <div class="flex flex-wrap gap-1 mt-3">
+                                        <span class="skill-tag">Kotlin</span>
+                                        <span class="skill-tag">Room DB</span>
+                                        <span class="skill-tag">MVVM</span>
+                                        <span class="skill-tag">Coroutines</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="project-card p-4 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition border border-gray-100">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <i class="fas fa-utensils text-emerald-500"></i>
+                                        <h3 class="font-bold text-gray-800">Restoran Senayan & Solusi Mobile TB</h3>
+                                    </div>
+                                    <p class="text-gray-600 text-sm">Menyampaikan solusi UI/UX yang kuat untuk bisnis dan dampak sosial (UNICEF/Markoding Challenge) dengan fokus pada aksesibilitas.</p>
+                                    <div class="flex flex-wrap gap-1 mt-3">
+                                        <span class="skill-tag">React</span>
+                                        <span class="skill-tag">Tailwind</span>
+                                        <span class="skill-tag">Figma</span>
+                                        <span class="skill-tag">UI/UX</span>
+                                    </div>
+                                    <a href="https://bomboniofficial.vercel.app/" target="_blank" rel="noopener noreferrer" class="text-emerald-600 text-sm hover:underline inline-flex items-center gap-1 mt-2 external-link">
+                                        Live Demo <i class="fas fa-external-link-alt text-xs"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Verified Certifications - ID -->
+                        <div>
+                            <h2 class="section-title">Sertifikasi Terverifikasi</h2>
+                            <div class="space-y-3">
+                                <div class="cert-card">
+                                    <div class="flex justify-between items-start flex-wrap gap-2">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-code text-emerald-500 text-sm mt-1"></i>
+                                            <div>
+                                                <h3 class="font-bold text-gray-800">Lulusan Full-Stack Developer</h3>
+                                                <p class="text-sm text-gray-500">DBS Foundation & Dicoding · 2026</p>
+                                            </div>
+                                        </div>
+                                        <a href="#" class="text-emerald-600 text-sm hover:underline flex items-center gap-1 external-link">
+                                            Lihat <i class="fas fa-external-link-alt text-xs"></i>
                                         </a>
+                                    </div>
+                                    <p class="text-gray-600 text-sm mt-2">Menyelesaikan program full-stack intensif dengan validasi proyek akhir.</p>
+                                </div>
+                                
+                                <div class="cert-card">
+                                    <div class="flex justify-between items-start flex-wrap gap-2">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-brain text-emerald-500 text-sm mt-1"></i>
+                                            <div>
+                                                <h3 class="font-bold text-gray-800">Paradigma & Logika Pemrograman</h3>
+                                                <p class="text-sm text-gray-500">Markoding · 2024</p>
+                                            </div>
+                                        </div>
+                                        <a href="https://drive.google.com/file/d/19QgN2IBpY7dJyn4cIZWQqEu2m7NodYk4/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="text-emerald-600 text-sm hover:underline flex items-center gap-1 external-link">
+                                            Lihat <i class="fas fa-external-link-alt text-xs"></i>
+                                        </a>
+                                    </div>
+                                    <p class="text-gray-600 text-sm mt-2">Lulus dengan predikat cum laude dalam pemrograman dasar dan pemikiran algoritmik.</p>
+                                </div>
+                                
+                                <div class="cert-card">
+                                    <div class="flex justify-between items-start flex-wrap gap-2">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-language text-emerald-500 text-sm mt-1"></i>
+                                            <div>
+                                                <h3 class="font-bold text-gray-800">Komunikasi Bisnis Bahasa Inggris</h3>
+                                                <p class="text-sm text-gray-500">TBI & Dicoding · 2025</p>
+                                            </div>
+                                        </div>
+                                        <a href="#" class="text-emerald-600 text-sm hover:underline flex items-center gap-1 external-link">
+                                            Lihat <i class="fas fa-external-link-alt text-xs"></i>
+                                        </a>
+                                    </div>
+                                    <p class="text-gray-600 text-sm mt-2">Mencapai 88% kemahiran dalam komunikasi bisnis bahasa Inggris.</p>
+                                </div>
+                                
+                                <div class="cert-card">
+                                    <div class="flex justify-between items-start flex-wrap gap-2">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-language text-emerald-500 text-sm mt-1"></i>
+                                            <div>
+                                                <h3 class="font-bold text-gray-800">Uji Kemahiran Berbahasa Indonesia (UKBI)</h3>
+                                                <p class="text-sm text-gray-500">Kemahiran Bahasa · 2024</p>
+                                            </div>
+                                        </div>
+                                        <a href="https://drive.google.com/file/d/1ZszvtWofweoTckAR8zJdadhwvktb9oZ0/view?usp=drivesdk" target="_blank" rel="noopener noreferrer" class="text-emerald-600 text-sm hover:underline flex items-center gap-1 external-link">
+                                            Lihat <i class="fas fa-external-link-alt text-xs"></i>
+                                        </a>
+                                    </div>
+                                    <p class="text-gray-600 text-sm mt-2">Mencapai predikat "Unggul" dengan skor 583.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Investment Experience - ID -->
+                        <div>
+                            <h2 class="section-title">Pengalaman Investasi</h2>
+                            <div class="bg-gradient-to-r from-emerald-50 to-transparent rounded-xl p-5 border border-emerald-100">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-trend-up text-emerald-500"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-700 text-sm leading-relaxed">
+                                            Peserta aktif di pasar saham Indonesia (IDX) dan trading emas. Mengembangkan literasi keuangan melalui 
+                                            belajar mandiri dan pengalaman praktis. Menerjemahkan wawasan pasar ke dalam solusi perangkat lunak 
+                                            yang membantu orang lain memahami keuangan pribadi dan strategi investasi.
+                                        </p>
+                                        <div class="mt-4 flex gap-6">
+                                            <div class="text-center">
+                                                <p class="text-2xl font-bold text-emerald-600">2023</p>
+                                                <p class="text-xs text-gray-500">Trading Emas Sejak</p>
+                                            </div>
+                                            <div class="text-center">
+                                                <p class="text-2xl font-bold text-emerald-600">IDX</p>
+                                                <p class="text-xs text-gray-500">Pasar Saham</p>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -535,237 +793,408 @@
                     </div>
                 </div>
                 
-                <!-- Right Column: Experience, Education, Certifications -->
-                <div class="md:col-span-2 space-y-8">
-                    <!-- Education -->
-                    <div>
-                        <h2 class="section-title">Education & Training</h2>
-                        <div class="timeline-item">
-                            <div class="flex items-start gap-2">
-                                <i class="fas fa-graduation-cap text-emerald-500 mt-1"></i>
-                                <div>
-                                    <p class="font-bold text-gray-800">Full-Stack Developer Graduate</p>
-                                    <p class="text-sm text-emerald-600 mb-1">Coding Camp 2026 · DBS Foundation & Dicoding</p>
-                                    <p class="text-gray-600 text-sm">Intensive full-stack program covering React, Node.js, and software engineering best practices.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="flex items-start gap-2">
-                                <i class="fas fa-laptop-code text-emerald-500 mt-1"></i>
-                                <div>
-                                    <p class="font-bold text-gray-800">Software Engineering Academy</p>
-                                    <p class="text-sm text-emerald-600 mb-1">Dicoding · 2024 - Present</p>
-                                    <p class="text-gray-600 text-sm">Comprehensive program covering Kotlin, Android development, clean architecture, and industry practices.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="flex items-start gap-2">
-                                <i class="fas fa-school text-emerald-500 mt-1"></i>
-                                <div>
-                                    <p class="font-bold text-gray-800">SMKN 24 Jakarta · Software Engineering (RPL)</p>
-                                    <p class="text-sm text-emerald-600 mb-1">2024 - 2026</p>
-                                    <p class="text-gray-600 text-sm">Specialized in software engineering with focus on full-stack development and system architecture.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="flex items-start gap-2">
-                                <i class="fas fa-flag text-emerald-500 mt-1"></i>
-                                <div>
-                                    <p class="font-bold text-gray-800">Pencak Silat Athlete & Coach</p>
-                                    <p class="text-sm text-emerald-600 mb-1">Since 2017</p>
-                                    <p class="text-gray-600 text-sm">Managing branch finances and training members, demonstrating accountability and discipline.</p>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Quote Section - ID -->
+                <div class="mt-10 pt-6 border-t border-gray-200 text-center">
+                    <div class="inline-block bg-gradient-to-r from-emerald-50 to-transparent px-8 py-3 rounded-full">
+                        <p class="text-gray-600 italic text-sm">
+                            <i class="fas fa-quote-left text-emerald-400 mr-2"></i>
+                            Kode dengan disiplin, investasi dengan sabar, bertarung dengan kehormatan. 
+                            <i class="fas fa-quote-right text-emerald-400 ml-2"></i>
+                        </p>
                     </div>
-                    
-                    <!-- Featured Projects -->
-                    <div>
-                        <h2 class="section-title">Featured Projects</h2>
-                        <div class="space-y-4">
-                            <div class="project-card p-4 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition border border-gray-100">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <i class="fas fa-chart-line text-emerald-500"></i>
-                                    <h3 class="font-bold text-gray-800">Fintrix (Finance & Matrix)</h3>
-                                </div>
-                                <p class="text-gray-600 text-sm">Fintech solution for youth financial literacy. Engineered RESTful APIs with Node.js and interactive interfaces with React/Next.js.</p>
-                                <div class="flex flex-wrap gap-1 mt-3">
-                                    <span class="skill-tag">React</span>
-                                    <span class="skill-tag">Next.js</span>
-                                    <span class="skill-tag">Node.js</span>
-                                    <span class="skill-tag">REST API</span>
-                                </div>
-                                <a href="#" class="text-emerald-600 text-sm hover:underline inline-flex items-center gap-1 mt-2 external-link">
-                                    View Project <i class="fas fa-external-link-alt text-xs"></i>
-                                </a>
-                            </div>
-                            
-                            <div class="project-card p-4 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition border border-gray-100">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <i class="fab fa-android text-emerald-500"></i>
-                                    <h3 class="font-bold text-gray-800">Mobile Inventory Management App</h3>
-                                </div>
-                                <p class="text-gray-600 text-sm">Kotlin-based Android app utilizing Room Database and MVVM architecture for real-time inventory tracking and management.</p>
-                                <div class="flex flex-wrap gap-1 mt-3">
-                                    <span class="skill-tag">Kotlin</span>
-                                    <span class="skill-tag">Room DB</span>
-                                    <span class="skill-tag">MVVM</span>
-                                    <span class="skill-tag">Coroutines</span>
-                                </div>
-                            </div>
-                            
-                            <div class="project-card p-4 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition border border-gray-100">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <i class="fas fa-utensils text-emerald-500"></i>
-                                    <h3 class="font-bold text-gray-800">Restoran Senayan & TB Mobile Solution</h3>
-                                </div>
-                                <p class="text-gray-600 text-sm">Delivered robust UI/UX solutions for business and social impact (UNICEF/Markoding Challenge) with a focus on accessibility.</p>
-                                <div class="flex flex-wrap gap-1 mt-3">
-                                    <span class="skill-tag">React</span>
-                                    <span class="skill-tag">Tailwind</span>
-                                    <span class="skill-tag">Figma</span>
-                                    <span class="skill-tag">UI/UX</span>
-                                </div>
-                                <a href="https://bomboniofficial.vercel.app/" target="_blank" rel="noopener noreferrer" class="text-emerald-600 text-sm hover:underline inline-flex items-center gap-1 mt-2 external-link">
-                                    Live Demo <i class="fas fa-external-link-alt text-xs"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Verified Certifications -->
-                    <div>
-                        <h2 class="section-title">Verified Certifications</h2>
-                        <div class="space-y-3">
-                            <div class="cert-card">
-                                <div class="flex justify-between items-start flex-wrap gap-2">
-                                    <div class="flex items-start gap-2">
-                                        <i class="fas fa-code text-emerald-500 text-sm mt-1"></i>
-                                        <div>
-                                            <h3 class="font-bold text-gray-800">Full-Stack Developer Graduate</h3>
-                                            <p class="text-sm text-gray-500">DBS Foundation & Dicoding · 2026</p>
-                                        </div>
-                                    </div>
-                                    <a href="#" class="text-emerald-600 text-sm hover:underline flex items-center gap-1 external-link">
-                                        View <i class="fas fa-external-link-alt text-xs"></i>
-                                    </a>
-                                </div>
-                                <p class="text-gray-600 text-sm mt-2">Completed intensive full-stack program with final project validation.</p>
-                            </div>
-                            
-                            <div class="cert-card">
-                                <div class="flex justify-between items-start flex-wrap gap-2">
-                                    <div class="flex items-start gap-2">
-                                        <i class="fas fa-brain text-emerald-500 text-sm mt-1"></i>
-                                        <div>
-                                            <h3 class="font-bold text-gray-800">Coding Paradigm & Logic</h3>
-                                            <p class="text-sm text-gray-500">Markoding · 2024</p>
-                                        </div>
-                                    </div>
-                                    <a href="https://drive.google.com/file/d/19QgN2IBpY7dJyn4cIZWQqEu2m7NodYk4/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="text-emerald-600 text-sm hover:underline flex items-center gap-1 external-link">
-                                        View <i class="fas fa-external-link-alt text-xs"></i>
-                                    </a>
-                                </div>
-                                <p class="text-gray-600 text-sm mt-2">Graduated with distinction in foundational programming and algorithmic thinking.</p>
-                            </div>
-                            
-                            <div class="cert-card">
-                                <div class="flex justify-between items-start flex-wrap gap-2">
-                                    <div class="flex items-start gap-2">
-                                        <i class="fas fa-language text-emerald-500 text-sm mt-1"></i>
-                                        <div>
-                                            <h3 class="font-bold text-gray-800">English for Business Communication</h3>
-                                            <p class="text-sm text-gray-500">TBI & Dicoding · 2025</p>
-                                        </div>
-                                    </div>
-                                    <a href="#" class="text-emerald-600 text-sm hover:underline flex items-center gap-1 external-link">
-                                        View <i class="fas fa-external-link-alt text-xs"></i>
-                                    </a>
-                                </div>
-                                <p class="text-gray-600 text-sm mt-2">Achieved 88% proficiency in business English communication.</p>
-                            </div>
-                            
-                            <div class="cert-card">
-                                <div class="flex justify-between items-start flex-wrap gap-2">
-                                    <div class="flex items-start gap-2">
-                                        <i class="fas fa-language text-emerald-500 text-sm mt-1"></i>
-                                        <div>
-                                            <h3 class="font-bold text-gray-800">Uji Kemahiran Berbahasa Indonesia (UKBI)</h3>
-                                            <p class="text-sm text-gray-500">Language Proficiency · 2024</p>
-                                        </div>
-                                    </div>
-                                    <a href="https://drive.google.com/file/d/1ZszvtWofweoTckAR8zJdadhwvktb9oZ0/view?usp=drivesdk" target="_blank" rel="noopener noreferrer" class="text-emerald-600 text-sm hover:underline flex items-center gap-1 external-link">
-                                        View <i class="fas fa-external-link-alt text-xs"></i>
-                                    </a>
-                                </div>
-                                <p class="text-gray-600 text-sm mt-2">Achieved "Unggul" (Superior) predicate with a score of 583.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Investment Experience -->
-                    <div>
-                        <h2 class="section-title">Investment Experience</h2>
-                        <div class="bg-gradient-to-r from-emerald-50 to-transparent rounded-xl p-5 border border-emerald-100">
-                            <div class="flex items-start gap-3">
-                                <div class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                                    <i class="fas fa-trend-up text-emerald-500"></i>
-                                </div>
-                                <div>
-                                    <p class="text-gray-700 text-sm leading-relaxed">
-                                        Active participant in Indonesian stock market (IDX) and gold trading. Developed financial literacy through 
-                                        self-study and practical experience. Translating market insights into software solutions that help 
-                                        others understand personal finance and investment strategies.
-                                    </p>
-                                    <div class="mt-4 flex gap-6">
-                                        <div class="text-center">
-                                            <p class="text-2xl font-bold text-emerald-600">2023</p>
-                                            <p class="text-xs text-gray-500">Gold Trading Since</p>
-                                        </div>
-                                        <div class="text-center">
-                                            <p class="text-2xl font-bold text-emerald-600">IDX</p>
-                                            <p class="text-xs text-gray-500">Stock Market</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <p class="text-xs text-gray-400 mt-3">— Naufal Murtadho</p>
                 </div>
             </div>
+            <!-- ========== END BAHASA INDONESIA ========== -->
             
-            <!-- Quote Section -->
-            <div class="mt-10 pt-6 border-t border-gray-200 text-center">
-                <div class="inline-block bg-gradient-to-r from-emerald-50 to-transparent px-8 py-3 rounded-full">
-                    <p class="text-gray-600 italic text-sm">
-                        <i class="fas fa-quote-left text-emerald-400 mr-2"></i>
-                        Code with discipline, invest with patience, fight with honor. 
-                        <i class="fas fa-quote-right text-emerald-400 ml-2"></i>
+            
+            <!-- ========== ENGLISH ========== -->
+            <div id="contentEn" class="lang-content">
+                <!-- Professional Summary - EN -->
+                <div class="mb-10">
+                    <h2 class="section-title">Professional Summary</h2>
+                    <p class="text-gray-700 leading-relaxed">
+                        A highly disciplined and creative <span class="font-semibold text-gray-900">Software Engineer born in 2008</span>, combining the rigorous mindset of a competitive 
+                        <span class="font-semibold text-gray-900">Pencak Silat national athlete</span> with active financial literacy in the stock and gold markets. Specialized in Web Development 
+                        and Mobile Engineering (<span class="text-emerald-600 font-medium">React, Node.js, Kotlin</span>), constantly driven to architect aesthetic, scalable, and intelligent digital 
+                        solutions. Possesses strong communication skills certified by <span class="font-semibold text-gray-900">UKBI</span> and proven problem-solving abilities from 
+                        competitive martial arts.
                     </p>
                 </div>
-                <p class="text-xs text-gray-400 mt-3">— Naufal Murtadho</p>
+                
+                <div class="grid md:grid-cols-3 gap-10">
+                    <!-- Left Column: Skills & Athletics -->
+                    <div class="space-y-8">
+                        <!-- Core Skills - EN -->
+                        <div>
+                            <h2 class="section-title">Core Skills</h2>
+                            <div class="space-y-4">
+                                <div>
+                                    <p class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                        <i class="fas fa-code text-emerald-500 text-sm"></i>
+                                        Web & Mobile
+                                    </p>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="skill-tag">React.js</span>
+                                        <span class="skill-tag">Next.js</span>
+                                        <span class="skill-tag">Node.js</span>
+                                        <span class="skill-tag">Express.js</span>
+                                        <span class="skill-tag">TypeScript</span>
+                                        <span class="skill-tag">Kotlin</span>
+                                        <span class="skill-tag">Tailwind CSS</span>
+                                        <span class="skill-tag">HTML5/CSS3</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                        <i class="fas fa-tools text-emerald-500 text-sm"></i>
+                                        Tools & Technologies
+                                    </p>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="skill-tag">Git/GitHub</span>
+                                        <span class="skill-tag">REST APIs</span>
+                                        <span class="skill-tag">Figma</span>
+                                        <span class="skill-tag">Android Studio</span>
+                                        <span class="skill-tag">VS Code</span>
+                                        <span class="skill-tag">3ds Max</span>
+                                        <span class="skill-tag">MaxScript</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                        <i class="fas fa-chart-pie text-emerald-500 text-sm"></i>
+                                        Financial Literacy
+                                    </p>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="skill-tag">Stock Investment (IDX)</span>
+                                        <span class="skill-tag">Gold Trading</span>
+                                        <span class="skill-tag">Market Analysis</span>
+                                        <span class="skill-tag">Portfolio Management</span>
+                                        <span class="skill-tag">Risk Assessment</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                        <i class="fas fa-users text-emerald-500 text-sm"></i>
+                                        Soft Skills
+                                    </p>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="skill-tag">Discipline</span>
+                                        <span class="skill-tag">Problem Solving</span>
+                                        <span class="skill-tag">Communication</span>
+                                        <span class="skill-tag">Team Collaboration</span>
+                                        <span class="skill-tag">Leadership</span>
+                                        <span class="skill-tag">Time Management</span>
+                                        <span class="skill-tag">Adaptability</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Athletics - EN -->
+                        <div>
+                            <h2 class="section-title">Athletics & Discipline</h2>
+                            <div class="bg-gradient-to-br from-gray-50 to-white rounded-xl p-4 border border-gray-100 shadow-sm">
+                                <div class="flex items-center gap-3 mb-3">
+                                    <div class="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center">
+                                        <i class="fas fa-fist-raised text-xl text-red-500"></i>
+                                    </div>
+                                    <h3 class="font-bold text-gray-800">Pencak Silat Athlete</h3>
+                                </div>
+                                <p class="text-gray-600 text-sm leading-relaxed">
+                                    Active competitor in regional and national championships. Trained in high mental resilience, 
+                                    strategic thinking, and disciplined execution. These qualities directly translate to debugging 
+                                    complex systems and handling high-pressure development environments.
+                                </p>
+                                <div class="mt-3 flex flex-wrap gap-2">
+                                    <span class="text-xs bg-gradient-to-r from-red-50 to-red-100 text-red-700 px-2 py-1 rounded-full border border-red-200">🏆 National Gold Medalist (Kemenpora RI Cup 2025)</span>
+                                    <span class="text-xs bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 px-2 py-1 rounded-full border border-amber-200">🥇 Regional Champion</span>
+                                    <span class="text-xs bg-gradient-to-r from-emerald-50 to-emerald-100 text-emerald-700 px-2 py-1 rounded-full border border-emerald-200">🎯 Strategic Mindset</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Languages - EN -->
+                        <div>
+                            <h2 class="section-title">Languages</h2>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg transition">
+                                    <span class="font-medium text-gray-700">Indonesian</span>
+                                    <span class="text-sm text-emerald-600 font-semibold bg-emerald-50 px-3 py-1 rounded-full">Native · UKBI Unggul</span>
+                                </div>
+                                <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded-lg transition">
+                                    <span class="font-medium text-gray-700">English</span>
+                                    <span class="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">Professional (TBI 88%)</span>
+                                </div>
+                                <div class="mt-4 p-4 bg-gradient-to-r from-emerald-50 to-emerald-50/50 rounded-xl border border-emerald-100">
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-certificate text-emerald-500 mt-0.5"></i>
+                                        <div>
+                                            <p class="text-sm font-semibold text-emerald-800">UKBI Certified</p>
+                                            <p class="text-xs text-emerald-700 mt-0.5">High Proficiency in Indonesian Language (Score 583)</p>
+                                            <a href="https://drive.google.com/file/d/1ZszvtWofweoTckAR8zJdadhwvktb9oZ0/view?usp=drivesdk" target="_blank" rel="noopener noreferrer" class="text-xs text-emerald-600 hover:underline inline-flex items-center gap-1 mt-2 external-link">
+                                                View Certificate <i class="fas fa-external-link-alt text-[10px]"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Column: Experience, Education, Certifications -->
+                    <div class="md:col-span-2 space-y-8">
+                        <!-- Education - EN -->
+                        <div>
+                            <h2 class="section-title">Education & Training</h2>
+                            <div class="timeline-item">
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-graduation-cap text-emerald-500 mt-1"></i>
+                                    <div>
+                                        <p class="font-bold text-gray-800">Full-Stack Developer Graduate</p>
+                                        <p class="text-sm text-emerald-600 mb-1">Coding Camp 2026 · DBS Foundation & Dicoding</p>
+                                        <p class="text-gray-600 text-sm">Intensive full-stack program covering React, Node.js, and software engineering best practices.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-laptop-code text-emerald-500 mt-1"></i>
+                                    <div>
+                                        <p class="font-bold text-gray-800">Software Engineering Academy</p>
+                                        <p class="text-sm text-emerald-600 mb-1">Dicoding · 2024 - Present</p>
+                                        <p class="text-gray-600 text-sm">Comprehensive program covering Kotlin, Android development, clean architecture, and industry practices.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-school text-emerald-500 mt-1"></i>
+                                    <div>
+                                        <p class="font-bold text-gray-800">SMKN 24 Jakarta · Software Engineering (RPL)</p>
+                                        <p class="text-sm text-emerald-600 mb-1">2024 - 2026</p>
+                                        <p class="text-gray-600 text-sm">Specialized in software engineering with focus on full-stack development and system architecture.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="flex items-start gap-2">
+                                    <i class="fas fa-flag text-emerald-500 mt-1"></i>
+                                    <div>
+                                        <p class="font-bold text-gray-800">Pencak Silat Athlete & Coach</p>
+                                        <p class="text-sm text-emerald-600 mb-1">Since 2017</p>
+                                        <p class="text-gray-600 text-sm">Managing branch finances and training members, demonstrating accountability and discipline.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Featured Projects - EN -->
+                        <div>
+                            <h2 class="section-title">Featured Projects</h2>
+                            <div class="space-y-4">
+                                <div class="project-card p-4 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition border border-gray-100">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <i class="fas fa-chart-line text-emerald-500"></i>
+                                        <h3 class="font-bold text-gray-800">Fintrix (Finance & Matrix)</h3>
+                                    </div>
+                                    <p class="text-gray-600 text-sm">Fintech solution for youth financial literacy. Engineered RESTful APIs with Node.js and interactive interfaces with React/Next.js.</p>
+                                    <div class="flex flex-wrap gap-1 mt-3">
+                                        <span class="skill-tag">React</span>
+                                        <span class="skill-tag">Next.js</span>
+                                        <span class="skill-tag">Node.js</span>
+                                        <span class="skill-tag">REST API</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="project-card p-4 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition border border-gray-100">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <i class="fab fa-android text-emerald-500"></i>
+                                        <h3 class="font-bold text-gray-800">Mobile Inventory Management App</h3>
+                                    </div>
+                                    <p class="text-gray-600 text-sm">Kotlin-based Android app utilizing Room Database and MVVM architecture for real-time inventory tracking and management.</p>
+                                    <div class="flex flex-wrap gap-1 mt-3">
+                                        <span class="skill-tag">Kotlin</span>
+                                        <span class="skill-tag">Room DB</span>
+                                        <span class="skill-tag">MVVM</span>
+                                        <span class="skill-tag">Coroutines</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="project-card p-4 bg-gray-50/50 rounded-xl hover:bg-gray-50 transition border border-gray-100">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <i class="fas fa-utensils text-emerald-500"></i>
+                                        <h3 class="font-bold text-gray-800">Restoran Senayan & TB Mobile Solution</h3>
+                                    </div>
+                                    <p class="text-gray-600 text-sm">Delivered robust UI/UX solutions for business and social impact (UNICEF/Markoding Challenge) with a focus on accessibility.</p>
+                                    <div class="flex flex-wrap gap-1 mt-3">
+                                        <span class="skill-tag">React</span>
+                                        <span class="skill-tag">Tailwind</span>
+                                        <span class="skill-tag">Figma</span>
+                                        <span class="skill-tag">UI/UX</span>
+                                    </div>
+                                    <a href="https://bomboniofficial.vercel.app/" target="_blank" rel="noopener noreferrer" class="text-emerald-600 text-sm hover:underline inline-flex items-center gap-1 mt-2 external-link">
+                                        Live Demo <i class="fas fa-external-link-alt text-xs"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Verified Certifications - EN -->
+                        <div>
+                            <h2 class="section-title">Verified Certifications</h2>
+                            <div class="space-y-3">
+                                <div class="cert-card">
+                                    <div class="flex justify-between items-start flex-wrap gap-2">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-code text-emerald-500 text-sm mt-1"></i>
+                                            <div>
+                                                <h3 class="font-bold text-gray-800">Full-Stack Developer Graduate</h3>
+                                                <p class="text-sm text-gray-500">DBS Foundation & Dicoding · 2026</p>
+                                            </div>
+                                        </div>
+                                        <a href="#" class="text-emerald-600 text-sm hover:underline flex items-center gap-1 external-link">
+                                            View <i class="fas fa-external-link-alt text-xs"></i>
+                                        </a>
+                                    </div>
+                                    <p class="text-gray-600 text-sm mt-2">Completed intensive full-stack program with final project validation.</p>
+                                </div>
+                                
+                                <div class="cert-card">
+                                    <div class="flex justify-between items-start flex-wrap gap-2">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-brain text-emerald-500 text-sm mt-1"></i>
+                                            <div>
+                                                <h3 class="font-bold text-gray-800">Coding Paradigm & Logic</h3>
+                                                <p class="text-sm text-gray-500">Markoding · 2024</p>
+                                            </div>
+                                        </div>
+                                        <a href="https://drive.google.com/file/d/19QgN2IBpY7dJyn4cIZWQqEu2m7NodYk4/view?usp=drive_link" target="_blank" rel="noopener noreferrer" class="text-emerald-600 text-sm hover:underline flex items-center gap-1 external-link">
+                                            View <i class="fas fa-external-link-alt text-xs"></i>
+                                        </a>
+                                    </div>
+                                    <p class="text-gray-600 text-sm mt-2">Graduated with distinction in foundational programming and algorithmic thinking.</p>
+                                </div>
+                                
+                                <div class="cert-card">
+                                    <div class="flex justify-between items-start flex-wrap gap-2">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-language text-emerald-500 text-sm mt-1"></i>
+                                            <div>
+                                                <h3 class="font-bold text-gray-800">English for Business Communication</h3>
+                                                <p class="text-sm text-gray-500">TBI & Dicoding · 2025</p>
+                                            </div>
+                                        </div>
+                                        <a href="#" class="text-emerald-600 text-sm hover:underline flex items-center gap-1 external-link">
+                                            View <i class="fas fa-external-link-alt text-xs"></i>
+                                        </a>
+                                    </div>
+                                    <p class="text-gray-600 text-sm mt-2">Achieved 88% proficiency in business English communication.</p>
+                                </div>
+                                
+                                <div class="cert-card">
+                                    <div class="flex justify-between items-start flex-wrap gap-2">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-language text-emerald-500 text-sm mt-1"></i>
+                                            <div>
+                                                <h3 class="font-bold text-gray-800">Uji Kemahiran Berbahasa Indonesia (UKBI)</h3>
+                                                <p class="text-sm text-gray-500">Language Proficiency · 2024</p>
+                                            </div>
+                                        </div>
+                                        <a href="https://drive.google.com/file/d/1ZszvtWofweoTckAR8zJdadhwvktb9oZ0/view?usp=drivesdk" target="_blank" rel="noopener noreferrer" class="text-emerald-600 text-sm hover:underline flex items-center gap-1 external-link">
+                                            View <i class="fas fa-external-link-alt text-xs"></i>
+                                        </a>
+                                    </div>
+                                    <p class="text-gray-600 text-sm mt-2">Achieved "Unggul" (Superior) predicate with a score of 583.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Investment Experience - EN -->
+                        <div>
+                            <h2 class="section-title">Investment Experience</h2>
+                            <div class="bg-gradient-to-r from-emerald-50 to-transparent rounded-xl p-5 border border-emerald-100">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-trend-up text-emerald-500"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-700 text-sm leading-relaxed">
+                                            Active participant in Indonesian stock market (IDX) and gold trading. Developed financial literacy through 
+                                            self-study and practical experience. Translating market insights into software solutions that help 
+                                            others understand personal finance and investment strategies.
+                                        </p>
+                                        <div class="mt-4 flex gap-6">
+                                            <div class="text-center">
+                                                <p class="text-2xl font-bold text-emerald-600">2023</p>
+                                                <p class="text-xs text-gray-500">Gold Trading Since</p>
+                                            </div>
+                                            <div class="text-center">
+                                                <p class="text-2xl font-bold text-emerald-600">IDX</p>
+                                                <p class="text-xs text-gray-500">Stock Market</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quote Section - EN -->
+                <div class="mt-10 pt-6 border-t border-gray-200 text-center">
+                    <div class="inline-block bg-gradient-to-r from-emerald-50 to-transparent px-8 py-3 rounded-full">
+                        <p class="text-gray-600 italic text-sm">
+                            <i class="fas fa-quote-left text-emerald-400 mr-2"></i>
+                            Code with discipline, invest with patience, fight with honor. 
+                            <i class="fas fa-quote-right text-emerald-400 ml-2"></i>
+                        </p>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-3">— Naufal Murtadho</p>
+                </div>
             </div>
+            <!-- ========== END ENGLISH ========== -->
+            
         </div>
     </div>
     
     <!-- Footer Note -->
     <div class="max-w-6xl mx-auto mt-6 text-center text-gray-500 text-xs no-print">
         <p>© 2025 Naufal Murtadho — Last updated: March 2026 | 
-            <a href="https://portopal.vercel.app/" target="_blank" rel="noopener noreferrer" class="text-emerald-500 hover:underline">Back to Portfolio</a> |
+            <a href="https://konssultasiweb.vercel.app/" target="_blank" rel="noopener noreferrer" class="text-emerald-500 hover:underline">Back to Portfolio</a> |
             <a href="https://bomboniofficial.vercel.app/" target="_blank" rel="noopener noreferrer" class="text-emerald-500 hover:underline">Bomboni Official</a>
         </p>
     </div>
     
     <script>
         // ============================================
-        // CV PAGE ENHANCED JAVASCRIPT
+        // LANGUAGE SWITCHER & ENHANCED JAVASCRIPT
         // ============================================
         
         (function() {
             'use strict';
+            
+            let currentLang = 'id';
+            
+            // Language switcher function
+            window.switchLanguage = function(lang) {
+                currentLang = lang;
+                
+                // Update buttons
+                document.getElementById('langId').className = lang === 'id' ? 'lang-btn active' : 'lang-btn inactive';
+                document.getElementById('langEn').className = lang === 'en' ? 'lang-btn active' : 'lang-btn inactive';
+                
+                // Update title
+                document.getElementById('titleId').classList.toggle('active', lang === 'id');
+                document.getElementById('titleEn').classList.toggle('active', lang === 'en');
+                
+                // Update content
+                document.getElementById('contentId').classList.toggle('active', lang === 'id');
+                document.getElementById('contentEn').classList.toggle('active', lang === 'en');
+                
+                // Update document lang attribute
+                document.documentElement.lang = lang === 'id' ? 'id' : 'en';
+            };
             
             // Remove loading class after page load
             const removeLoading = () => {
@@ -813,7 +1242,7 @@
                 secureExternalLinks();
                 trackCertificateClicks();
                 
-                console.log('📄 CV Page - Version 100/100 Loaded');
+                console.log('📄 CV Page - Version 100/100 Loaded | Language: ' + currentLang);
             };
             
             if (document.readyState === 'loading') {
