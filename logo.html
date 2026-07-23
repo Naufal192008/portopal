@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Order Desain Logo Profesional | Design Brief & PDF</title>
+  <!-- Font Google -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Library jsPDF & html2canvas untuk generate PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f1f5f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      margin: 0;
+    }
+    .container {
+      max-width: 1000px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 2.5rem;
+      box-shadow: 0 30px 50px -15px rgba(0,0,0,0.2);
+      padding: 2.5rem 2.2rem;
+      transition: all 0.2s;
+    }
+    h1 {
+      font-size: 2.3rem;
+      font-weight: 700;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-bottom: 0.4rem;
+    }
+    h1 i {
+      color: #2563eb;
+    }
+    .subhead {
+      font-weight: 500;
+      color: #475569;
+      margin-bottom: 2rem;
+      padding-left: 1rem;
+      border-left: 5px solid #2563eb;
+    }
+    .grid-panduan {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+    }
+    .card {
+      background: #f8fafc;
+      border-radius: 1.5rem;
+      padding: 1.5rem 1.2rem;
+      border: 1px solid #e2e8f0;
+      transition: 0.2s;
+    }
+    .card i {
+      font-size: 2rem;
+      color: #2563eb;
+      margin-bottom: 0.8rem;
+      background: white;
+      padding: 0.6rem;
+      border-radius: 50%;
+    }
+    .card h3 {
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+    .wa-card {
+      background: #dcfce7;
+      border-color: #bbf7d0;
+    }
+    .wa-card i {
+      color: #16a34a;
+    }
+    .btn-wa {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: #25D366;
+      color: white;
+      font-weight: 600;
+      padding: 0.7rem 1.5rem;
+      border-radius: 2rem;
+      text-decoration: none;
+      margin-top: 0.7rem;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .btn-wa:hover {
+      background: #1da851;
+    }
+    .brief-section {
+      background: #ffffff;
+      border: 1px solid #e9eef3;
+      border-radius: 2rem;
+      padding: 2rem 1.8rem;
+      margin: 1.8rem 0;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+    }
+    .brief-section h2 {
+      font-weight: 700;
+      font-size: 1.7rem;
+      margin-bottom: 1.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1.4rem;
+    }
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .full-width {
+      grid-column: span 2;
+    }
+    label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    label i {
+      color: #2563eb;
+      width: 1.2rem;
+    }
+    input, textarea, select {
+      padding: 0.8rem 1rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 1rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+      background: #ffffff;
+      transition: 0.2s;
+      outline: none;
+      width: 100%;
+      resize: vertical;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.2);
+    }
+    .error-msg {
+      font-size: 0.75rem;
+      color: #dc2626;
+      margin-top: 0.2rem;
+      display: none;
+      align-items: center;
+      gap: 0.2rem;
+    }
+    .input-error {
+      border-color: #dc2626 !important;
+      background: #fff5f5;
+    }
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    .btn-primary {
+      background: #0f172a;
+      color: white;
+      border: none;
+      padding: 0.9rem 2.2rem;
+      border-radius: 2.5rem;
+      font-weight: 600;
+      font-size: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: 0.25s;
+      background: #1e293b;
+      letter-spacing: 0.3px;
+      border: 1px solid #334155;
+    }
+    .btn-primary:hover {
+      background: #0f172a;
+      box-shadow: 0 10px 18px rgba(0,0,0,0.2);
+    }
+    .btn-outline {
+      background: white;
+      border: 1px solid #2563eb;
+      color: #2563eb;
+      padding: 0.9rem 2rem;
+      border-radius: 2.5rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-outline:hover {
+      background: #eff6ff;
+    }
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 2rem;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 1.8rem;
+    }
+    .social a {
+      color: #475569;
+      font-size: 1.5rem;
+      margin-right: 1.2rem;
+    }
+    .social a:hover {
+      color: #2563eb;
+    }
+    .porto-link {
+      background: #f1f5f9;
+      padding: 0.5rem 1.5rem;
+      border-radius: 2rem;
+      font-weight: 500;
+      text-decoration: none;
+      color: #1e293b;
+    }
+    hr {
+      margin: 1.5rem 0 1rem;
+      border: 0.5px solid #e2e8f0;
+    }
+    .note {
+      font-size: 0.85rem;
+      color: #475569;
+      text-align: center;
+    }
+    #pdfPreviewContainer {
+      display: none;
+    }
+    @media (max-width: 650px) {
+      .container {
+        padding: 1.8rem 1.2rem;
+      }
+      .full-width {
+        grid-column: span 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1><i class="fas fa-pen-fancy"></i> King Desain Logo</h1>
+    <div class="subhead">Panduan Order · Brief Validasi · Otomatis PDF</div>
+
+    <!-- Alur Pemesanan -->
+    <div class="grid-panduan">
+      <div class="card"><i class="fas fa-cart-shopping"></i><h3>1. Checkout</h3><p>Lakukan checkout paket.</p></div>
+      <div class="card wa-card"><i class="fab fa-whatsapp"></i><h3>2. Hubungi WA</h3><p><strong>0857-1078-5244</strong></p>
+        <a href="https://wa.me/6285710785244?text=Halo%20King%20Desain%2C%20saya%20mau%20order%20logo." target="_blank" class="btn-wa"><i class="fab fa-whatsapp"></i> Chat via WA</a>
+      </div>
+      <div class="card"><i class="fas fa-file-signature"></i><h3>3. Isi Brief</h3><p>Form di bawah (wajib valid).</p></div>
+      <div class="card"><i class="fas fa-image"></i><h3>4. Kirim Referensi</h3><p>Opsional via WA.</p></div>
+      <div class="card"><i class="fas fa-draw-polygon"></i><h3>5-7. Proses</h3><p>Draft → Review → Final PNG</p></div>
+    </div>
+
+    <!-- Design Brief Form dengan Validasi -->
+    <div class="brief-section">
+      <h2><i class="fas fa-clipboard-check"></i> Design Brief (Validasi Ketat)</h2>
+      <form id="designBriefForm" novalidate>
+        <div class="form-grid">
+          <!-- Tanggal otomatis -->
+          <div class="field-group">
+            <label><i class="far fa-calendar-alt"></i> Tanggal Brief</label>
+            <input type="date" id="tanggal" name="tanggal" required>
+            <span class="error-msg" id="err-tanggal"><i class="fas fa-exclamation-circle"></i> Harap isi tanggal.</span>
+          </div>
+          <div class="field-group">
+            <label><i class="fas fa-tag"></i> Nama Proyek</label>
+            <input type="text" id="namaProyek" name="namaProyek" placeholder="Logo" value="Logo" required>
+            <span class="error-msg" id="err-namaProyek"><i class="fas fa-exclamation-circle"></i> Minimal 2 karakter.</span>
+          </div>
+          <div class="field-group">
+            <label><i class="fas fa-store"></i> Merek Klien (Nama Usaha) *</label>
+            <input type="text" id="merekKlien" name="merekKlien" placeholder="Nama brand / usaha" required>
+            <span class="error-msg" id="err-merekKlien"><i class="fas fa-exclamation-circle"></i> Nama usaha wajib diisi.</span>
+          </div>
+          <div class="field-group">
+            <label><i class="fas fa-user"></i> Nama Klien (PJ) *</label>
+            <input type="text" id="namaKlien" name="namaKlien" placeholder="Nama lengkap penanggung jawab" required>
+            <span class="error-msg" id="err-namaKlien"><i class="fas fa-exclamation-circle"></i> Nama klien tidak boleh kosong.</span>
+          </div>
+          <div class="field-group">
+            <label><i class="fas fa-paint-brush"></i> Nama Desainer</label>
+            <input type="text" id="namaDesainer" name="namaDesainer" value="King NFLMR" required>
+            <span class="error-msg" id="err-namaDesainer"><i class="fas fa-exclamation-circle"></i> Isi desainer.</span>
+          </div>
+          <div class="field-group full-width">
+            <label><i class="fas fa-bullseye"></i> Tujuan Proyek *</label>
+            <input type="text" id="tujuanProyek" name="tujuanProyek" placeholder="Contoh: Membangun identitas brand modern" required>
+            <span class="error-msg" id="err-tujuanProyek"><i class="fas fa-exclamation-circle"></i> Tujuan proyek wajib diisi.</span>
+          </div>
+          <div class="field-group">
+            <label><i class="fas fa-file-pdf"></i> Keterangan Projek</label>
+            <input type="text" id="keteranganProjek" name="keteranganProjek" value="Logo Format PDF dan PNG" required>
+          </div>
+          <div class="field-group">
+            <label><i class="fas fa-clock"></i> Timeline *</label>
+            <input type="text" id="timeline" name="timeline" placeholder="Misal: 5 hari kerja" required>
+            <span class="error-msg" id="err-timeline"><i class="fas fa-exclamation-circle"></i> Estimasi timeline diperlukan.</span>
+          </div>
+          <div class="field-group">
+            <label><i class="fas fa-coins"></i> Budget *</label>
+            <input type="text" id="budget" name="budget" placeholder="Contoh: Rp 750.000" required>
+            <span class="error-msg" id="err-budget"><i class="fas fa-exclamation-circle"></i> Budget harus diisi.</span>
+          </div>
+          <div class="field-group">
+            <label><i class="fas fa-copyright"></i> Ulasan Merek *</label>
+            <input type="text" id="ulasanMerek" name="ulasanMerek" placeholder="Deskripsi singkat brand" required>
+            <span class="error-msg" id="err-ulasanMerek"><i class="fas fa-exclamation-circle"></i> Ulasan merek wajib.</span>
+          </div>
+          <div class="field-group">
+            <label><i class="fas fa-box"></i> Ulasan Produk *</label>
+            <input type="text" id="ulasanProduk" name="ulasanProduk" placeholder="Produk/jasa yang dijual" required>
+            <span class="error-msg" id="err-ulasanProduk"><i class="fas fa-exclamation-circle"></i> Produk/jasa harus dijelaskan.</span>
+          </div>
+          <div class="field-group">
+            <label><i class="fas fa-users"></i> Target Audience *</label>
+            <input type="text" id="targetAudience" name="targetAudience" placeholder="Contoh: usia 25-40, profesional" required>
+            <span class="error-msg" id="err-targetAudience"><i class="fas fa-exclamation-circle"></i> Target audiens diperlukan.</span>
+          </div>
+          <div class="field-group full-width">
+            <label><i class="fas fa-info-circle"></i> Keterangan Tambahan</label>
+            <textarea id="keteranganTambahan" name="keteranganTambahan" rows="2" placeholder="Opsional"></textarea>
+          </div>
+          <div class="field-group">
+            <label><i class="fas fa-palette"></i> Warna *</label>
+            <input type="text" id="warna" name="warna" placeholder="Contoh: navy, gold, putih" required>
+            <span class="error-msg" id="err-warna"><i class="fas fa-exclamation-circle"></i> Preferensi warna wajib.</span>
+          </div>
+          <div class="field-group">
+            <label><i class="fas fa-eye"></i> Visual Preferences *</label>
+            <input type="text" id="visualPreferences" name="visualPreferences" placeholder="Minimalis, elegan, dll." required>
+            <span class="error-msg" id="err-visualPreferences"><i class="fas fa-exclamation-circle"></i> Gaya visual diperlukan.</span>
+          </div>
+          <div class="field-group">
+            <label><i class="fas fa-font"></i> Font *</label>
+            <input type="text" id="font" name="font" placeholder="Sans-serif, tegas, modern" required>
+            <span class="error-msg" id="err-font"><i class="fas fa-exclamation-circle"></i> Preferensi font wajib.</span>
+          </div>
+          <div class="field-group full-width">
+            <label><i class="fas fa-comment"></i> Pesan Tambahan Referensi</label>
+            <textarea id="pesanTambahan" name="pesanTambahan" rows="2" placeholder="Tulis jika ada referensi gambar..."></textarea>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button type="button" id="btnGeneratePDF" class="btn-primary">
+            <i class="fas fa-file-pdf"></i> Generate PDF Design Brief
+          </button>
+          <button type="button" id="btnKirimWA" class="btn-outline">
+            <i class="fab fa-whatsapp"></i> Kirim PDF ke WhatsApp Admin
+          </button>
+        </div>
+        <p style="font-size:0.8rem; margin-top:1rem; color:#475569;">
+          <i class="fas fa-check-circle"></i> PDF akan diunduh otomatis. Lalu klik "Kirim PDF ke WhatsApp" untuk meneruskan.
+        </p>
+      </form>
+    </div>
+
+    <!-- Kontak & Portofolio -->
+    <div class="footer-links">
+      <div class="social">
+        <a href="https://wa.me/6285710785244" target="_blank"><i class="fab fa-whatsapp"></i></a>
+        <a href="https://instagram.com/king_nflmr" target="_blank"><i class="fab fa-instagram"></i></a>
+        <a href="https://portopal.vercel.app/" target="_blank"><i class="fas fa-globe"></i></a>
+      </div>
+      <a href="https://portopal.vercel.app/" target="_blank" class="porto-link"><i class="fas fa-briefcase"></i> Portofolio Lengkap</a>
+    </div>
+    <hr>
+    <div class="note">Terima kasih mempercayakan branding bisnis Anda. <br> Instagram: @king_nflmr | Portofolio: portopal.vercel.app</div>
+  </div>
+
+  <!-- Hidden div untuk render PDF (tidak terlihat) -->
+  <div id="pdfContent" style="position: absolute; left: -9999px; top: 0; width: 800px; background: white; padding: 30px; font-family: 'Inter', sans-serif; color: #1e293b;">
+    <!-- Konten akan diisi dinamis oleh JavaScript sebelum render PDF -->
+  </div>
+
+  <script>
+    (function() {
+      // Set tanggal hari ini
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      document.getElementById('tanggal').value = `${yyyy}-${mm}-${dd}`;
+    })();
+
+    // ------------------- VALIDASI & ERROR HANDLING -------------------
+    function clearErrors() {
+      document.querySelectorAll('.error-msg').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('input, textarea').forEach(el => el.classList.remove('input-error'));
+    }
+
+    function showError(fieldId, errId) {
+      const field = document.getElementById(fieldId);
+      const errEl = document.getElementById(errId);
+      if (field) field.classList.add('input-error');
+      if (errEl) errEl.style.display = 'flex';
+    }
+
+    function validateForm() {
+      clearErrors();
+      let isValid = true;
+
+      // Daftar field wajib beserta error id
+      const requiredFields = [
+        { id: 'tanggal', err: 'err-tanggal' },
+        { id: 'namaProyek', err: 'err-namaProyek' },
+        { id: 'merekKlien', err: 'err-merekKlien' },
+        { id: 'namaKlien', err: 'err-namaKlien' },
+        { id: 'namaDesainer', err: 'err-namaDesainer' },
+        { id: 'tujuanProyek', err: 'err-tujuanProyek' },
+        { id: 'timeline', err: 'err-timeline' },
+        { id: 'budget', err: 'err-budget' },
+        { id: 'ulasanMerek', err: 'err-ulasanMerek' },
+        { id: 'ulasanProduk', err: 'err-ulasanProduk' },
+        { id: 'targetAudience', err: 'err-targetAudience' },
+        { id: 'warna', err: 'err-warna' },
+        { id: 'visualPreferences', err: 'err-visualPreferences' },
+        { id: 'font', err: 'err-font' }
+      ];
+
+      requiredFields.forEach(item => {
+        const el = document.getElementById(item.id);
+        if (!el || el.value.trim() === '') {
+          showError(item.id, item.err);
+          isValid = false;
+        } else if (el.value.trim().length < 2 && item.id !== 'tanggal') {
+          // minimal 2 karakter untuk teks
+          showError(item.id, item.err);
+          isValid = false;
+        }
+      });
+
+      // Validasi tambahan khusus (misal budget mengandung angka)
+      const budget = document.getElementById('budget').value.trim();
+      if (budget && !/\d/.test(budget)) {
+        showError('budget', 'err-budget');
+        isValid = false;
+      }
+
+      return isValid;
+    }
+
+    // ------------------- GENERATE PDF DENGAN jsPDF & html2canvas -------------------
+    async function generatePDF() {
+      if (!validateForm()) {
+        alert('Harap lengkapi semua field wajib dengan benar sebelum membuat PDF.');
+        return null;
+      }
+
+      // Ambil data
+      const data = {
+        tanggal: document.getElementById('tanggal').value,
+        namaProyek: document.getElementById('namaProyek').value,
+        merekKlien: document.getElementById('merekKlien').value,
+        namaKlien: document.getElementById('namaKlien').value,
+        namaDesainer: document.getElementById('namaDesainer').value,
+        tujuanProyek: document.getElementById('tujuanProyek').value,
+        keteranganProjek: document.getElementById('keteranganProjek').value,
+        timeline: document.getElementById('timeline').value,
+        budget: document.getElementById('budget').value,
+        ulasanMerek: document.getElementById('ulasanMerek').value,
+        ulasanProduk: document.getElementById('ulasanProduk').value,
+        targetAudience: document.getElementById('targetAudience').value,
+        keteranganTambahan: document.getElementById('keteranganTambahan').value || '-',
+        warna: document.getElementById('warna').value,
+        visualPreferences: document.getElementById('visualPreferences').value,
+        font: document.getElementById('font').value,
+        pesanTambahan: document.getElementById('pesanTambahan').value || '-'
+      };
+
+      // Bangun HTML untuk PDF (tampak profesional)
+      const pdfHtml = `
+        <div style="padding: 20px; font-family: 'Inter', Arial, sans-serif; max-width: 750px; margin:0 auto;">
+          <div style="text-align: center; margin-bottom: 25px;">
+            <h1 style="color: #0f172a; font-size: 28px; margin:0;">DESIGN BRIEF</h1>
+            <p style="color: #2563eb; font-weight: 600; margin:5px 0;">Jasa Desain Logo Profesional</p>
+            <hr style="border: 1px solid #2563eb; width: 80px; margin: 10px auto;">
+          </div>
+          <table style="width:100%; border-collapse: collapse; font-size: 14px; color:#1e293b;">
+            <tr><td style="padding:8px 0; font-weight:700; width:40%;">📅 Tanggal Brief</td><td>: ${data.tanggal}</td></tr>
+            <tr><td style="padding:8px 0; font-weight:700;">🏷️ Nama Proyek</td><td>: ${data.namaProyek}</td></tr>
+            <tr><td style="padding:8px 0; font-weight:700;">🏢 Merek Klien</td><td>: ${data.merekKlien}</td></tr>
+            <tr><td style="padding:8px 0; font-weight:700;">👤 Nama Klien (PJ)</td><td>: ${data.namaKlien}</td></tr>
+            <tr><td style="padding:8px 0; font-weight:700;">🎨 Desainer</td><td>: ${data.namaDesainer}</td></tr>
+            <tr><td colspan="2" style="padding:12px 0 4px; font-weight:700; font-size:15px; color:#0f172a;">🎯 Project Overview</td></tr>
+            <tr><td style="padding:6px 0;">Tujuan Proyek</td><td>: ${data.tujuanProyek}</td></tr>
+            <tr><td style="padding:6px 0;">Keterangan</td><td>: ${data.keteranganProjek}</td></tr>
+            <tr><td style="padding:6px 0;">Timeline</td><td>: ${data.timeline}</td></tr>
+            <tr><td style="padding:6px 0;">Budget</td><td>: ${data.budget}</td></tr>
+            <tr><td colspan="2" style="padding:12px 0 4px; font-weight:700; font-size:15px;">📦 Merek, Produk & Target</td></tr>
+            <tr><td>Ulasan Merek</td><td>: ${data.ulasanMerek}</td></tr>
+            <tr><td>Ulasan Produk</td><td>: ${data.ulasanProduk}</td></tr>
+            <tr><td>Target Audience</td><td>: ${data.targetAudience}</td></tr>
+            <tr><td>Tambahan</td><td>: ${data.keteranganTambahan}</td></tr>
+            <tr><td colspan="2" style="padding:12px 0 4px; font-weight:700; font-size:15px;">🎨 Referensi Desain</td></tr>
+            <tr><td>Warna</td><td>: ${data.warna}</td></tr>
+            <tr><td>Visual</td><td>: ${data.visualPreferences}</td></tr>
+            <tr><td>Font</td><td>: ${data.font}</td></tr>
+            <tr><td>Pesan Tambahan</td><td>: ${data.pesanTambahan}</td></tr>
+          </table>
+          <div style="margin-top: 30px; text-align: center; font-size:12px; color:#64748b;">
+            <p>Dokumen dibuat otomatis · King Desain Logo · 0857-1078-5244</p>
+          </div>
+        </div>
+      `;
+
+      // Masukkan ke div tersembunyi
+      const pdfDiv = document.getElementById('pdfContent');
+      pdfDiv.innerHTML = pdfHtml;
+
+      try {
+        const canvas = await html2canvas(pdfDiv, {
+          scale: 2,
+          backgroundColor: '#ffffff',
+          logging: false
+        });
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = pdfWidth - 20;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 10;
+
+        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight + 10;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+          heightLeft -= pdfHeight;
+        }
+
+        // Simpan PDF
+        pdf.save(`DesignBrief_${data.merekKlien.replace(/\s+/g, '_')}.pdf`);
+        return pdf;
+      } catch (error) {
+        alert('Gagal membuat PDF: ' + error.message);
+        return null;
+      }
+    }
+
+    // Fungsi untuk mengarahkan ke WhatsApp dengan pesan bahwa PDF siap dikirim
+    function kirimKeWA() {
+      // Cek apakah form sudah valid? Kita ingin user generate dulu, tapi bisa diingatkan.
+      const merek = document.getElementById('merekKlien')?.value.trim();
+      if (!merek) {
+        alert('Silakan isi minimal Merek Klien terlebih dahulu, lalu generate PDF.');
+        return;
+      }
+      // Pesan ke admin
+      const pesanWA = `Halo Admin King Desain,%0A%0ASaya sudah mengisi Design Brief dan telah mengunduh file PDF-nya. Siap mengirimkan file PDF melalui WhatsApp ini.%0A%0ANama Klien: ${document.getElementById('namaKlien')?.value || '-'}%0AMerek: ${merek}%0A%0ATerima kasih.`;
+      window.open(`https://wa.me/6285710785244?text=${pesanWA}`, '_blank');
+    }
+
+    // Event Listener
+    document.getElementById('btnGeneratePDF').addEventListener('click', async () => {
+      await generatePDF();
+    });
+
+    document.getElementById('btnKirimWA').addEventListener('click', () => {
+      // Validasi dulu sebelum kirim WA (opsional, tapi disarankan generate dulu)
+      if (!validateForm()) {
+        alert('Lengkapi form terlebih dahulu. Lebih baik generate PDF sebelum mengirim ke WhatsApp.');
+        return;
+      }
+      kirimKeWA();
+    });
+
+    // Hilangkan error saat user mengetik
+    document.querySelectorAll('input, textarea').forEach(input => {
+      input.addEventListener('input', function() {
+        this.classList.remove('input-error');
+        const errId = 'err-' + this.id;
+        const errEl = document.getElementById(errId);
+        if (errEl) errEl.style.display = 'none';
+      });
+    });
+  </script>
+</body>
+</html>
