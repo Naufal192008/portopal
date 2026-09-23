@@ -1,0 +1,3607 @@
+# 📁 **PROJECT RESTORAN POS - FULL CODE LENGKAP**
+
+---
+
+## 📂 **STRUCTURE FOLDER**
+
+```
+restoran/
+├── assets/
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       └── script.js
+├── config/
+│   └── database.php
+├── controllers/
+│   ├── AuthController.php
+│   ├── DashboardController.php
+│   ├── MenuController.php
+│   ├── OrderController.php
+│   ├── ReportController.php
+│   ├── TableController.php
+│   └── TransactionController.php
+├── models/
+│   ├── MenuItem.php
+│   ├── Order.php
+│   ├── Table.php
+│   ├── Transaction.php
+│   └── User.php
+├── views/
+│   ├── partials/
+│   │   ├── alerts.php
+│   │   ├── footer.php
+│   │   └── header.php
+│   ├── barang/
+│   │   ├── form.php
+│   │   └── index.php
+│   ├── meja/
+│   │   ├── form.php
+│   │   └── index.php
+│   ├── menu/
+│   │   ├── form.php
+│   │   └── index.php
+│   ├── order/
+│   │   └── index.php
+│   ├── orders/
+│   │   └── index.php
+│   ├── reports/
+│   │   ├── best_selling.php
+│   │   └── daily.php
+│   ├── tables/
+│   │   ├── form.php
+│   │   └── index.php
+│   ├── transactions/
+│   │   └── index.php
+│   ├── dashboard.php
+│   ├── login.php
+│   └── test_session.php
+├── database.sql
+└── index.php
+```
+
+---
+
+## 📄 **FILE 1: assets/css/style.css**
+
+```css
+/* ============================================
+   STYLE.CSS - Global Styles
+   ============================================ */
+
+/* ---------- SIDEBAR ---------- */
+.sidebar {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+    position: sticky;
+    top: 0;
+}
+
+.sidebar .nav-link {
+    color: rgba(255,255,255,0.8);
+    padding: 12px 20px;
+    margin: 4px 0;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+
+.sidebar .nav-link:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+
+.sidebar .nav-link.active {
+    background: #667eea;
+    color: white;
+}
+
+.sidebar .nav-link i {
+    width: 25px;
+}
+
+/* ---------- DASHBOARD CARDS ---------- */
+.card-dashboard {
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+    border: none;
+}
+
+.card-dashboard:hover {
+    transform: translateY(-5px);
+}
+
+.card-dashboard .icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.card-dashboard .icon i {
+    font-size: 28px;
+}
+
+.card-dashboard .icon.bg-primary { 
+    background: linear-gradient(135deg, #667eea, #764ba2); 
+}
+.card-dashboard .icon.bg-success { 
+    background: linear-gradient(135deg, #11998e, #38ef7d); 
+}
+.card-dashboard .icon.bg-warning { 
+    background: linear-gradient(135deg, #f2994a, #f2c94a); 
+}
+.card-dashboard .icon.bg-danger { 
+    background: linear-gradient(135deg, #eb3349, #f45c43); 
+}
+
+/* ---------- TABLES ---------- */
+.table th {
+    background: #f8f9fa;
+    border-top: none;
+}
+
+.table-hover tbody tr:hover {
+    background: #f0f7ff;
+}
+
+/* ---------- FORMS ---------- */
+.form-control:focus, 
+.form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* ---------- BUTTONS ---------- */
+.btn {
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 10px 20px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border: none;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #11998e, #38ef7d);
+    border: none;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #eb3349, #f45c43);
+    border: none;
+}
+
+/* ---------- ALERTS ---------- */
+.alert {
+    border-radius: 12px;
+    border: none;
+}
+
+/* ---------- PRINT ---------- */
+@media print {
+    .sidebar, .btn, .navbar {
+        display: none !important;
+    }
+    .col-md-10 {
+        width: 100% !important;
+        margin-left: 0 !important;
+    }
+}
+```
+
+---
+
+## 📄 **FILE 2: assets/js/script.js**
+
+```javascript
+// ============================================
+// SCRIPT.JS - Global JavaScript
+// ============================================
+
+// ---------- AUTO DISMISS ALERTS ----------
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        let alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            let closeBtn = alert.querySelector('.btn-close');
+            if (closeBtn) {
+                closeBtn.click();
+            }
+        });
+    }, 5000);
+});
+
+// ---------- FORMAT RUPIAH ----------
+function formatRupiah(angka) {
+    return 'Rp ' + parseInt(angka).toLocaleString('id-ID');
+}
+
+// ---------- CONFIRM DELETE ----------
+function confirmDelete(url) {
+    if (confirm('Yakin akan menghapus data ini?')) {
+        window.location.href = url;
+    }
+}
+
+// ---------- PRINT LAPORAN ----------
+function printLaporan() {
+    window.print();
+}
+```
+
+---
+
+## 📄 **FILE 3: config/database.php**
+
+```php
+<?php
+// ============================================
+// DATABASE.PHP - KONEKSI DAN HELPER FUNCTIONS
+// ============================================
+
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
+
+class Database {
+    private static $instance = null;
+    private $pdo;
+    private $host = 'localhost';
+    private $dbname = 'restaurant_pos';
+    private $username = 'root';
+    private $password = '';
+    
+    private function __construct() {
+        try {
+            $this->pdo = new PDO(
+                "mysql:host={$this->host};dbname={$this->dbname};charset=utf8mb4",
+                $this->username,
+                $this->password
+            );
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            die("❌ Koneksi database gagal: " . $e->getMessage());
+        }
+    }
+    
+    public static function getInstance() {
+        if (self::$instance == null) {
+            self::$instance = new Database();
+        }
+        return self::$instance;
+    }
+    
+    public function getConnection() {
+        return $this->pdo;
+    }
+    
+    public function getOne($sql, $params = []) {
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetch();
+    }
+    
+    public function getAll($sql, $params = []) {
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+    
+    public function execute($sql, $params = []) {
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute($params);
+    }
+    
+    public function insert($sql, $params = []) {
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $this->pdo->lastInsertId();
+    }
+    
+    // ============================================
+    // STORED PROCEDURE
+    // ============================================
+    public function callProcedure($name, $params = []) {
+        $placeholders = implode(',', array_fill(0, count($params), '?'));
+        $sql = "CALL $name($placeholders)";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        
+        $results = [];
+        do {
+            $results[] = $stmt->fetchAll();
+        } while ($stmt->nextRowset());
+        
+        return $results;
+    }
+}
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+function isLoggedIn() {
+    return isset($_SESSION['user_id']) && $_SESSION['user_id'] > 0;
+}
+
+function getCurrentUser() {
+    return $_SESSION['full_name'] ?? null;
+}
+
+function getCurrentRole() {
+    return $_SESSION['role'] ?? null;
+}
+
+function getCurrentUserId() {
+    return $_SESSION['user_id'] ?? 0;
+}
+
+function requireLogin() {
+    if (!isLoggedIn()) {
+        header('Location: index.php?page=login');
+        exit;
+    }
+}
+
+function requireRole($role) {
+    requireLogin();
+    $currentRole = getCurrentRole();
+    if ($currentRole != $role && $currentRole != 'administrator') {
+        header('Location: index.php?page=dashboard');
+        exit;
+    }
+}
+
+function hashPassword($password) {
+    return md5($password);
+}
+
+function formatRupiah($amount) {
+    return 'Rp ' . number_format($amount, 0, ',', '.');
+}
+?>
+```
+
+---
+
+## 📄 **FILE 4: controllers/AuthController.php**
+
+```php
+<?php
+// ============================================
+// AUTHCONTROLLER.PHP - LOGIN/LOGOUT
+// ============================================
+
+require_once __DIR__ . '/../models/User.php';
+
+class AuthController {
+    private $user;
+    
+    public function __construct() {
+        $this->user = new User();
+    }
+    
+    public function index() {
+        if ($this->user->isLoggedIn()) {
+            header('Location: index.php?page=dashboard');
+            exit;
+        }
+        include __DIR__ . '/../views/login.php';
+    }
+    
+    public function proses() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $username = trim($_POST['username'] ?? '');
+            $password = trim($_POST['password'] ?? '');
+            
+            if (empty($username) || empty($password)) {
+                $_SESSION['error'] = 'Username dan Password harus diisi!';
+                header('Location: index.php?page=login');
+                exit;
+            }
+            
+            if ($this->user->login($username, $password)) {
+                $_SESSION['success'] = 'Selamat datang, ' . htmlspecialchars($username) . '!';
+                header('Location: index.php?page=dashboard');
+            } else {
+                $_SESSION['error'] = 'Username atau Password salah!';
+                header('Location: index.php?page=login');
+            }
+            exit;
+        }
+    }
+    
+    public function logout() {
+        $this->user->logout();
+        header('Location: index.php?page=login');
+        exit;
+    }
+}
+?>
+```
+
+---
+
+## 📄 **FILE 5: controllers/DashboardController.php**
+
+```php
+<?php
+// ============================================
+// DASHBOARDCONTROLLER.PHP
+// ============================================
+
+class DashboardController {
+    
+    public function __construct() {
+        require_once __DIR__ . '/../config/database.php';
+        if (!isLoggedIn()) {
+            header('Location: index.php?page=login');
+            exit;
+        }
+    }
+    
+    public function index() {
+        include __DIR__ . '/../views/dashboard.php';
+    }
+}
+?>
+```
+
+---
+
+## 📄 **FILE 6: controllers/MenuController.php**
+
+```php
+<?php
+// ============================================
+// MENUCONTROLLER.PHP - ENTRI BARANG (Admin & Waiter)
+// ============================================
+
+require_once __DIR__ . '/../models/MenuItem.php';
+require_once __DIR__ . '/../config/Database.php';
+
+class MenuController {
+    private $menu;
+    
+    public function __construct() {
+        requireLogin();
+        $role = getCurrentRole();
+        if ($role != 'administrator' && $role != 'waiter') {
+            header('Location: index.php?page=dashboard');
+            exit;
+        }
+        $this->menu = new MenuItem();
+    }
+    
+    public function index() {
+        $data['items'] = $this->menu->getAll();
+        $data['categories'] = $this->menu->getCategories();
+        include __DIR__ . '/../views/menu/index.php';
+    }
+    
+    public function form() {
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $data['item'] = $id > 0 ? $this->menu->getById($id) : null;
+        $data['categories'] = $this->menu->getCategories();
+        include __DIR__ . '/../views/menu/form.php';
+    }
+    
+    public function save() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $data = [
+                'item_id' => (int)($_POST['item_id'] ?? 0),
+                'item_code' => trim($_POST['item_code'] ?? ''),
+                'item_name' => trim($_POST['item_name'] ?? ''),
+                'category' => trim($_POST['category'] ?? ''),
+                'price' => (float)($_POST['price'] ?? 0),
+                'is_available' => isset($_POST['is_available']) ? 1 : 0
+            ];
+            
+            if (empty($data['item_code']) || empty($data['item_name']) || $data['price'] <= 0) {
+                $_SESSION['error'] = 'Semua field harus diisi dengan benar!';
+                header('Location: index.php?page=barang&action=form');
+                exit;
+            }
+            
+            if ($this->menu->save($data)) {
+                $_SESSION['success'] = 'Data barang berhasil disimpan!';
+            } else {
+                $_SESSION['error'] = 'Gagal menyimpan data barang!';
+            }
+            header('Location: index.php?page=barang');
+            exit;
+        }
+    }
+    
+    public function delete() {
+        requireRole('administrator');
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        if ($id > 0 && $this->menu->delete($id)) {
+            $_SESSION['success'] = 'Data barang berhasil dihapus!';
+        } else {
+            $_SESSION['error'] = 'Gagal menghapus data barang!';
+        }
+        header('Location: index.php?page=barang');
+        exit;
+    }
+}
+?>
+```
+
+---
+
+## 📄 **FILE 7: controllers/OrderController.php**
+
+```php
+<?php
+// ============================================
+// ORDERCONTROLLER.PHP - ENTRI ORDER (Waiter)
+// ============================================
+
+require_once __DIR__ . '/../models/Order.php';
+require_once __DIR__ . '/../models/Table.php';
+require_once __DIR__ . '/../models/MenuItem.php';
+require_once __DIR__ . '/../config/Database.php';
+
+class OrderController {
+    private $order;
+    private $table;
+    private $menu;
+    
+    public function __construct() {
+        requireRole('waiter');
+        $this->order = new Order();
+        $this->table = new Table();
+        $this->menu = new MenuItem();
+    }
+    
+    public function index() {
+        $data['tables'] = $this->table->getAvailable();
+        $data['menu_items'] = $this->menu->getAll(null, true);
+        $data['active_orders'] = $this->order->getActiveOrders();
+        include __DIR__ . '/../views/orders/index.php';
+    }
+    
+    public function create() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $table_id = (int)($_POST['table_id'] ?? 0);
+            $waiter_id = getCurrentUserId();
+            
+            if ($table_id <= 0) {
+                $_SESSION['error'] = 'Pilih meja terlebih dahulu!';
+                header('Location: index.php?page=order');
+                exit;
+            }
+            
+            $order_id = $this->order->createOrder($table_id, $waiter_id);
+            
+            if ($order_id) {
+                $_SESSION['order_id'] = $order_id;
+                $_SESSION['success'] = 'Order berhasil dibuat! Silakan tambahkan item.';
+            } else {
+                $_SESSION['error'] = 'Gagal membuat order!';
+            }
+            header('Location: index.php?page=order');
+            exit;
+        }
+    }
+    
+    public function addItem() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $order_id = (int)($_POST['order_id'] ?? 0);
+            $item_id = (int)($_POST['item_id'] ?? 0);
+            $quantity = (int)($_POST['quantity'] ?? 1);
+            $note = trim($_POST['note'] ?? '');
+            
+            if ($order_id <= 0 || $item_id <= 0 || $quantity <= 0) {
+                $_SESSION['error'] = 'Data tidak valid!';
+                header('Location: index.php?page=order');
+                exit;
+            }
+            
+            if ($this->order->addItem($order_id, $item_id, $quantity, $note)) {
+                $_SESSION['success'] = 'Item berhasil ditambahkan!';
+            } else {
+                $_SESSION['error'] = 'Gagal menambahkan item!';
+            }
+            header('Location: index.php?page=order');
+            exit;
+        }
+    }
+}
+?>
+```
+
+---
+
+## 📄 **FILE 8: controllers/ReportController.php**
+
+```php
+<?php
+// ============================================
+// REPORTCONTROLLER.PHP - GENERATE LAPORAN
+// ============================================
+
+require_once __DIR__ . '/../models/Transaction.php';
+require_once __DIR__ . '/../config/Database.php';
+
+class ReportController {
+    private $transaction;
+    
+    public function __construct() {
+        requireLogin();
+        $role = getCurrentRole();
+        if ($role != 'waiter' && $role != 'kasir' && $role != 'administrator') {
+            header('Location: index.php?page=dashboard');
+            exit;
+        }
+        $this->transaction = new Transaction();
+    }
+    
+    public function index() {
+        $data['date'] = $_GET['date'] ?? date('Y-m-d');
+        $data['transactions'] = $this->transaction->getDailyReport($data['date']);
+        $data['summary'] = $this->transaction->getSummary($data['date']);
+        include __DIR__ . '/../views/reports/daily.php';
+    }
+    
+    public function bestSelling() {
+        $data['start_date'] = $_GET['start_date'] ?? date('Y-m-d', strtotime('-30 days'));
+        $data['end_date'] = $_GET['end_date'] ?? date('Y-m-d');
+        $data['items'] = $this->transaction->getBestSelling($data['start_date'], $data['end_date']);
+        include __DIR__ . '/../views/reports/best_selling.php';
+    }
+}
+?>
+```
+
+---
+
+## 📄 **FILE 9: controllers/TableController.php**
+
+```php
+<?php
+// ============================================
+// TABLECONTROLLER.PHP - ENTRI MEJA (Admin)
+// ============================================
+
+require_once __DIR__ . '/../models/Table.php';
+require_once __DIR__ . '/../config/Database.php';
+
+class TableController {
+    private $table;
+    
+    public function __construct() {
+        requireRole('administrator');
+        $this->table = new Table();
+    }
+    
+    public function index() {
+        $data['tables'] = $this->table->getAll();
+        include __DIR__ . '/../views/tables/index.php';
+    }
+    
+    public function form() {
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        $data = $id > 0 ? $this->table->getById($id) : null;
+        include __DIR__ . '/../views/tables/form.php';
+    }
+    
+    public function save() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $data = [
+                'table_id' => (int)($_POST['table_id'] ?? 0),
+                'table_number' => trim($_POST['table_number'] ?? ''),
+                'capacity' => (int)($_POST['capacity'] ?? 4),
+                'status' => $_POST['status'] ?? 'available'
+            ];
+            
+            if (empty($data['table_number'])) {
+                $_SESSION['error'] = 'Nomor meja harus diisi!';
+                header('Location: index.php?page=meja&action=form');
+                exit;
+            }
+            
+            if ($this->table->save($data)) {
+                $_SESSION['success'] = 'Data meja berhasil disimpan!';
+            } else {
+                $_SESSION['error'] = 'Gagal menyimpan data meja!';
+            }
+            header('Location: index.php?page=meja');
+            exit;
+        }
+    }
+    
+    public function delete() {
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        if ($id > 0 && $this->table->delete($id)) {
+            $_SESSION['success'] = 'Data meja berhasil dihapus!';
+        } else {
+            $_SESSION['error'] = 'Gagal menghapus data meja!';
+        }
+        header('Location: index.php?page=meja');
+        exit;
+    }
+}
+?>
+```
+
+---
+
+## 📄 **FILE 10: controllers/TransactionController.php**
+
+```php
+<?php
+// ============================================
+// TRANSACTIONCONTROLLER.PHP - ENTRI TRANSAKSI (Kasir)
+// ============================================
+
+require_once __DIR__ . '/../models/Order.php';
+require_once __DIR__ . '/../models/Transaction.php';
+require_once __DIR__ . '/../config/Database.php';
+
+class TransactionController {
+    private $order;
+    private $transaction;
+    
+    public function __construct() {
+        requireRole('kasir');
+        $this->order = new Order();
+        $this->transaction = new Transaction();
+    }
+    
+    public function index() {
+        $data['active_orders'] = $this->order->getActiveOrders();
+        include __DIR__ . '/../views/transactions/index.php';
+    }
+    
+    public function proses() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $order_id = (int)($_POST['order_id'] ?? 0);
+            $payment_method = $_POST['payment_method'] ?? 'cash';
+            $amount_paid = (float)($_POST['amount_paid'] ?? 0);
+            $kasir_id = getCurrentUserId();
+            
+            if ($order_id <= 0 || $amount_paid <= 0) {
+                $_SESSION['error'] = 'Data tidak valid!';
+                header('Location: index.php?page=transaksi');
+                exit;
+            }
+            
+            try {
+                if ($this->order->completeTransaction($order_id, $kasir_id, $payment_method, $amount_paid)) {
+                    $_SESSION['success'] = 'Pembayaran berhasil!';
+                } else {
+                    $_SESSION['error'] = 'Gagal memproses pembayaran!';
+                }
+            } catch (Exception $e) {
+                $_SESSION['error'] = 'Error: ' . $e->getMessage();
+            }
+            
+            header('Location: index.php?page=transaksi');
+            exit;
+        }
+    }
+}
+?>
+```
+
+---
+
+## 📄 **FILE 11: models/MenuItem.php**
+
+```php
+<?php
+// ============================================
+// MENUITEM.PHP - MODEL BARANG (OOP)
+// ============================================
+
+require_once __DIR__ . '/../config/Database.php';
+
+class MenuItem {
+    private $db;
+    
+    public function __construct() {
+        $this->db = Database::getInstance();
+    }
+    
+    public function getAll($categoryFilter = null, $availableOnly = false) {
+        $sql = "SELECT * FROM menu_items";
+        $conditions = [];
+        $params = [];
+        
+        if ($availableOnly) {
+            $conditions[] = "is_available = 1";
+        }
+        if ($categoryFilter) {
+            $conditions[] = "category = ?";
+            $params[] = $categoryFilter;
+        }
+        if ($conditions) {
+            $sql .= " WHERE " . implode(" AND ", $conditions);
+        }
+        $sql .= " ORDER BY category, item_name";
+        return $this->db->getAll($sql, $params);
+    }
+    
+    public function getById($id) {
+        $sql = "SELECT * FROM menu_items WHERE item_id = ?";
+        return $this->db->getOne($sql, [$id]);
+    }
+    
+    public function getCategories() {
+        $sql = "SELECT DISTINCT category FROM menu_items WHERE category IS NOT NULL ORDER BY category";
+        $results = $this->db->getAll($sql);
+        return array_column($results, 'category');
+    }
+    
+    public function save($data) {
+        if (isset($data['item_id']) && $data['item_id'] > 0) {
+            $sql = "UPDATE menu_items SET item_code=?, item_name=?, category=?, price=?, is_available=? WHERE item_id=?";
+            return $this->db->execute($sql, [
+                $data['item_code'], $data['item_name'], $data['category'],
+                $data['price'], $data['is_available'] ?? 1, $data['item_id']
+            ]);
+        } else {
+            $sql = "INSERT INTO menu_items (item_code, item_name, category, price, is_available) VALUES (?, ?, ?, ?, ?)";
+            return $this->db->insert($sql, [
+                $data['item_code'], $data['item_name'], $data['category'],
+                $data['price'], $data['is_available'] ?? 1
+            ]);
+        }
+    }
+    
+    public function delete($id) {
+        $sql = "DELETE FROM menu_items WHERE item_id = ?";
+        return $this->db->execute($sql, [$id]);
+    }
+}
+?>
+```
+
+---
+
+## 📄 **FILE 12: models/Order.php**
+
+```php
+<?php
+// ============================================
+// ORDER.PHP - MODEL ORDER (OOP)
+// ============================================
+
+require_once __DIR__ . '/../config/Database.php';
+
+class Order {
+    private $db;
+    
+    public function __construct() {
+        $this->db = Database::getInstance();
+    }
+    
+    // STORED PROCEDURE: sp_create_order
+    public function createOrder($table_id, $waiter_id) {
+        try {
+            $result = $this->db->callProcedure('sp_create_order', [$table_id, $waiter_id]);
+            if ($result && isset($result[0][0]['order_id'])) {
+                return $result[0][0]['order_id'];
+            }
+            return null;
+        } catch (Exception $e) {
+            throw new Exception("Gagal membuat order: " . $e->getMessage());
+        }
+    }
+    
+    // STORED PROCEDURE: sp_add_order_item
+    public function addItem($order_id, $item_id, $quantity, $note = '') {
+        try {
+            $this->db->callProcedure('sp_add_order_item', [$order_id, $item_id, $quantity, $note]);
+            return true;
+        } catch (Exception $e) {
+            throw new Exception("Gagal menambah item: " . $e->getMessage());
+        }
+    }
+    
+    // STORED PROCEDURE: sp_complete_transaction
+    public function completeTransaction($order_id, $kasir_id, $payment_method, $amount_paid) {
+        try {
+            $this->db->callProcedure('sp_complete_transaction', 
+                [$order_id, $kasir_id, $payment_method, $amount_paid]);
+            return true;
+        } catch (Exception $e) {
+            throw new Exception("Gagal menyelesaikan transaksi: " . $e->getMessage());
+        }
+    }
+    
+    public function getActiveOrders() {
+        $sql = "SELECT o.*, t.table_number, u.full_name AS waiter_name
+                FROM orders o
+                LEFT JOIN tables t ON o.table_id = t.table_id
+                LEFT JOIN users u ON o.waiter_id = u.user_id
+                WHERE o.status != 'paid'
+                ORDER BY o.order_date DESC";
+        return $this->db->getAll($sql);
+    }
+    
+    public function getById($id) {
+        $sql = "SELECT * FROM orders WHERE order_id = ?";
+        return $this->db->getOne($sql, [$id]);
+    }
+    
+    public function getItems($order_id) {
+        $sql = "SELECT oi.*, mi.item_name, mi.category 
+                FROM order_items oi
+                JOIN menu_items mi ON oi.item_id = mi.item_id
+                WHERE oi.order_id = ?";
+        return $this->db->getAll($sql, [$order_id]);
+    }
+    
+    public function getDetail($order_id) {
+        $sql = "SELECT o.*, t.table_number, u.full_name AS waiter_name
+                FROM orders o
+                LEFT JOIN tables t ON o.table_id = t.table_id
+                LEFT JOIN users u ON o.waiter_id = u.user_id
+                WHERE o.order_id = ?";
+        return $this->db->getOne($sql, [$order_id]);
+    }
+    
+    public function updateStatus($order_id, $status) {
+        $sql = "UPDATE orders SET status = ? WHERE order_id = ?";
+        return $this->db->execute($sql, [$status, $order_id]);
+    }
+}
+?>
+```
+
+---
+
+## 📄 **FILE 13: models/Table.php**
+
+```php
+<?php
+// ============================================
+// TABLE.PHP - MODEL MEJA (OOP)
+// ============================================
+
+require_once __DIR__ . '/../config/Database.php';
+
+class Table {
+    private $db;
+    
+    public function __construct() {
+        $this->db = Database::getInstance();
+    }
+    
+    public function getAll($statusFilter = null) {
+        $sql = "SELECT * FROM tables";
+        $params = [];
+        if ($statusFilter) {
+            $sql .= " WHERE status = ?";
+            $params[] = $statusFilter;
+        }
+        $sql .= " ORDER BY table_number";
+        return $this->db->getAll($sql, $params);
+    }
+    
+    public function getById($id) {
+        $sql = "SELECT * FROM tables WHERE table_id = ?";
+        return $this->db->getOne($sql, [$id]);
+    }
+    
+    public function getAvailable() {
+        return $this->getAll('available');
+    }
+    
+    public function save($data) {
+        if (isset($data['table_id']) && $data['table_id'] > 0) {
+            $sql = "UPDATE tables SET table_number=?, capacity=?, status=? WHERE table_id=?";
+            return $this->db->execute($sql, [
+                $data['table_number'], $data['capacity'], 
+                $data['status'] ?? 'available', $data['table_id']
+            ]);
+        } else {
+            $sql = "INSERT INTO tables (table_number, capacity, status) VALUES (?, ?, ?)";
+            return $this->db->insert($sql, [
+                $data['table_number'], $data['capacity'], 
+                $data['status'] ?? 'available'
+            ]);
+        }
+    }
+    
+    public function updateStatus($id, $status) {
+        $sql = "UPDATE tables SET status = ? WHERE table_id = ?";
+        return $this->db->execute($sql, [$status, $id]);
+    }
+    
+    public function delete($id) {
+        $sql = "DELETE FROM tables WHERE table_id = ?";
+        return $this->db->execute($sql, [$id]);
+    }
+    
+    public function getStatusBadge($status) {
+        $badges = [
+            'available' => '<span class="badge bg-success">Tersedia</span>',
+            'occupied' => '<span class="badge bg-danger">Terisi</span>',
+            'reserved' => '<span class="badge bg-warning">Reservasi</span>'
+        ];
+        return $badges[$status] ?? $status;
+    }
+}
+?>
+```
+
+---
+
+## 📄 **FILE 14: models/Transaction.php**
+
+```php
+<?php
+// ============================================
+// TRANSACTION.PHP - MODEL TRANSAKSI (OOP)
+// ============================================
+
+require_once __DIR__ . '/../config/Database.php';
+
+class Transaction {
+    private $db;
+    
+    public function __construct() {
+        $this->db = Database::getInstance();
+    }
+    
+    // STORED PROCEDURE: sp_daily_report
+    public function getDailyReport($date = null) {
+        if (!$date) {
+            $date = date('Y-m-d');
+        }
+        try {
+            $result = $this->db->callProcedure('sp_daily_report', [$date]);
+            return $result[0] ?? [];
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+    
+    // STORED PROCEDURE: sp_best_selling_menu
+    public function getBestSelling($start_date = null, $end_date = null) {
+        if (!$start_date) {
+            $start_date = date('Y-m-d', strtotime('-30 days'));
+        }
+        if (!$end_date) {
+            $end_date = date('Y-m-d');
+        }
+        try {
+            $result = $this->db->callProcedure('sp_best_selling_menu', [$start_date, $end_date]);
+            return $result[0] ?? [];
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+    
+    public function getSummary($date = null) {
+        if (!$date) {
+            $date = date('Y-m-d');
+        }
+        $sql = "SELECT 
+                    COUNT(*) as total_transactions,
+                    SUM(o.total) as total_revenue,
+                    AVG(o.total) as average_transaction,
+                    COUNT(DISTINCT o.order_id) as total_orders
+                FROM transactions t
+                JOIN orders o ON t.order_id = o.order_id
+                WHERE DATE(t.transaction_date) = ? AND t.status = 'completed'";
+        return $this->db->getOne($sql, [$date]);
+    }
+    
+    public function getAll($date = null) {
+        if (!$date) {
+            $date = date('Y-m-d');
+        }
+        $sql = "SELECT t.*, o.table_id, o.total as order_total,
+                       u.full_name as kasir_name
+                FROM transactions t
+                JOIN orders o ON t.order_id = o.order_id
+                JOIN users u ON t.kasir_id = u.user_id
+                WHERE DATE(t.transaction_date) = ?
+                ORDER BY t.transaction_date DESC";
+        return $this->db->getAll($sql, [$date]);
+    }
+}
+?>
+```
+
+---
+
+## 📄 **FILE 15: models/User.php**
+
+```php
+<?php
+// ============================================
+// USER.PHP - MODEL USER (OOP)
+// ============================================
+
+require_once __DIR__ . '/../config/Database.php';
+
+class User {
+    private $db;
+    private $user_id;
+    private $username;
+    private $full_name;
+    private $role;
+    
+    public function __construct() {
+        $this->db = Database::getInstance();
+    }
+    
+    // LOGIN
+    public function login($username, $password) {
+        $sql = "SELECT * FROM users WHERE username = ? AND password = MD5(?) AND is_active = 1";
+        $result = $this->db->getOne($sql, [$username, $password]);
+        
+        if ($result) {
+            $this->user_id = $result['user_id'];
+            $this->username = $result['username'];
+            $this->full_name = $result['full_name'];
+            $this->role = $result['role'];
+            
+            $_SESSION['user_id'] = $result['user_id'];
+            $_SESSION['username'] = $result['username'];
+            $_SESSION['full_name'] = $result['full_name'];
+            $_SESSION['role'] = $result['role'];
+            $_SESSION['login'] = true;
+            
+            return true;
+        }
+        return false;
+    }
+    
+    // LOGOUT
+    public function logout() {
+        $_SESSION = array();
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000,
+                $params["path"], $params["domain"],
+                $params["secure"], $params["httponly"]
+            );
+        }
+        session_destroy();
+        return true;
+    }
+    
+    public function isLoggedIn() {
+        return isset($_SESSION['login']) && $_SESSION['login'] === true;
+    }
+    
+    public function hasRole($role) {
+        return isset($_SESSION['role']) && $_SESSION['role'] == $role;
+    }
+    
+    public function getAll() {
+        $sql = "SELECT * FROM users ORDER BY full_name";
+        return $this->db->getAll($sql);
+    }
+    
+    public function getById($id) {
+        $sql = "SELECT * FROM users WHERE user_id = ?";
+        return $this->db->getOne($sql, [$id]);
+    }
+    
+    public function getWaiterList() {
+        $sql = "SELECT * FROM users WHERE role = 'waiter' AND is_active = 1 ORDER BY full_name";
+        return $this->db->getAll($sql);
+    }
+    
+    public function save($data) {
+        if (isset($data['user_id']) && $data['user_id'] > 0) {
+            if (!empty($data['password'])) {
+                $sql = "UPDATE users SET username=?, password=MD5(?), full_name=?, role=?, is_active=? WHERE user_id=?";
+                return $this->db->execute($sql, [
+                    $data['username'], $data['password'], $data['full_name'],
+                    $data['role'], $data['is_active'] ?? 1, $data['user_id']
+                ]);
+            } else {
+                $sql = "UPDATE users SET username=?, full_name=?, role=?, is_active=? WHERE user_id=?";
+                return $this->db->execute($sql, [
+                    $data['username'], $data['full_name'],
+                    $data['role'], $data['is_active'] ?? 1, $data['user_id']
+                ]);
+            }
+        } else {
+            $sql = "INSERT INTO users (username, password, full_name, role, is_active) VALUES (?, MD5(?), ?, ?, ?)";
+            return $this->db->insert($sql, [
+                $data['username'], $data['password'], $data['full_name'],
+                $data['role'], $data['is_active'] ?? 1
+            ]);
+        }
+    }
+    
+    public function delete($id) {
+        $sql = "DELETE FROM users WHERE user_id = ?";
+        return $this->db->execute($sql, [$id]);
+    }
+    
+    public function getUserId() { return $this->user_id; }
+    public function getUsername() { return $this->username; }
+    public function getFullName() { return $this->full_name; }
+    public function getRole() { return $this->role; }
+}
+?>
+```
+
+---
+
+## 📄 **FILE 16: views/partials/alerts.php**
+
+```php
+<?php if (isset($_SESSION['success'])): ?>
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle"></i> <?= $_SESSION['success']; unset($_SESSION['success']); ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
+
+<?php if (isset($_SESSION['error'])): ?>
+    <div class="alert alert-danger alert-dismissible fade show">
+        <i class="fas fa-exclamation-circle"></i> <?= $_SESSION['error']; unset($_SESSION['error']); ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+<?php endif; ?>
+```
+
+---
+
+## 📄 **FILE 17: views/partials/header.php**
+
+```php
+<?php
+// Pastikan variabel $page didefinisikan
+if (!isset($page)) {
+    $page = 'dashboard';
+}
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kasir Restoran</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        /* Additional styles */
+        body { background: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 d-md-block sidebar p-0">
+                <div class="p-3 text-white text-center border-bottom">
+                    <h4><i class="fas fa-utensils"></i> Kasir</h4>
+                    <small class="text-light">Restoran</small>
+                    <hr class="border-light">
+                    <div class="small">
+                        <i class="fas fa-user-circle fa-2x"></i>
+                        <br>
+                        <strong><?= $_SESSION['username'] ?? 'Guest' ?></strong>
+                        <br>
+                        <span class="badge bg-<?= $_SESSION['role'] == 'administrator' ? 'danger' : ($_SESSION['role'] == 'waiter' ? 'success' : 'warning') ?>">
+                            <?= ucfirst($_SESSION['role'] ?? '') ?>
+                        </span>
+                    </div>
+                </div>
+                <ul class="nav flex-column p-2">
+                    <li class="nav-item">
+                        <a class="nav-link <?= $page == 'dashboard' ? 'active' : '' ?>" href="index.php?page=dashboard">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    
+                    <?php if ($_SESSION['role'] == 'administrator'): ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $page == 'meja' ? 'active' : '' ?>" href="index.php?page=meja">
+                            <i class="fas fa-chair"></i> Kelola Meja
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    
+                    <?php if ($_SESSION['role'] != 'kasir'): ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $page == 'barang' ? 'active' : '' ?>" href="index.php?page=barang">
+                            <i class="fas fa-utensil-spoon"></i> Kelola Menu
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    
+                    <?php if ($_SESSION['role'] == 'waiter' || $_SESSION['role'] == 'administrator'): ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $page == 'order' ? 'active' : '' ?>" href="index.php?page=order">
+                            <i class="fas fa-shopping-cart"></i> Buat Order
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    
+                    <?php if ($_SESSION['role'] == 'kasir' || $_SESSION['role'] == 'administrator'): ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $page == 'transaksi' ? 'active' : '' ?>" href="index.php?page=transaksi">
+                            <i class="fas fa-cash-register"></i> Transaksi
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    
+                    <?php if ($_SESSION['role'] != 'waiter'): ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $page == 'laporan' ? 'active' : '' ?>" href="index.php?page=laporan">
+                            <i class="fas fa-file-alt"></i> Laporan
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    
+                    <hr class="border-light">
+                    <li class="nav-item">
+                        <a class="nav-link text-danger" href="index.php?page=logout">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <!-- Main Content -->
+            <main class="col-md-10 ms-sm-auto px-md-4 py-4">
+```
+
+---
+
+## 📄 **FILE 18: views/partials/footer.php**
+
+```php
+            </main>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#dataTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json'
+                }
+            });
+        });
+    </script>
+    <script src="assets/js/script.js"></script>
+</body>
+</html>
+```
+
+---
+
+## 📄 **FILE 19: views/barang/form.php**
+
+```php
+<?php include 'views/partials/header.php'; ?>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-utensil-spoon"></i> <?= isset($data) ? 'Edit' : 'Tambah' ?> Menu</h2>
+    <a href="index.php?page=barang" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Kembali
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST" action="index.php?page=barang&action=save">
+            <?php if (isset($data)): ?>
+                <input type="hidden" name="id_barang" value="<?= $data['id_barang'] ?>">
+            <?php endif; ?>
+            
+            <div class="mb-3">
+                <label class="form-label">Nama Menu</label>
+                <input type="text" name="nama_barang" class="form-control" 
+                       value="<?= isset($data) ? $data['nama_barang'] : '' ?>" required>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Harga (Rp)</label>
+                <input type="number" name="harga" class="form-control" 
+                       value="<?= isset($data) ? $data['harga'] : '' ?>" required>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Stok</label>
+                <input type="number" name="stok" class="form-control" 
+                       value="<?= isset($data) ? $data['stok'] : '0' ?>" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Simpan
+            </button>
+        </form>
+    </div>
+</div>
+
+<?php include 'views/partials/footer.php'; ?>
+```
+
+---
+
+## 📄 **FILE 20: views/barang/index.php**
+
+```php
+<?php include 'views/partials/header.php'; ?>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-utensil-spoon"></i> Kelola Menu</h2>
+    <a href="index.php?page=barang&action=form" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Tambah Menu
+    </a>
+</div>
+
+<?php include 'views/partials/alerts.php'; ?>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="dataTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nama Menu</th>
+                        <th>Harga</th>
+                        <th>Stok</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($data as $row): ?>
+                    <tr>
+                        <td><?= $row['id_barang'] ?></td>
+                        <td><strong><?= $row['nama_barang'] ?></strong></td>
+                        <td>Rp <?= number_format($row['harga'], 0, ',', '.') ?></td>
+                        <td>
+                            <span class="badge bg-<?= $row['stok'] > 10 ? 'success' : ($row['stok'] > 0 ? 'warning' : 'danger') ?>">
+                                <?= $row['stok'] ?>
+                            </span>
+                        </td>
+                        <td>
+                            <a href="index.php?page=barang&action=form&id=<?= $row['id_barang'] ?>" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="index.php?page=barang&action=delete&id=<?= $row['id_barang'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<?php include 'views/partials/footer.php'; ?>
+```
+
+---
+
+## 📄 **FILE 21: views/meja/form.php**
+
+```php
+<?php include 'views/partials/header.php'; ?>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chair"></i> <?= isset($data) ? 'Edit' : 'Tambah' ?> Meja</h2>
+    <a href="index.php?page=meja" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Kembali
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST" action="index.php?page=meja&action=save">
+            <?php if (isset($data)): ?>
+                <input type="hidden" name="id_meja" value="<?= $data['id_meja'] ?>">
+            <?php endif; ?>
+            
+            <div class="mb-3">
+                <label class="form-label">Nomor Meja</label>
+                <input type="text" name="nomor_meja" class="form-control" 
+                       value="<?= isset($data) ? $data['nomor_meja'] : '' ?>" required>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="kosong" <?= (isset($data) && $data['status'] == 'kosong') ? 'selected' : '' ?>>Kosong</option>
+                    <option value="terisi" <?= (isset($data) && $data['status'] == 'terisi') ? 'selected' : '' ?>>Terisi</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Simpan
+            </button>
+        </form>
+    </div>
+</div>
+
+<?php include 'views/partials/footer.php'; ?>
+```
+
+---
+
+## 📄 **FILE 22: views/meja/index.php**
+
+```php
+<?php include 'views/partials/header.php'; ?>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chair"></i> Kelola Meja</h2>
+    <a href="index.php?page=meja&action=form" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Tambah Meja
+    </a>
+</div>
+
+<?php include 'views/partials/alerts.php'; ?>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="dataTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nomor Meja</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($data as $row): ?>
+                    <tr>
+                        <td><?= $row['id_meja'] ?></td>
+                        <td><strong><?= $row['nomor_meja'] ?></strong></td>
+                        <td>
+                            <span class="badge bg-<?= $row['status'] == 'kosong' ? 'success' : 'danger' ?>">
+                                <?= ucfirst($row['status']) ?>
+                            </span>
+                        </td>
+                        <td>
+                            <a href="index.php?page=meja&action=form&id=<?= $row['id_meja'] ?>" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="index.php?page=meja&action=delete&id=<?= $row['id_meja'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<?php include 'views/partials/footer.php'; ?>
+```
+
+---
+
+## 📄 **FILE 23: views/menu/form.php**
+
+```php
+<?php
+// views/menu/form.php - Form Tambah/Edit Menu
+$item = $data['item'] ?? null;
+$categories = $data['categories'] ?? [];
+$isEdit = !empty($item);
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= $isEdit ? 'Edit' : 'Tambah' ?> Menu - Restaurant POS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+        .card { border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.php?page=dashboard">
+                <i class="fas fa-utensils me-2"></i>RestoPOS
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text text-white me-3">
+                    <i class="fas fa-user-circle me-1"></i>
+                    <?= htmlspecialchars($_SESSION['full_name'] ?? 'User') ?>
+                </span>
+                <a href="index.php?page=logout" class="btn btn-danger btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2><i class="fas fa-<?= $isEdit ? 'edit' : 'plus' ?> text-warning me-2"></i>
+                    <?= $isEdit ? 'Edit' : 'Tambah' ?> Menu</h2>
+                <hr>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">Form <?= $isEdit ? 'Edit' : 'Tambah' ?> Menu</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="index.php?page=barang&action=save">
+                            <?php if ($isEdit): ?>
+                            <input type="hidden" name="item_id" value="<?= $item['item_id'] ?>">
+                            <?php endif; ?>
+
+                            <div class="mb-3">
+                                <label class="form-label">Kode Barang</label>
+                                <input type="text" name="item_code" class="form-control" 
+                                       value="<?= $item['item_code'] ?? '' ?>" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Nama Barang</label>
+                                <input type="text" name="item_name" class="form-control" 
+                                       value="<?= $item['item_name'] ?? '' ?>" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Kategori</label>
+                                <input type="text" name="category" class="form-control" 
+                                       value="<?= $item['category'] ?? '' ?>"
+                                       placeholder="Contoh: Makanan, Minuman, Dessert">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Harga (Rp)</label>
+                                <input type="number" name="price" class="form-control" 
+                                       value="<?= $item['price'] ?? 0 ?>" required min="0">
+                            </div>
+
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" name="is_available" class="form-check-input" 
+                                       id="is_available" <?= ($item['is_available'] ?? 1) ? 'checked' : '' ?>>
+                                <label class="form-check-label" for="is_available">Tersedia</label>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-save me-2"></i>Simpan
+                                </button>
+                                <a href="index.php?page=barang" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Kembali
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+```
+
+---
+
+## 📄 **FILE 24: views/menu/index.php**
+
+```php
+<?php
+// views/menu/index.php - Daftar Menu
+$items = $data['items'] ?? [];
+$categories = $data['categories'] ?? [];
+$role = getCurrentRole();
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Menu - Restaurant POS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+        .card { border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.php?page=dashboard">
+                <i class="fas fa-utensils me-2"></i>RestoPOS
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text text-white me-3">
+                    <i class="fas fa-user-circle me-1"></i>
+                    <?= htmlspecialchars($_SESSION['full_name'] ?? 'User') ?>
+                    <span class="badge bg-light text-dark ms-2"><?= ucfirst($_SESSION['role'] ?? '') ?></span>
+                </span>
+                <a href="index.php?page=logout" class="btn btn-danger btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2><i class="fas fa-pizza-slice text-warning me-2"></i>Manajemen Menu</h2>
+                <hr>
+            </div>
+        </div>
+
+        <?php include 'views/partials/alerts.php'; ?>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-list me-2"></i>Daftar Menu</h5>
+                        <?php if ($role == 'administrator'): ?>
+                        <a href="index.php?page=barang&action=form" class="btn btn-dark btn-sm">
+                            <i class="fas fa-plus me-2"></i>Tambah Barang
+                        </a>
+                        <?php endif; ?>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Kode</th>
+                                        <th>Nama</th>
+                                        <th>Kategori</th>
+                                        <th>Harga</th>
+                                        <th>Status</th>
+                                        <?php if ($role == 'administrator'): ?>
+                                        <th>Aksi</th>
+                                        <?php endif; ?>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (empty($items)): ?>
+                                    <tr><td colspan="6" class="text-center">Belum ada data menu</td></tr>
+                                    <?php else: ?>
+                                    <?php foreach ($items as $item): ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($item['item_code']) ?></td>
+                                        <td><?= htmlspecialchars($item['item_name']) ?></td>
+                                        <td><?= htmlspecialchars($item['category']) ?></td>
+                                        <td><?= formatRupiah($item['price']) ?></td>
+                                        <td>
+                                            <?php if ($item['is_available']): ?>
+                                            <span class="badge bg-success">Tersedia</span>
+                                            <?php else: ?>
+                                            <span class="badge bg-danger">Tidak Tersedia</span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <?php if ($role == 'administrator'): ?>
+                                        <td>
+                                            <a href="index.php?page=barang&action=form&id=<?= $item['item_id'] ?>" 
+                                               class="btn btn-sm btn-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="index.php?page=barang&action=delete&id=<?= $item['item_id'] ?>" 
+                                               class="btn btn-sm btn-danger" 
+                                               onclick="return confirm('Yakin ingin menghapus?')">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </td>
+                                        <?php endif; ?>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+```
+
+---
+
+## 📄 **FILE 25: views/order/index.php**
+
+```php
+<?php include 'views/partials/header.php'; ?>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-shopping-cart"></i> Buat Order</h2>
+    <a href="index.php?page=dashboard" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Kembali
+    </a>
+</div>
+
+<?php include 'views/partials/alerts.php'; ?>
+
+<div class="row">
+    <!-- Order Form -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Form Order</h5>
+            </div>
+            <div class="card-body">
+                <form id="orderForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Pilih Meja</label>
+                            <select id="id_meja" class="form-select" required>
+                                <option value="">-- Pilih Meja --</option>
+                                <?php foreach ($mejaList as $m): ?>
+                                <option value="<?= $m['id_meja'] ?>"><?= $m['nomor_meja'] ?> (<?= $m['status'] ?>)</option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="form-label">Pilih Menu</label>
+                            <select id="id_barang" class="form-select">
+                                <option value="">-- Pilih Menu --</option>
+                                <?php foreach ($barangList as $b): ?>
+                                <option value="<?= $b['id_barang'] ?>" data-harga="<?= $b['harga'] ?>" data-stok="<?= $b['stok'] ?>">
+                                    <?= $b['nama_barang'] ?> (Rp <?= number_format($b['harga'], 0, ',', '.') ?>) - Stok: <?= $b['stok'] ?>
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Qty</label>
+                            <input type="number" id="quantity" class="form-control" value="1" min="1">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Subtotal</label>
+                            <input type="text" id="subtotal" class="form-control" readonly value="0">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="button" id="btnAddItem" class="btn btn-success w-100">
+                                <i class="fas fa-plus"></i> Tambah
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                
+                <hr>
+                
+                <!-- Daftar Item -->
+                <h6>Daftar Item</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm" id="itemTable">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Menu</th>
+                                <th>Qty</th>
+                                <th>Harga</th>
+                                <th>Subtotal</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemBody">
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                                <td><strong id="totalDisplay">Rp 0</strong></td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Summary -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-file-invoice"></i> Ringkasan Order</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Meja</label>
+                    <p id="summaryMeja" class="fw-bold">-</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Jumlah Item</label>
+                    <p id="summaryItem" class="fw-bold">0</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Total</label>
+                    <p id="summaryTotal" class="fw-bold text-success fs-4">Rp 0</p>
+                </div>
+                <button id="btnSaveOrder" class="btn btn-primary w-100">
+                    <i class="fas fa-save"></i> Simpan Order
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let items = [];
+let itemCount = 0;
+
+$(document).ready(function() {
+    // Update subtotal ketika quantity berubah
+    $('#quantity').on('change keyup', function() {
+        updateSubtotal();
+    });
+    
+    $('#id_barang').on('change', function() {
+        updateSubtotal();
+    });
+    
+    // Tambah item
+    $('#btnAddItem').on('click', function() {
+        addItem();
+    });
+    
+    // Simpan order
+    $('#btnSaveOrder').on('click', function() {
+        saveOrder();
+    });
+});
+
+function updateSubtotal() {
+    let harga = $('#id_barang option:selected').data('harga') || 0;
+    let qty = parseInt($('#quantity').val()) || 0;
+    let subtotal = harga * qty;
+    $('#subtotal').val('Rp ' + subtotal.toLocaleString('id-ID'));
+}
+
+function addItem() {
+    let id_barang = $('#id_barang').val();
+    let nama_barang = $('#id_barang option:selected').text().split(' (')[0];
+    let harga = $('#id_barang option:selected').data('harga') || 0;
+    let stok = $('#id_barang option:selected').data('stok') || 0;
+    let qty = parseInt($('#quantity').val()) || 0;
+    
+    if (!id_barang) {
+        alert('Pilih menu terlebih dahulu!');
+        return;
+    }
+    
+    if (qty <= 0) {
+        alert('Quantity harus lebih dari 0!');
+        return;
+    }
+    
+    if (qty > stok) {
+        alert('Stok tidak cukup! Sisa stok: ' + stok);
+        return;
+    }
+    
+    let subtotal = harga * qty;
+    
+    items.push({
+        id_barang: id_barang,
+        nama_barang: nama_barang,
+        quantity: qty,
+        harga: harga,
+        subtotal: subtotal
+    });
+    
+    renderItems();
+    updateSummary();
+    
+    // Reset form
+    $('#id_barang').val('');
+    $('#quantity').val(1);
+    $('#subtotal').val('0');
+}
+
+function renderItems() {
+    let html = '';
+    items.forEach(function(item, index) {
+        html += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${item.nama_barang}</td>
+                <td>${item.quantity}</td>
+                <td>Rp ${item.harga.toLocaleString('id-ID')}</td>
+                <td>Rp ${item.subtotal.toLocaleString('id-ID')}</td>
+                <td>
+                    <button class="btn btn-sm btn-danger" onclick="removeItem(${index})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    $('#itemBody').html(html);
+}
+
+function removeItem(index) {
+    items.splice(index, 1);
+    renderItems();
+    updateSummary();
+}
+
+function updateSummary() {
+    let total = 0;
+    items.forEach(function(item) {
+        total += item.subtotal;
+    });
+    
+    let meja = $('#id_meja option:selected').text() || '-';
+    $('#summaryMeja').text(meja);
+    $('#summaryItem').text(items.length);
+    $('#summaryTotal').text('Rp ' + total.toLocaleString('id-ID'));
+    $('#totalDisplay').text('Rp ' + total.toLocaleString('id-ID'));
+}
+
+function saveOrder() {
+    let id_meja = $('#id_meja').val();
+    
+    if (!id_meja) {
+        alert('Pilih meja terlebih dahulu!');
+        return;
+    }
+    
+    if (items.length === 0) {
+        alert('Tambah item terlebih dahulu!');
+        return;
+    }
+    
+    if (!confirm('Yakin akan menyimpan order ini?')) {
+        return;
+    }
+    
+    $.ajax({
+        url: 'index.php?page=order&action=save',
+        type: 'POST',
+        data: {
+            id_meja: id_meja,
+            items: JSON.stringify(items)
+        },
+        success: function(response) {
+            alert('Order berhasil disimpan!');
+            location.reload();
+        },
+        error: function() {
+            alert('Gagal menyimpan order!');
+        }
+    });
+}
+</script>
+
+<?php include 'views/partials/footer.php'; ?>
+```
+
+---
+
+## 📄 **FILE 26: views/orders/index.php**
+
+```php
+<?php
+// views/orders/index.php - Halaman Order (Waiter)
+$tables = $data['tables'] ?? [];
+$menu_items = $data['menu_items'] ?? [];
+$active_orders = $data['active_orders'] ?? [];
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entri Order - Restaurant POS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+        .card { border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        .menu-item-card { cursor: pointer; transition: 0.3s; }
+        .menu-item-card:hover { transform: scale(1.02); border-color: #667eea; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.php?page=dashboard">
+                <i class="fas fa-utensils me-2"></i>RestoPOS
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text text-white me-3">
+                    <i class="fas fa-user-circle me-1"></i>
+                    <?= htmlspecialchars($_SESSION['full_name'] ?? 'User') ?>
+                </span>
+                <a href="index.php?page=logout" class="btn btn-danger btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <h2><i class="fas fa-clipboard-list text-success me-2"></i>Entri Order</h2>
+        <hr>
+
+        <?php include 'views/partials/alerts.php'; ?>
+
+        <div class="row">
+            <!-- Buat Order Baru -->
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Buat Order Baru</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="index.php?page=order&action=create">
+                            <div class="mb-3">
+                                <label class="form-label">Pilih Meja</label>
+                                <select name="table_id" class="form-select" required>
+                                    <option value="">-- Pilih Meja --</option>
+                                    <?php foreach ($tables as $table): ?>
+                                    <option value="<?= $table['table_id'] ?>">
+                                        Meja <?= $table['table_number'] ?> (Kapasitas: <?= $table['capacity'] ?>)
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-clipboard-list me-2"></i>Buat Order
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tambah Item ke Order -->
+                <div class="card mt-3">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-cart-plus me-2"></i>Tambah Item</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="index.php?page=order&action=add_item">
+                            <div class="mb-2">
+                                <label class="form-label">Order ID</label>
+                                <input type="number" name="order_id" class="form-control" 
+                                       placeholder="Masukkan ID Order" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Pilih Menu</label>
+                                <select name="item_id" class="form-select" required>
+                                    <option value="">-- Pilih Menu --</option>
+                                    <?php foreach ($menu_items as $item): ?>
+                                    <option value="<?= $item['item_id'] ?>">
+                                        <?= $item['item_name'] ?> - <?= formatRupiah($item['price']) ?>
+                                    </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Jumlah</label>
+                                <input type="number" name="quantity" class="form-control" value="1" min="1" required>
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Catatan</label>
+                                <input type="text" name="note" class="form-control" placeholder="Contoh: Pedas, Tidak Pedas">
+                            </div>
+                            <button type="submit" class="btn btn-info w-100 text-white">
+                                <i class="fas fa-plus me-2"></i>Tambah Item
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daftar Order Aktif -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-list me-2"></i>Order Aktif</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Meja</th>
+                                        <th>Waiter</th>
+                                        <th>Status</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (empty($active_orders)): ?>
+                                    <tr><td colspan="5" class="text-center">Tidak ada order aktif</td></tr>
+                                    <?php else: ?>
+                                    <?php foreach ($active_orders as $order): ?>
+                                    <tr>
+                                        <td>#<?= $order['order_id'] ?></td>
+                                        <td><?= $order['table_number'] ?? '-' ?></td>
+                                        <td><?= $order['waiter_name'] ?? '-' ?></td>
+                                        <td>
+                                            <span class="badge bg-<?= $order['status'] == 'pending' ? 'secondary' : 'primary' ?>">
+                                                <?= ucfirst($order['status']) ?>
+                                            </span>
+                                        </td>
+                                        <td><?= formatRupiah($order['total']) ?></td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+```
+
+---
+
+## 📄 **FILE 27: views/reports/best_selling.php**
+
+```php
+<?php
+// views/reports/best_selling.php - Laporan Menu Terlaris
+$items = $data['items'] ?? [];
+$start_date = $data['start_date'] ?? date('Y-m-d', strtotime('-30 days'));
+$end_date = $data['end_date'] ?? date('Y-m-d');
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu Terlaris - Restaurant POS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+        .card { border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        .rank-1 { color: #ffd700; }
+        .rank-2 { color: #c0c0c0; }
+        .rank-3 { color: #cd7f32; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.php?page=dashboard">
+                <i class="fas fa-utensils me-2"></i>RestoPOS
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text text-white me-3">
+                    <i class="fas fa-user-circle me-1"></i>
+                    <?= htmlspecialchars($_SESSION['full_name'] ?? 'User') ?>
+                </span>
+                <a href="index.php?page=logout" class="btn btn-danger btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <h2><i class="fas fa-trophy text-warning me-2"></i>Menu Terlaris</h2>
+        <hr>
+
+        <!-- Filter -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <input type="hidden" name="page" value="laporan">
+                    <input type="hidden" name="action" value="best_selling">
+                    <div class="col-md-4">
+                        <label class="form-label">Tanggal Mulai</label>
+                        <input type="date" name="start_date" class="form-control" value="<?= $start_date ?>">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Tanggal Selesai</label>
+                        <input type="date" name="end_date" class="form-control" value="<?= $end_date ?>">
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Tampilkan
+                        </button>
+                        <a href="index.php?page=laporan" class="btn btn-secondary ms-2">
+                            <i class="fas fa-arrow-left me-2"></i>Kembali
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tabel Menu Terlaris -->
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>10 Menu Terlaris</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nama Menu</th>
+                                <th>Kategori</th>
+                                <th>Total Terjual</th>
+                                <th>Total Pendapatan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($items)): ?>
+                            <tr><td colspan="5" class="text-center">Tidak ada data pada periode ini</td></tr>
+                            <?php else: ?>
+                            <?php foreach ($items as $index => $item): ?>
+                            <tr>
+                                <td>
+                                    <?php if ($index == 0): ?>
+                                    <span class="rank-1"><i class="fas fa-crown fa-2x"></i></span>
+                                    <?php elseif ($index == 1): ?>
+                                    <span class="rank-2"><i class="fas fa-medal fa-2x"></i></span>
+                                    <?php elseif ($index == 2): ?>
+                                    <span class="rank-3"><i class="fas fa-medal fa-2x"></i></span>
+                                    <?php else: ?>
+                                    <?= $index + 1 ?>
+                                    <?php endif; ?>
+                                </td>
+                                <td><strong><?= htmlspecialchars($item['item_name']) ?></strong></td>
+                                <td><?= htmlspecialchars($item['category']) ?></td>
+                                <td><?= $item['total_quantity'] ?></td>
+                                <td><?= formatRupiah($item['total_revenue']) ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+```
+
+---
+
+## 📄 **FILE 28: views/reports/daily.php**
+
+```php
+<?php
+// views/reports/daily.php - Laporan Harian
+$date = $data['date'] ?? date('Y-m-d');
+$transactions = $data['transactions'] ?? [];
+$summary = $data['summary'] ?? null;
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Harian - Restaurant POS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+        .card { border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        .summary-card { border-left: 4px solid #667eea; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.php?page=dashboard">
+                <i class="fas fa-utensils me-2"></i>RestoPOS
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text text-white me-3">
+                    <i class="fas fa-user-circle me-1"></i>
+                    <?= htmlspecialchars($_SESSION['full_name'] ?? 'User') ?>
+                </span>
+                <a href="index.php?page=logout" class="btn btn-danger btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <h2><i class="fas fa-calendar-day text-primary me-2"></i>Laporan Harian</h2>
+        <hr>
+
+        <!-- Filter Tanggal -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <input type="hidden" name="page" value="laporan">
+                    <div class="col-md-6">
+                        <label class="form-label">Pilih Tanggal</label>
+                        <input type="date" name="date" class="form-control" value="<?= $date ?>">
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Tampilkan
+                        </button>
+                        <a href="index.php?page=laporan&action=best_selling" class="btn btn-success ms-2">
+                            <i class="fas fa-trophy me-2"></i>Menu Terlaris
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <?php if ($summary): ?>
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card summary-card bg-success text-white">
+                    <div class="card-body">
+                        <h6>Total Pendapatan</h6>
+                        <h3><?= formatRupiah($summary['total_revenue'] ?? 0) ?></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card summary-card bg-info text-white">
+                    <div class="card-body">
+                        <h6>Total Transaksi</h6>
+                        <h3><?= $summary['total_transactions'] ?? 0 ?></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card summary-card bg-warning text-white">
+                    <div class="card-body">
+                        <h6>Rata-rata Transaksi</h6>
+                        <h3><?= formatRupiah($summary['average_transaction'] ?? 0) ?></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card summary-card bg-secondary text-white">
+                    <div class="card-body">
+                        <h6>Total Order</h6>
+                        <h3><?= $summary['total_orders'] ?? 0 ?></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+
+        <!-- Tabel Transaksi -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Daftar Transaksi</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Waktu</th>
+                                <th>Kasir</th>
+                                <th>Metode</th>
+                                <th>Total</th>
+                                <th>Dibayar</th>
+                                <th>Kembali</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($transactions)): ?>
+                            <tr><td colspan="7" class="text-center">Tidak ada transaksi pada tanggal ini</td></tr>
+                            <?php else: ?>
+                            <?php foreach ($transactions as $trx): ?>
+                            <tr>
+                                <td>#<?= $trx['transaction_id'] ?></td>
+                                <td><?= date('H:i', strtotime($trx['transaction_date'])) ?></td>
+                                <td><?= htmlspecialchars($trx['kasir_name']) ?></td>
+                                <td>
+                                    <span class="badge bg-info"><?= strtoupper($trx['payment_method']) ?></span>
+                                </td>
+                                <td><?= formatRupiah($trx['total']) ?></td>
+                                <td><?= formatRupiah($trx['amount_paid']) ?></td>
+                                <td><?= formatRupiah($trx['change_amount']) ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+```
+
+---
+
+## 📄 **FILE 29: views/tables/form.php**
+
+```php
+<?php
+// views/tables/form.php - Form Tambah/Edit Meja
+$table = $data ?? null;
+$isEdit = !empty($table);
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= $isEdit ? 'Edit' : 'Tambah' ?> Meja - Restaurant POS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+        .card { border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.php?page=dashboard">
+                <i class="fas fa-utensils me-2"></i>RestoPOS
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text text-white me-3">
+                    <i class="fas fa-user-circle me-1"></i>
+                    <?= htmlspecialchars($_SESSION['full_name'] ?? 'User') ?>
+                </span>
+                <a href="index.php?page=logout" class="btn btn-danger btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2><i class="fas fa-<?= $isEdit ? 'edit' : 'plus' ?> text-primary me-2"></i>
+                    <?= $isEdit ? 'Edit' : 'Tambah' ?> Meja</h2>
+                <hr>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mx-auto">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Form <?= $isEdit ? 'Edit' : 'Tambah' ?> Meja</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="index.php?page=meja&action=save">
+                            <?php if ($isEdit): ?>
+                            <input type="hidden" name="table_id" value="<?= $table['table_id'] ?>">
+                            <?php endif; ?>
+
+                            <div class="mb-3">
+                                <label class="form-label">Nomor Meja</label>
+                                <input type="text" name="table_number" class="form-control" 
+                                       value="<?= $table['table_number'] ?? '' ?>" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Kapasitas</label>
+                                <input type="number" name="capacity" class="form-control" 
+                                       value="<?= $table['capacity'] ?? 4 ?>" required min="1">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Status</label>
+                                <select name="status" class="form-select">
+                                    <option value="available" <?= ($table['status'] ?? '') == 'available' ? 'selected' : '' ?>>Tersedia</option>
+                                    <option value="occupied" <?= ($table['status'] ?? '') == 'occupied' ? 'selected' : '' ?>>Terisi</option>
+                                    <option value="reserved" <?= ($table['status'] ?? '') == 'reserved' ? 'selected' : '' ?>>Reservasi</option>
+                                </select>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-save me-2"></i>Simpan
+                                </button>
+                                <a href="index.php?page=meja" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Kembali
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+```
+
+---
+
+## 📄 **FILE 30: views/tables/index.php**
+
+```php
+<?php
+// views/tables/index.php - Manajemen Meja
+$tables = $data['tables'] ?? [];
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Meja - Restaurant POS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+        .card { border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        .table-status { padding: 5px 12px; border-radius: 20px; font-size: 12px; }
+        .status-available { background: #d4edda; color: #155724; }
+        .status-occupied { background: #f8d7da; color: #721c24; }
+        .status-reserved { background: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.php?page=dashboard">
+                <i class="fas fa-utensils me-2"></i>RestoPOS
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text text-white me-3">
+                    <i class="fas fa-user-circle me-1"></i>
+                    <?= htmlspecialchars($_SESSION['full_name'] ?? 'User') ?>
+                </span>
+                <a href="index.php?page=logout" class="btn btn-danger btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2><i class="fas fa-chair text-primary me-2"></i>Manajemen Meja</h2>
+                <hr>
+            </div>
+        </div>
+
+        <?php include 'views/partials/alerts.php'; ?>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-list me-2"></i>Daftar Meja</h5>
+                        <a href="index.php?page=meja&action=form" class="btn btn-light btn-sm">
+                            <i class="fas fa-plus me-2"></i>Tambah Meja
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <?php if (empty($tables)): ?>
+                            <div class="col-12 text-center py-5">
+                                <p class="text-muted">Belum ada data meja</p>
+                            </div>
+                            <?php else: ?>
+                            <?php foreach ($tables as $table): ?>
+                            <div class="col-md-3 col-6 mb-3">
+                                <div class="card text-center p-3">
+                                    <h3 class="mb-2"><?= htmlspecialchars($table['table_number']) ?></h3>
+                                    <p class="mb-1">Kapasitas: <?= $table['capacity'] ?> orang</p>
+                                    <span class="table-status status-<?= $table['status'] ?>">
+                                        <?= ucfirst($table['status']) ?>
+                                    </span>
+                                    <div class="mt-2">
+                                        <a href="index.php?page=meja&action=form&id=<?= $table['table_id'] ?>" 
+                                           class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="index.php?page=meja&action=delete&id=<?= $table['table_id'] ?>" 
+                                           class="btn btn-sm btn-danger"
+                                           onclick="return confirm('Yakin ingin menghapus?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+```
+
+---
+
+## 📄 **FILE 31: views/transactions/index.php**
+
+```php
+<?php
+// views/transactions/index.php - Halaman Transaksi (Kasir)
+$active_orders = $data['active_orders'] ?? [];
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entri Transaksi - Restaurant POS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+        .card { border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.php?page=dashboard">
+                <i class="fas fa-utensils me-2"></i>RestoPOS
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text text-white me-3">
+                    <i class="fas fa-user-circle me-1"></i>
+                    <?= htmlspecialchars($_SESSION['full_name'] ?? 'User') ?>
+                </span>
+                <a href="index.php?page=logout" class="btn btn-danger btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <h2><i class="fas fa-cash-register text-info me-2"></i>Entri Transaksi</h2>
+        <hr>
+
+        <?php include 'views/partials/alerts.php'; ?>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-list me-2"></i>Daftar Order Siap Bayar</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID Order</th>
+                                        <th>Meja</th>
+                                        <th>Waiter</th>
+                                        <th>Status</th>
+                                        <th>Total</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (empty($active_orders)): ?>
+                                    <tr><td colspan="6" class="text-center">Tidak ada order yang siap dibayar</td></tr>
+                                    <?php else: ?>
+                                    <?php foreach ($active_orders as $order): ?>
+                                    <tr>
+                                        <td>#<?= $order['order_id'] ?></td>
+                                        <td><?= $order['table_number'] ?? '-' ?></td>
+                                        <td><?= $order['waiter_name'] ?? '-' ?></td>
+                                        <td>
+                                            <span class="badge bg-<?= $order['status'] == 'ready' ? 'success' : 'secondary' ?>">
+                                                <?= ucfirst($order['status']) ?>
+                                            </span>
+                                        </td>
+                                        <td><strong><?= formatRupiah($order['total']) ?></strong></td>
+                                        <td>
+                                            <button class="btn btn-sm btn-success pay-btn" 
+                                                    data-order="<?= $order['order_id'] ?>"
+                                                    data-total="<?= $order['total'] ?>"
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#paymentModal">
+                                                <i class="fas fa-money-bill"></i> Bayar
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Pembayaran -->
+    <div class="modal fade" id="paymentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fas fa-cash-register me-2"></i>Proses Pembayaran</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="index.php?page=transaksi&action=proses">
+                    <div class="modal-body">
+                        <input type="hidden" name="order_id" id="order_id">
+                        <div class="mb-3">
+                            <label class="form-label">Total yang Harus Dibayar</label>
+                            <h3 class="text-primary" id="total_display">Rp 0</h3>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Metode Pembayaran</label>
+                            <select name="payment_method" class="form-select" required>
+                                <option value="cash">Tunai</option>
+                                <option value="credit_card">Kartu Kredit</option>
+                                <option value="debit_card">Kartu Debit</option>
+                                <option value="qr_code">QR Code</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Jumlah Dibayar</label>
+                            <input type="number" name="amount_paid" class="form-control" 
+                                   placeholder="Masukkan jumlah uang" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check me-2"></i> Proses Pembayaran
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.querySelectorAll('.pay-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const orderId = this.dataset.order;
+            const total = this.dataset.total;
+            document.getElementById('order_id').value = orderId;
+            document.getElementById('total_display').textContent = 
+                'Rp ' + new Intl.NumberFormat('id-ID').format(total);
+        });
+    });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+```
+
+---
+
+## 📄 **FILE 32: views/dashboard.php**
+
+```php
+<?php
+requireLogin();
+$full_name = $_SESSION['full_name'] ?? 'User';
+$role = $_SESSION['role'] ?? 'guest';
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Restaurant POS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background: #f8f9fa; }
+        .navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
+        .card { border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
+        .menu-card { cursor: pointer; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="index.php?page=dashboard">
+                <i class="fas fa-utensils me-2"></i>RestoPOS
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text text-white me-3">
+                    <i class="fas fa-user-circle me-1"></i>
+                    <?= htmlspecialchars($full_name) ?>
+                    <span class="badge bg-light text-dark ms-2"><?= ucfirst($role) ?></span>
+                </span>
+                <a href="index.php?page=logout" class="btn btn-danger btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card bg-success text-white">
+                    <div class="card-body">
+                        <h1 class="display-4">🎉 Selamat Datang, <?= htmlspecialchars($full_name) ?>!</h1>
+                        <p class="lead">Anda login sebagai <strong><?= ucfirst($role) ?></strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <?php if ($role == 'administrator'): ?>
+            <div class="col-md-3 col-6 mb-3">
+                <a href="index.php?page=meja" class="text-decoration-none">
+                    <div class="card text-center p-4 menu-card">
+                        <i class="fas fa-chair fa-3x text-primary"></i>
+                        <p class="mt-2 fw-bold">Entri Meja</p>
+                    </div>
+                </a>
+            </div>
+            <?php endif; ?>
+            
+            <?php if ($role == 'administrator' || $role == 'waiter'): ?>
+            <div class="col-md-3 col-6 mb-3">
+                <a href="index.php?page=barang" class="text-decoration-none">
+                    <div class="card text-center p-4 menu-card">
+                        <i class="fas fa-pizza-slice fa-3x text-warning"></i>
+                        <p class="mt-2 fw-bold">Entri Barang</p>
+                    </div>
+                </a>
+            </div>
+            <?php endif; ?>
+            
+            <?php if ($role == 'waiter'): ?>
+            <div class="col-md-3 col-6 mb-3">
+                <a href="index.php?page=order" class="text-decoration-none">
+                    <div class="card text-center p-4 menu-card">
+                        <i class="fas fa-clipboard-list fa-3x text-success"></i>
+                        <p class="mt-2 fw-bold">Entri Order</p>
+                    </div>
+                </a>
+            </div>
+            <?php endif; ?>
+            
+            <?php if ($role == 'kasir'): ?>
+            <div class="col-md-3 col-6 mb-3">
+                <a href="index.php?page=transaksi" class="text-decoration-none">
+                    <div class="card text-center p-4 menu-card">
+                        <i class="fas fa-cash-register fa-3x text-info"></i>
+                        <p class="mt-2 fw-bold">Entri Transaksi</p>
+                    </div>
+                </a>
+            </div>
+            <?php endif; ?>
+            
+            <?php if ($role == 'waiter' || $role == 'kasir' || $role == 'administrator'): ?>
+            <div class="col-md-3 col-6 mb-3">
+                <a href="index.php?page=laporan" class="text-decoration-none">
+                    <div class="card text-center p-4 menu-card">
+                        <i class="fas fa-chart-bar fa-3x text-danger"></i>
+                        <p class="mt-2 fw-bold">Generate Laporan</p>
+                    </div>
+                </a>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+```
+
+---
+
+## 📄 **FILE 33: views/login.php**
+
+```php
+<?php
+$error = $_SESSION['error'] ?? '';
+$success = $_SESSION['success'] ?? '';
+unset($_SESSION['error'], $_SESSION['success']);
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Restaurant POS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 420px;
+        }
+        .login-card .logo { text-align: center; margin-bottom: 30px; }
+        .login-card .logo i { font-size: 60px; color: #667eea; }
+        .login-card .logo h1 { font-weight: 700; color: #333; margin-top: 10px; }
+        .login-card .logo p { color: #666; font-size: 14px; }
+        .login-card .form-control { border-radius: 12px; padding: 12px 16px; }
+        .login-card .btn-login {
+            border-radius: 12px; padding: 12px; font-weight: 600;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .login-card .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        .demo-accounts {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .demo-accounts small { display: block; }
+        .login-footer { text-align: center; margin-top: 20px; color: #999; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="logo">
+            <i class="fas fa-utensils"></i>
+            <h1>RestoPOS</h1>
+            <p>Sistem Kasir Restoran</p>
+        </div>
+        
+        <?php if ($error): ?>
+        <div class="alert alert-danger"><?= $error ?></div>
+        <?php endif; ?>
+        <?php if ($success): ?>
+        <div class="alert alert-success"><?= $success ?></div>
+        <?php endif; ?>
+        
+        <form method="POST" action="index.php?page=login&action=proses">
+            <div class="mb-3">
+                <label class="form-label"><i class="fas fa-user"></i> Username</label>
+                <input type="text" name="username" class="form-control" placeholder="Masukkan username" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label"><i class="fas fa-lock"></i> Password</label>
+                <input type="password" name="password" class="form-control" placeholder="Masukkan password" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-login w-100">
+                <i class="fas fa-sign-in-alt me-2"></i> Login
+            </button>
+        </form>
+        
+        <div class="demo-accounts">
+            <small><strong>📋 Demo Account</strong></small>
+            <small>👑 Admin: <code>admin / admin123</code></small>
+            <small>👨‍🍳 Waiter: <code>waiter1 / waiter123</code></small>
+            <small>💰 Kasir: <code>kasir1 / kasir123</code></small>
+        </div>
+        
+        <div class="login-footer">
+            <small>&copy; <?= date('Y') ?> Restaurant POS</small>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+```
+
+---
+
+## 📄 **FILE 34: views/test_session.php**
+
+```php
+<?php
+// ============================================
+// test_session.php - Cek Session
+// ============================================
+
+session_start();
+
+echo "<h2>🔍 Session Test</h2>";
+
+// Tampilkan semua data session
+echo "<h3>Data Session Saat Ini:</h3>";
+echo "<pre>";
+print_r($_SESSION);
+echo "</pre>";
+
+// Coba set session baru
+$_SESSION['test'] = 'Session Berjalan!';
+echo "<p>✅ Session test telah di-set</p>";
+
+echo "<p><a href='test_session.php'>Refresh halaman</a> untuk cek apakah session tetap ada.</p>";
+echo "<p><a href='index.php'>Kembali ke Login</a></p>";
+?>
+```
+
+---
+
+## 📄 **FILE 35: database.sql**
+
+```sql
+-- ============================================================
+-- DATABASE: restaurant_pos
+-- SCRIPT LENGKAP: TABEL + DATA + STORED PROCEDURE
+-- ============================================================
+
+-- ============================================================
+-- 1. BUAT DATABASE
+-- ============================================================
+CREATE DATABASE IF NOT EXISTS restaurant_pos;
+USE restaurant_pos;
+
+-- ============================================================
+-- 2. HAPUS TABEL LAMA (KALAU ADA) - URUTAN PENTING!
+-- ============================================================
+DROP TABLE IF EXISTS transactions;
+DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS menu_items;
+DROP TABLE IF EXISTS tables;
+DROP TABLE IF EXISTS users;
+
+-- ============================================================
+-- 3. BUAT TABEL-TABEL
+-- ============================================================
+
+-- TABEL 1: users (Pengguna)
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    role ENUM('administrator', 'waiter', 'kasir') NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- TABEL 2: tables (Meja)
+CREATE TABLE tables (
+    table_id INT AUTO_INCREMENT PRIMARY KEY,
+    table_number VARCHAR(10) UNIQUE NOT NULL,
+    capacity INT DEFAULT 4,
+    status ENUM('available', 'occupied', 'reserved') DEFAULT 'available',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- TABEL 3: menu_items (Barang/Menu)
+CREATE TABLE menu_items (
+    item_id INT AUTO_INCREMENT PRIMARY KEY,
+    item_code VARCHAR(20) UNIQUE NOT NULL,
+    item_name VARCHAR(100) NOT NULL,
+    category VARCHAR(50),
+    price DECIMAL(10, 2) NOT NULL,
+    is_available BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- TABEL 4: orders (Pesanan)
+CREATE TABLE orders (
+    order_id INT AUTO_INCREMENT PRIMARY KEY,
+    table_id INT NOT NULL,
+    waiter_id INT NOT NULL,
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('pending', 'preparing', 'ready', 'served', 'paid') DEFAULT 'pending',
+    subtotal DECIMAL(10, 2) DEFAULT 0,
+    tax DECIMAL(10, 2) DEFAULT 0,
+    total DECIMAL(10, 2) DEFAULT 0,
+    FOREIGN KEY (table_id) REFERENCES tables(table_id),
+    FOREIGN KEY (waiter_id) REFERENCES users(user_id)
+);
+
+-- TABEL 5: order_items (Detail Pesanan)
+CREATE TABLE order_items (
+    order_item_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    item_id INT NOT NULL,
+    quantity INT NOT NULL,
+    price_per_unit DECIMAL(10, 2) NOT NULL,
+    subtotal DECIMAL(10, 2) NOT NULL,
+    note TEXT,
+    FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
+    FOREIGN KEY (item_id) REFERENCES menu_items(item_id)
+);
+
+-- TABEL 6: transactions (Transaksi)
+CREATE TABLE transactions (
+    transaction_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    kasir_id INT NOT NULL,
+    transaction_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    payment_method ENUM('cash', 'credit_card', 'debit_card', 'qr_code') NOT NULL,
+    amount_paid DECIMAL(10, 2) NOT NULL,
+    change_amount DECIMAL(10, 2) DEFAULT 0,
+    status ENUM('completed', 'cancelled') DEFAULT 'completed',
+    FOREIGN KEY (order_id) REFERENCES orders(order_id),
+    FOREIGN KEY (kasir_id) REFERENCES users(user_id)
+);
+
+-- ============================================================
+-- 4. DATA AWAL (SEEDER)
+-- ============================================================
+
+-- Password: admin123, waiter123, kasir123 (pakai MD5)
+INSERT INTO users (username, password, full_name, role) VALUES
+('admin', MD5('admin123'), 'Administrator', 'administrator'),
+('waiter1', MD5('waiter123'), 'Budi Waiter', 'waiter'),
+('waiter2', MD5('waiter123'), 'Ani Waiter', 'waiter'),
+('kasir1', MD5('kasir123'), 'Citra Kasir', 'kasir');
+
+-- Data Meja
+INSERT INTO tables (table_number, capacity) VALUES
+('A1', 4), ('A2', 4), ('A3', 6),
+('B1', 2), ('B2', 2), ('B3', 4),
+('C1', 8), ('C2', 6);
+
+-- Data Menu
+INSERT INTO menu_items (item_code, item_name, category, price) VALUES
+('M001', 'Nasi Goreng Spesial', 'Makanan', 35000),
+('M002', 'Mie Goreng', 'Makanan', 28000),
+('M003', 'Ayam Bakar', 'Makanan', 42000),
+('M004', 'Soto Ayam', 'Makanan', 30000),
+('M005', 'Gado-gado', 'Makanan', 25000),
+('D001', 'Es Teh Manis', 'Minuman', 8000),
+('D002', 'Jus Jeruk', 'Minuman', 15000),
+('D003', 'Kopi Hitam', 'Minuman', 12000),
+('D004', 'Es Campur', 'Minuman', 18000);
+
+-- ============================================================
+-- 5. STORED PROCEDURE
+-- ============================================================
+
+DELIMITER //
+
+-- SP 1: sp_create_order - Membuat order baru
+CREATE PROCEDURE sp_create_order(
+    IN p_table_id INT,
+    IN p_waiter_id INT,
+    OUT p_order_id INT
+)
+BEGIN
+    INSERT INTO orders (table_id, waiter_id, status) 
+    VALUES (p_table_id, p_waiter_id, 'pending');
+    
+    SET p_order_id = LAST_INSERT_ID();
+    UPDATE tables SET status = 'occupied' WHERE table_id = p_table_id;
+END //
+
+-- SP 2: sp_add_order_item - Menambah item ke order
+CREATE PROCEDURE sp_add_order_item(
+    IN p_order_id INT,
+    IN p_item_id INT,
+    IN p_quantity INT,
+    IN p_note TEXT
+)
+BEGIN
+    DECLARE v_price DECIMAL(10,2);
+    DECLARE v_subtotal DECIMAL(10,2);
+    DECLARE v_current_subtotal DECIMAL(10,2);
+    DECLARE v_tax DECIMAL(10,2);
+    DECLARE v_total DECIMAL(10,2);
+    
+    -- Ambil harga item
+    SELECT price INTO v_price FROM menu_items WHERE item_id = p_item_id;
+    
+    -- Hitung subtotal
+    SET v_subtotal = v_price * p_quantity;
+    
+    -- Insert ke order_items
+    INSERT INTO order_items (order_id, item_id, quantity, price_per_unit, subtotal, note)
+    VALUES (p_order_id, p_item_id, p_quantity, v_price, v_subtotal, p_note);
+    
+    -- Update total di orders
+    SELECT SUM(subtotal) INTO v_current_subtotal FROM order_items WHERE order_id = p_order_id;
+    
+    SET v_tax = v_current_subtotal * 0.1; -- PPN 10%
+    SET v_total = v_current_subtotal + v_tax;
+    
+    UPDATE orders 
+    SET subtotal = v_current_subtotal, tax = v_tax, total = v_total 
+    WHERE order_id = p_order_id;
+END //
+
+-- SP 3: sp_complete_transaction - Menyelesaikan transaksi
+CREATE PROCEDURE sp_complete_transaction(
+    IN p_order_id INT,
+    IN p_kasir_id INT,
+    IN p_payment_method VARCHAR(20),
+    IN p_amount_paid DECIMAL(10,2)
+)
+BEGIN
+    DECLARE v_total DECIMAL(10,2);
+    DECLARE v_change DECIMAL(10,2);
+    DECLARE v_table_id INT;
+    
+    -- Ambil total order
+    SELECT total, table_id INTO v_total, v_table_id 
+    FROM orders WHERE order_id = p_order_id;
+    
+    -- Hitung kembalian
+    SET v_change = p_amount_paid - v_total;
+    
+    -- Insert transaksi
+    INSERT INTO transactions (order_id, kasir_id, payment_method, amount_paid, change_amount)
+    VALUES (p_order_id, p_kasir_id, p_payment_method, p_amount_paid, v_change);
+    
+    -- Update status order menjadi paid
+    UPDATE orders SET status = 'paid' WHERE order_id = p_order_id;
+    
+    -- Update status meja menjadi available
+    UPDATE tables SET status = 'available' WHERE table_id = v_table_id;
+END //
+
+-- SP 4: sp_daily_report - Laporan penjualan harian
+CREATE PROCEDURE sp_daily_report(
+    IN p_date DATE
+)
+BEGIN
+    SELECT 
+        t.transaction_id,
+        t.transaction_date,
+        u.full_name AS kasir_name,
+        o.order_id,
+        t.payment_method,
+        o.total,
+        t.amount_paid,
+        t.change_amount
+    FROM transactions t
+    JOIN orders o ON t.order_id = o.order_id
+    JOIN users u ON t.kasir_id = u.user_id
+    WHERE DATE(t.transaction_date) = p_date
+    ORDER BY t.transaction_date DESC;
+END //
+
+-- SP 5: sp_best_selling_menu - Laporan menu terlaris
+CREATE PROCEDURE sp_best_selling_menu(
+    IN p_start_date DATE,
+    IN p_end_date DATE
+)
+BEGIN
+    SELECT 
+        mi.item_name,
+        mi.category,
+        SUM(oi.quantity) AS total_quantity,
+        SUM(oi.subtotal) AS total_revenue
+    FROM order_items oi
+    JOIN orders o ON oi.order_id = o.order_id
+    JOIN menu_items mi ON oi.item_id = mi.item_id
+    WHERE DATE(o.order_date) BETWEEN p_start_date AND p_end_date
+    AND o.status = 'paid'
+    GROUP BY mi.item_id
+    ORDER BY total_quantity DESC
+    LIMIT 10;
+END //
+
+DELIMITER ;
+
+-- ============================================================
+-- 6. VERIFIKASI - CEK SEMUA DATA
+-- ============================================================
+
+-- Cek user
+SELECT '=== USERS ===' AS '';
+SELECT user_id, username, full_name, role FROM users;
+
+-- Cek meja
+SELECT '=== TABLES ===' AS '';
+SELECT table_id, table_number, capacity, status FROM tables;
+
+-- Cek menu
+SELECT '=== MENU ITEMS ===' AS '';
+SELECT item_id, item_code, item_name, category, price FROM menu_items;
+
+-- Cek stored procedure
+SELECT '=== STORED PROCEDURES ===' AS '';
+SHOW PROCEDURE STATUS WHERE Db = 'restaurant_pos';
+
+-- ============================================================
+-- SELESAI! 🎉
+-- ============================================================
+```
+
+---
+
+## 📄 **FILE 36: index.php**
+
+```php
+<?php
+// ============================================
+// INDEX.PHP - ROUTER UTAMA
+// ============================================
+
+session_start();
+
+// Autoload
+spl_autoload_register(function ($class_name) {
+    $paths = [
+        __DIR__ . '/models/' . $class_name . '.php',
+        __DIR__ . '/controllers/' . $class_name . '.php',
+        __DIR__ . '/config/' . $class_name . '.php'
+    ];
+    foreach ($paths as $file) {
+        if (file_exists($file)) {
+            require_once $file;
+            return;
+        }
+    }
+});
+
+// Routing
+$page = isset($_GET['page']) ? $_GET['page'] : 'login';
+$action = isset($_GET['action']) ? $_GET['action'] : 'index';
+
+// Include config untuk helper functions
+require_once __DIR__ . '/config/Database.php';
+
+switch($page) {
+    case 'login':
+        $controller = new AuthController();
+        if ($action == 'proses') {
+            $controller->proses();
+        } else {
+            $controller->index();
+        }
+        break;
+        
+    case 'logout':
+        $controller = new AuthController();
+        $controller->logout();
+        break;
+        
+    case 'dashboard':
+        requireLogin();
+        include __DIR__ . '/views/dashboard.php';
+        break;
+        
+    // ENTRI MEJA (Admin)
+    case 'meja':
+        $controller = new TableController();
+        if ($action == 'form') {
+            $controller->form();
+        } elseif ($action == 'save') {
+            $controller->save();
+        } elseif ($action == 'delete') {
+            $controller->delete();
+        } else {
+            $controller->index();
+        }
+        break;
+        
+    // ENTRI BARANG (Admin & Waiter)
+    case 'barang':
+        $controller = new MenuController();
+        if ($action == 'form') {
+            $controller->form();
+        } elseif ($action == 'save') {
+            $controller->save();
+        } elseif ($action == 'delete') {
+            $controller->delete();
+        } else {
+            $controller->index();
+        }
+        break;
+        
+    // ENTRI ORDER (Waiter)
+    case 'order':
+        $controller = new OrderController();
+        if ($action == 'create') {
+            $controller->create();
+        } elseif ($action == 'add_item') {
+            $controller->addItem();
+        } else {
+            $controller->index();
+        }
+        break;
+        
+    // ENTRI TRANSAKSI (Kasir)
+    case 'transaksi':
+        $controller = new TransactionController();
+        if ($action == 'proses') {
+            $controller->proses();
+        } else {
+            $controller->index();
+        }
+        break;
+        
+    // LAPORAN (Waiter & Kasir)
+    case 'laporan':
+        $controller = new ReportController();
+        if ($action == 'best_selling') {
+            $controller->bestSelling();
+        } else {
+            $controller->index();
+        }
+        break;
+        
+    default:
+        header('Location: index.php?page=login');
+        break;
+}
+?>
+```
+
+---
+
+## ✅ **SELESAI! Semua file sudah lengkap dan terstruktur dengan benar.** 🎉
+
+**Cara menjalankan:**
+1. Import `database.sql` ke MySQL
+2. Letakkan semua file di folder `restoran/` di htdocs (XAMPP) atau public_html
+3. Akses `http://localhost/restoran/` atau `http://localhost/restoran/index.php?page=login`
+4. Login dengan:
+   - Admin: `admin / admin123`
+   - Waiter: `waiter1 / waiter123`
+   - Kasir: `kasir1 / kasir123`
