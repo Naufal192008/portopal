@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Web Application Security Assessment Report - SAMPLE</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  @page {
+    size: A4;
+    margin: 18mm 15mm;
+  }
+
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    color: #1a1a1a;
+    line-height: 1.6;
+    font-size: 10.5pt;
+    background: #fff;
+    padding: 20px;
+  }
+
+  /* === HEADER BANNER === */
+  .header-banner {
+    background: linear-gradient(135deg, #0a1628 0%, #1a3a5c 50%, #0d4f6e 100%);
+    color: #fff;
+    padding: 35px 30px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header-banner::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(0, 200, 255, 0.15) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+
+  .header-banner h1 {
+    font-size: 22pt;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header-banner .subtitle {
+    font-size: 11pt;
+    color: #7ec8e3;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header-banner .badge {
+    display: inline-block;
+    background: #ff4d4f;
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 8pt;
+    font-weight: bold;
+    letter-spacing: 1px;
+    margin-top: 15px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* === WATERMARK === */
+  .watermark {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-45deg);
+    font-size: 120px;
+    font-weight: 900;
+    color: rgba(220, 220, 220, 0.15);
+    z-index: 0;
+    pointer-events: none;
+    letter-spacing: 20px;
+    font-family: Arial, sans-serif;
+  }
+
+  .content {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* === INFO BOX === */
+  .info-box {
+    background: #f7f9fc;
+    border-left: 4px solid #0d4f6e;
+    padding: 18px 20px;
+    border-radius: 4px;
+    margin-bottom: 25px;
+  }
+
+  .info-box table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .info-box td {
+    padding: 4px 0;
+    font-size: 10pt;
+    vertical-align: top;
+  }
+
+  .info-box td:first-child {
+    width: 130px;
+    color: #555;
+    font-weight: 600;
+  }
+
+  .info-box td:last-child {
+    color: #1a1a1a;
+  }
+
+  /* === SECTION HEADERS === */
+  h2 {
+    font-size: 14pt;
+    color: #0a1628;
+    border-bottom: 3px solid #0d4f6e;
+    padding-bottom: 8px;
+    margin: 30px 0 15px 0;
+    font-weight: 700;
+    page-break-after: avoid;
+  }
+
+  h3 {
+    font-size: 12pt;
+    color: #0a1628;
+    margin: 20px 0 10px 0;
+    font-weight: 700;
+    page-break-after: avoid;
+  }
+
+  h4 {
+    font-size: 11pt;
+    color: #0d4f6e;
+    margin: 15px 0 8px 0;
+    font-weight: 700;
+  }
+
+  p { margin-bottom: 10px; text-align: justify; }
+
+  /* === TABLES === */
+  table.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 18px 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+
+  table.data-table th {
+    background: #0a1628;
+    color: #fff;
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 9pt;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  table.data-table td {
+    padding: 9px 8px;
+    border-bottom: 1px solid #e0e5ec;
+    vertical-align: middle;
+  }
+
+  table.data-table tr:nth-child(even) {
+    background: #f9fafb;
+  }
+
+  /* === SEVERITY BADGES === */
+  .badge-sev {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 8.5pt;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  .sev-critical { background: #ff4d4f; color: #fff; }
+  .sev-high { background: #ff922b; color: #fff; }
+  .sev-medium { background: #ffd43b; color: #1a1a1a; }
+  .sev-low { background: #4dabf7; color: #fff; }
+
+  /* === FINDING CARDS === */
+  .finding-card {
+    border: 1px solid #e0e5ec;
+    border-left: 5px solid #0d4f6e;
+    border-radius: 6px;
+    padding: 18px 20px;
+    margin: 18px 0;
+    background: #fff;
+    page-break-inside: avoid;
+  }
+
+  .finding-card.critical { border-left-color: #ff4d4f; }
+  .finding-card.high { border-left-color: #ff922b; }
+  .finding-card.medium { border-left-color: #ffd43b; }
+  .finding-card.low { border-left-color: #4dabf7; }
+
+  .finding-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #d0d7e0;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .finding-title {
+    font-size: 12pt;
+    font-weight: 700;
+    color: #0a1628;
+  }
+
+  .finding-meta {
+    font-size: 9.5pt;
+    color: #555;
+    margin-bottom: 10px;
+    line-height: 1.8;
+  }
+
+  .finding-meta strong {
+    color: #0a1628;
+    display: inline-block;
+    min-width: 90px;
+  }
+
+  /* === CODE BLOCKS === */
+  pre {
+    background: #0a1628;
+    color: #7ec8e3;
+    padding: 14px 16px;
+    border-radius: 5px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 9pt;
+    line-height: 1.5;
+    overflow-x: auto;
+    margin: 10px 0;
+    page-break-inside: avoid;
+  }
+
+  code {
+    background: #eef2f7;
+    color: #c92a2a;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Consolas', monospace;
+    font-size: 9pt;
+  }
+
+  /* === REMEDIATION LIST === */
+  .remediation {
+    background: #f0f9f4;
+    border-left: 4px solid #2f9e44;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin-top: 12px;
+  }
+
+  .remediation h4 {
+    color: #2f9e44;
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 10pt;
+  }
+
+  .remediation ol {
+    margin-left: 20px;
+    font-size: 10pt;
+  }
+
+  .remediation li {
+    margin-bottom: 5px;
+  }
+
+  /* === EXECUTIVE SUMMARY BOX === */
+  .exec-summary {
+    background: linear-gradient(135deg, #fff5f5 0%, #fff0e6 100%);
+    border: 1px solid #ffd0d0;
+    border-radius: 6px;
+    padding: 20px;
+    margin: 15px 0;
+  }
+
+  .exec-summary .count-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 15px 0;
+  }
+
+  .count-box {
+    text-align: center;
+    padding: 12px 8px;
+    border-radius: 5px;
+    color: #fff;
+  }
+
+  .count-box .num {
+    font-size: 22pt;
+    font-weight: 900;
+    display: block;
+    line-height: 1;
+  }
+
+  .count-box .label {
+    font-size: 8pt;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 5px;
+    display: block;
+  }
+
+  .count-critical { background: #ff4d4f; }
+  .count-high { background: #ff922b; }
+  .count-medium { background: #ffd43b; color: #1a1a1a; }
+  .count-low { background: #4dabf7; }
+
+  /* === DISCLAIMER BOX === */
+  .disclaimer {
+    background: #fff9db;
+    border: 1px solid #ffd43b;
+    border-left: 4px solid #f59f00;
+    padding: 14px 18px;
+    border-radius: 4px;
+    margin: 15px 0;
+    font-size: 9.5pt;
+  }
+
+  .disclaimer strong {
+    color: #e67700;
+  }
+
+  /* === SIGNATURE === */
+  .signature {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 2px solid #0a1628;
+    page-break-inside: avoid;
+  }
+
+  .signature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 20px;
+  }
+
+  .sig-box {
+    padding: 15px;
+    background: #f7f9fc;
+    border-radius: 5px;
+  }
+
+  .sig-box .name {
+    font-size: 12pt;
+    font-weight: 700;
+    color: #0a1628;
+    margin-bottom: 4px;
+  }
+
+  .sig-box .role {
+    font-size: 9.5pt;
+    color: #555;
+    margin-bottom: 8px;
+  }
+
+  .sig-box .contact {
+    font-size: 9pt;
+    color: #0d4f6e;
+  }
+
+  /* === FOOTER === */
+  .footer {
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 1px solid #d0d7e0;
+    text-align: center;
+    font-size: 8.5pt;
+    color: #888;
+  }
+
+  /* === PRINT === */
+  @media print {
+    body { padding: 0; }
+    .no-print { display: none; }
+    .watermark {
+      position: fixed;
+      color: rgba(200, 200, 200, 0.2) !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .header-banner,
+    .count-box,
+    .badge-sev,
+    .finding-card,
+    .exec-summary,
+    .remediation,
+    .disclaimer {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    h2 { page-break-after: avoid; }
+    .finding-card { page-break-inside: avoid; }
+  }
+
+  /* === PAGE BREAK === */
+  .page-break { page-break-before: always; }
+</style>
+</head>
+<body>
+
+<div class="watermark">SAMPLE</div>
+
+<div class="content">
+
+  <!-- HEADER -->
+  <div class="header-banner">
+    <h1>WEB APPLICATION<br>SECURITY ASSESSMENT REPORT</h1>
+    <div class="subtitle">Portfolio Sample Report</div>
+    <span class="badge">CONFIDENTIAL — FOR DEMONSTRATION ONLY</span>
+  </div>
+
+  <!-- INFO BOX -->
+  <div class="info-box">
+    <table>
+      <tr><td>Target</td><td>: testphp.vulnweb.com (Public Practice Target)</td></tr>
+      <tr><td>Client</td><td>: [SAMPLE] — For Portfolio Demonstration</td></tr>
+      <tr><td>Prepared by</td><td>: Naufal Murtadho — CODESHIELD Cyber Security Services</td></tr>
+      <tr><td>Date</td><td>: 20 February 2024</td></tr>
+      <tr><td>Methodology</td><td>: OWASP Top 10 2021, NIST SP 800-115, PTES</td></tr>
+      <tr><td>Tools Used</td><td>: Burp Suite Professional v2023.12.1, OWASP ZAP, Nikto, SQLmap</td></tr>
+    </table>
+  </div>
+
+  <div class="disclaimer">
+    <strong>⚠️ DISCLAIMER:</strong> This is a <strong>SAMPLE report</strong> created using a public practice target (<code>testphp.vulnweb.com</code>), provided by Acunetix for security education. No real client data is included in this document. This report is for portfolio demonstration purposes only.
+  </div>
+
+  <!-- 1. EXECUTIVE SUMMARY -->
+  <h2>1. Executive Summary</h2>
+
+  <div class="exec-summary">
+    <p>A comprehensive <strong>grey-box security assessment</strong> was performed on the target web application following <strong>OWASP Top 10 2021</strong> guidelines. The assessment identified <strong>5 vulnerabilities</strong> across multiple severity levels:</p>
+
+    <div class="count-grid">
+      <div class="count-box count-critical">
+        <span class="num">1</span>
+        <span class="label">Critical</span>
+      </div>
+      <div class="count-box count-high">
+        <span class="num">2</span>
+        <span class="label">High</span>
+      </div>
+      <div class="count-box count-medium">
+        <span class="num">1</span>
+        <span class="label">Medium</span>
+      </div>
+      <div class="count-box count-low">
+        <span class="num">1</span>
+        <span class="label">Low</span>
+      </div>
+    </div>
+
+    <p>The most severe finding is a <strong>SQL Injection vulnerability</strong> in the artist listing endpoint, allowing unauthorized database access and complete system compromise. <strong>Immediate remediation (within 24 hours)</strong> is strongly recommended.</p>
+  </div>
+
+  <!-- 2. SCOPE -->
+  <h2>2. Scope &amp; Methodology</h2>
+
+  <h3>2.1 Scope</h3>
+  <div class="info-box">
+    <table>
+      <tr><td>Target</td><td>: testphp.vulnweb.com</td></tr>
+      <tr><td>Test Type</td><td>: Grey-box Web Application Testing</td></tr>
+      <tr><td>Period</td><td>: 15 – 19 February 2024</td></tr>
+      <tr><td>Out of Scope</td><td>: DoS/DDoS, Social Engineering, Physical Infrastructure</td></tr>
+    </table>
+  </div>
+
+  <h3>2.2 Standards Referenced</h3>
+  <ul style="margin-left: 25px; margin-bottom: 15px;">
+    <li><strong>OWASP Top 10 — 2021</strong>: Industry-standard web vulnerability classification</li>
+    <li><strong>NIST SP 800-115</strong>: Technical Guide to Information Security Testing</li>
+    <li><strong>PTES</strong>: Penetration Testing Execution Standard</li>
+  </ul>
+
+  <!-- 3. FINDINGS SUMMARY -->
+  <h2>3. Findings Summary</h2>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th style="width: 6%;">#</th>
+        <th style="width: 38%;">Vulnerability</th>
+        <th style="width: 20%;">OWASP 2021</th>
+        <th style="width: 16%;">Severity</th>
+        <th style="width: 10%;">CVSS</th>
+        <th style="width: 10%;">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>SQL Injection (Auth Bypass)</td>
+        <td>A03:2021 – Injection</td>
+        <td><span class="badge-sev sev-critical">CRITICAL</span></td>
+        <td>9.8</td>
+        <td>Open</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Stored Cross-Site Scripting</td>
+        <td>A03:2021 – Injection</td>
+        <td><span class="badge-sev sev-high">HIGH</span></td>
+        <td>7.5</td>
+        <td>Open</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>Missing CSRF Protection</td>
+        <td>A01:2021 – Broken Access</td>
+        <td><span class="badge-sev sev-high">HIGH</span></td>
+        <td>7.1</td>
+        <td>Open</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>Outdated JavaScript Libraries</td>
+        <td>A06:2021 – Vulnerable Components</td>
+        <td><span class="badge-sev sev-medium">MEDIUM</span></td>
+        <td>5.3</td>
+        <td>Open</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>Missing HTTP Security Headers</td>
+        <td>A05:2021 – Misconfiguration</td>
+        <td><span class="badge-sev sev-low">LOW</span></td>
+        <td>3.1</td>
+        <td>Open</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 4. DETAILED FINDINGS -->
+  <div class="page-break"></div>
+  <h2>4. Detailed Findings</h2>
+
+  <!-- Finding 1 -->
+  <div class="finding-card critical">
+    <div class="finding-header">
+      <div class="finding-title">Finding #1 — SQL Injection (Authentication Bypass)</div>
+      <span class="badge-sev sev-critical">CRITICAL</span>
+    </div>
+
+    <div class="finding-meta">
+      <strong>CVSS:</strong> 9.8 — CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H<br>
+      <strong>CWE:</strong> CWE-89 (SQL Injection)<br>
+      <strong>OWASP:</strong> A03:2021 – Injection<br>
+      <strong>Endpoint:</strong> GET /artists.php<br>
+      <strong>Parameter:</strong> artist<br>
+      <strong>Server:</strong> Apache/2.4.41 (Ubuntu)
+    </div>
+
+    <h4>Description</h4>
+    <p>User input on the <code>artist</code> parameter is not sanitized before being concatenated into SQL queries. This allows attackers to inject SQL control characters to bypass authentication and gain unauthorized access to the backend database.</p>
+
+    <h4>Proof of Concept</h4>
+    <pre>GET /artists.php?artist=1' HTTP/1.1
+Host: testphp.vulnweb.com
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+
+Result: Application returned HTTP 200 OK with the full
+artist list from the database — bypassing the query filter.</pre>
+    <p><strong>Result:</strong> Application returned <code>HTTP 200 OK</code> with full database records — bypassing input sanitization entirely.</p>
+
+    <div class="remediation">
+      <h4>✓ Remediation</h4>
+      <ol>
+        <li>Use <strong>prepared statements</strong> / parameterized queries for all database interactions.</li>
+        <li>Adopt an <strong>ORM</strong> (Eloquent, Prisma, Sequelize) with built-in sanitization.</li>
+        <li>Apply the <strong>principle of least privilege</strong> to database service accounts.</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Finding 2 -->
+  <div class="finding-card high">
+    <div class="finding-header">
+      <div class="finding-title">Finding #2 — Stored Cross-Site Scripting (XSS)</div>
+      <span class="badge-sev sev-high">HIGH</span>
+    </div>
+
+    <div class="finding-meta">
+      <strong>CVSS:</strong> 7.5<br>
+      <strong>CWE:</strong> CWE-79<br>
+      <strong>OWASP:</strong> A03:2021 – Injection<br>
+      <strong>Endpoint:</strong> POST /profile/comments<br>
+      <strong>Parameter:</strong> comment_body
+    </div>
+
+    <h4>Description</h4>
+    <p>Comment input is stored in the database without HTML encoding. When other users view the profile, the malicious script executes in their browser, potentially stealing session cookies and hijacking user accounts.</p>
+
+    <h4>Proof of Concept</h4>
+    <pre>Payload: &lt;script&gt;alert('XSS-Demo')&lt;/script&gt;
+Result : Script executed automatically in visitors' browsers.</pre>
+
+    <div class="remediation">
+      <h4>✓ Remediation</h4>
+      <ol>
+        <li>Apply <strong>context-aware HTML entity encoding</strong> on all user-supplied output.</li>
+        <li>Enable a strict <strong>Content Security Policy (CSP)</strong>.</li>
+        <li>Sanitize input using libraries like <strong>DOMPurify</strong>.</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Finding 3 -->
+  <div class="finding-card high">
+    <div class="finding-header">
+      <div class="finding-title">Finding #3 — Missing CSRF Token Protection</div>
+      <span class="badge-sev sev-high">HIGH</span>
+    </div>
+
+    <div class="finding-meta">
+      <strong>CVSS:</strong> 7.1<br>
+      <strong>CWE:</strong> CWE-352<br>
+      <strong>OWASP:</strong> A01:2021 – Broken Access Control<br>
+      <strong>Endpoint:</strong> POST /api/v1/profile/update
+    </div>
+
+    <h4>Description</h4>
+    <p>State-changing requests lack CSRF tokens, allowing attackers to forge requests on behalf of authenticated users via malicious third-party websites.</p>
+
+    <h4>Proof of Concept</h4>
+    <pre>Crafted HTML form auto-submitted from attacker's site
+→ Successfully updated victim's profile without consent.</pre>
+
+    <div class="remediation">
+      <h4>✓ Remediation</h4>
+      <ol>
+        <li>Implement <strong>anti-CSRF tokens</strong> (synchronizer token pattern).</li>
+        <li>Use <code>SameSite=Strict</code> cookies for session tokens.</li>
+        <li>Validate <code>Origin</code> and <code>Referer</code> headers on state-changing requests.</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Finding 4 -->
+  <div class="finding-card medium">
+    <div class="finding-header">
+      <div class="finding-title">Finding #4 — Outdated JavaScript Libraries</div>
+      <span class="badge-sev sev-medium">MEDIUM</span>
+    </div>
+
+    <div class="finding-meta">
+      <strong>CVSS:</strong> 5.3<br>
+      <strong>CWE:</strong> CWE-1104<br>
+      <strong>OWASP:</strong> A06:2021 – Vulnerable &amp; Outdated Components
+    </div>
+
+    <h4>Description</h4>
+    <p>Frontend uses <strong>jQuery v1.12.4</strong> (released 2016), which has multiple known CVEs including <code>CVE-2020-11022</code> and <code>CVE-2020-11023</code>, allowing XSS via HTML manipulation.</p>
+
+    <div class="remediation">
+      <h4>✓ Remediation</h4>
+      <ol>
+        <li>Upgrade to <strong>jQuery 3.7+</strong> or migrate to vanilla JavaScript.</li>
+        <li>Use <strong>Snyk</strong> or <strong>Dependabot</strong> for automated CVE monitoring.</li>
+        <li>Remove unused dependencies to reduce attack surface.</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Finding 5 -->
+  <div class="finding-card low">
+    <div class="finding-header">
+      <div class="finding-title">Finding #5 — Missing HTTP Security Headers</div>
+      <span class="badge-sev sev-low">LOW</span>
+    </div>
+
+    <div class="finding-meta">
+      <strong>CVSS:</strong> 3.1<br>
+      <strong>OWASP:</strong> A05:2021 – Security Misconfiguration
+    </div>
+
+    <h4>Description</h4>
+    <p>Response headers lack: <code>Content-Security-Policy</code>, <code>X-Frame-Options</code>, <code>X-Content-Type-Options</code>, <code>HSTS</code>, and <code>Referrer-Policy</code>. This exposes the application to clickjacking, MIME-sniffing, and protocol downgrade attacks.</p>
+
+    <div class="remediation">
+      <h4>✓ Remediation</h4>
+      <ol>
+        <li>Add security headers on web server (Nginx/Apache).</li>
+        <li>Enable <strong>HSTS</strong> with minimum 6-month max-age.</li>
+        <li>Set <strong>CSP</strong> with restrictive <code>default-src</code>.</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- 5. ROADMAP -->
+  <div class="page-break"></div>
+  <h2>5. Remediation Roadmap</h2>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th style="width: 12%;">Priority</th>
+        <th style="width: 50%;">Finding</th>
+        <th style="width: 20%;">Deadline</th>
+        <th style="width: 18%;">Responsible</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>P1</strong></td>
+        <td>SQL Injection (Auth Bypass)</td>
+        <td><strong>24 hours</strong></td>
+        <td>Backend Team</td>
+      </tr>
+      <tr>
+        <td><strong>P2</strong></td>
+        <td>Stored XSS + Missing CSRF</td>
+        <td>7 days</td>
+        <td>Frontend &amp; API Team</td>
+      </tr>
+      <tr>
+        <td><strong>P3</strong></td>
+        <td>Outdated JS Libraries</td>
+        <td>14 days</td>
+        <td>DevOps / Frontend</td>
+      </tr>
+      <tr>
+        <td><strong>P4</strong></td>
+        <td>Missing Security Headers</td>
+        <td>30 days</td>
+        <td>Infrastructure Team</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 6. APPENDIX -->
+  <h2>6. Appendix &amp; Disclaimer</h2>
+
+  <h3>6.1 Tools Used</h3>
+  <ul style="margin-left: 25px; margin-bottom: 15px;">
+    <li>Burp Suite Professional v2023.12.1</li>
+    <li>OWASP ZAP</li>
+    <li>Nikto</li>
+    <li>SQLmap</li>
+  </ul>
+
+  <h3>6.2 Legal Disclaimer</h3>
+  <div class="disclaimer">
+    This is a <strong>SAMPLE report</strong> for portfolio demonstration. Testing was performed <strong>ONLY on a public practice target</strong> (<code>testphp.vulnweb.com</code>) provided by Acunetix for security education. <strong>No unauthorized testing was conducted on any real system.</strong> This document is confidential and for illustrative purposes only.
+  </div>
+
+  <!-- SIGNATURE -->
+  <div class="signature">
+    <div class="signature-grid">
+      <div class="sig-box">
+        <div class="name">Naufal Murtadho</div>
+        <div class="role">Founder &amp; Lead Security Consultant</div>
+        <div class="contact">
+          CODESHIELD Cyber Security Services<br>
+          Email: nmurtadho1905@gmail.com
+        </div>
+      </div>
+      <div class="sig-box">
+        <div class="name">Date</div>
+        <div class="role">Signed &amp; Verified</div>
+        <div class="contact">
+          20 February 2024<br>
+          Report ID: CS-SAMPLE-2024-001
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    CODESHIELD Cyber Security Services &nbsp;|&nbsp; Confidential Sample Report
+  </div>
+
+</div>
+
+</body>
+</html>
