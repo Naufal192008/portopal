@@ -1,26 +1,36 @@
-# 🚀 FULL LENGKAP: SISTEM LELANG ONLINE + FR-IA.02 + LAPORAN USK
+# 🚀 FULL LENGKAP FINAL — SISTEM LELANG ONLINE (REGISTER → LOGIN, TANPA DUMMY)
 
-Aplikasi **Sistem Lelang Online** sesuai PDM dari FR.IA.02, pakai **PHP Native + MySQL** (mudah, tidak perlu install Java/C#). Lengkap dengan stored procedure, laporan, dan dokumentasi.
+Semua yang kamu butuhkan dari **nol sampai selesai**. Ikuti urut dari atas ke bawah. Tinggal copy-paste.
 
 ---
 
 # 📦 BAGIAN 1: PERINTAH CMD
 
-## 🎯 LANGKAH 1.1 — Buat Folder & Struktur Project
+## 🎯 LANGKAH 1.1 — Buat Folder Project
+
+Buka **CMD** (XAMPP harus running), copy-paste:
 
 ```cmd
 cd /d C:\xampp\htdocs && rmdir /s /q sistem-lelang 2>nul & mkdir sistem-lelang && cd sistem-lelang && mkdir config includes pages assets assets\css assets\js database laporan && echo SELESAI LANGKAH 1
 ```
 
-## 🎯 LANGKAH 1.2 — Buat Database MySQL
+## 🎯 LANGKAH 1.2 — Buat Database Kosong
 
 ```cmd
 mysql -u root -e "DROP DATABASE IF EXISTS sistem_lelang; CREATE DATABASE sistem_lelang;" && echo SELESAI LANGKAH 2
 ```
 
+## 🎯 LANGKAH 1.3 — Import Schema Database
+
+```cmd
+cd /d C:\xampp\htdocs\sistem-lelang && mysql -u root sistem_lelang < database\sistem_lelang.sql && echo SELESAI LANGKAH 3
+```
+
+> ⚠️ Jalankan LANGKAH 1.3 **setelah** kamu buat file `database/sistem_lelang.sql` di bawah.
+
 ---
 
-# 📝 BAGIAN 2: DATABASE & STORED PROCEDURE
+# 📝 BAGIAN 2: DATABASE
 
 ## 📄 File 1: `database/sistem_lelang.sql`
 
@@ -29,7 +39,8 @@ mysql -u root -e "DROP DATABASE IF EXISTS sistem_lelang; CREATE DATABASE sistem_
 ```sql
 -- ============================================================
 -- DATABASE: sistem_lelang
--- Aplikasi Lelang Online - FR.IA.02 TPD
+-- Aplikasi Lelang Online - TANPA DATA DUMMY
+-- Flow: Register → Login → Pakai Aplikasi
 -- ============================================================
 
 USE sistem_lelang;
@@ -49,25 +60,28 @@ CREATE TABLE tb_level (
     level ENUM('administrator', 'petugas') NOT NULL
 );
 
+-- Level (hanya master data, bukan user)
+INSERT INTO tb_level (level) VALUES ('administrator'), ('petugas');
+
 -- ============================================================
--- 2. TABEL PETUGAS
+-- 2. TABEL PETUGAS (KOSONG - user register sendiri)
 -- ============================================================
 CREATE TABLE tb_petugas (
     id_petugas INT AUTO_INCREMENT PRIMARY KEY,
-    nama_petugas VARCHAR(25) NOT NULL,
-    username VARCHAR(25) NOT NULL UNIQUE,
+    nama_petugas VARCHAR(50) NOT NULL,
+    username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     id_level INT,
     FOREIGN KEY (id_level) REFERENCES tb_level(id_level) ON DELETE SET NULL
 );
 
 -- ============================================================
--- 3. TABEL MASYARAKAT
+-- 3. TABEL MASYARAKAT (KOSONG - user register sendiri)
 -- ============================================================
 CREATE TABLE tb_masyarakat (
     id_user INT AUTO_INCREMENT PRIMARY KEY,
-    nama_lengkap VARCHAR(25) NOT NULL,
-    username VARCHAR(25) NOT NULL UNIQUE,
+    nama_lengkap VARCHAR(50) NOT NULL,
+    username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     telp VARCHAR(25)
 );
@@ -77,9 +91,9 @@ CREATE TABLE tb_masyarakat (
 -- ============================================================
 CREATE TABLE tb_barang (
     id_barang INT AUTO_INCREMENT PRIMARY KEY,
-    nama_barang VARCHAR(25) NOT NULL,
+    nama_barang VARCHAR(100) NOT NULL,
     harga_awal INT NOT NULL,
-    deskripsi_barang VARCHAR(100),
+    deskripsi_barang VARCHAR(255),
     tgl DATE
 );
 
@@ -114,64 +128,75 @@ CREATE TABLE tb_history_lelang (
 );
 
 -- ============================================================
--- DATA AWAL (SEEDER)
--- ============================================================
-
--- Level
-INSERT INTO tb_level (level) VALUES ('administrator'), ('petugas');
-
--- Petugas (password: admin123, petugas123)
--- Hash pakai password_hash() PHP, default password di bawah
-INSERT INTO tb_petugas (nama_petugas, username, password, id_level) VALUES
-('Administrator', 'admin', '$2y$10$eImiTXuWVxfM37uY4JANjQ==eIWH7CbvBk8eLZXzZ0P0eIWH7CbvBk8eLZXzZ0P0', 1),
-('Petugas Lelang', 'petugas1', '$2y$10$eImiTXuWVxfM37uY4JANjQ==eIWH7CbvBk8eLZXzZ0P0eIWH7CbvBk8eLZXzZ0P0', 2);
-
--- Masyarakat
-INSERT INTO tb_masyarakat (nama_lengkap, username, password, telp) VALUES
-('Budi Santoso', 'budi', '$2y$10$eImiTXuWVxfM37uY4JANjQ==eIWH7CbvBk8eLZXzZ0P0eIWH7CbvBk8eLZXzZ0P0', '081234567890'),
-('Ani Wijaya', 'ani', '$2y$10$eImiTXuWVxfM37uY4JANjQ==eIWH7CbvBk8eLZXzZ0P0eIWH7CbvBk8eLZXzZ0P0', '089876543210');
-
--- Barang
-INSERT INTO tb_barang (nama_barang, harga_awal, deskripsi_barang, tgl) VALUES
-('Sepeda Motor', 5000000, 'Honda Beat 2020', CURDATE()),
-('Laptop Asus', 3000000, 'Asus Vivobook 2019', CURDATE()),
-('Handphone', 1500000, 'Samsung A50', CURDATE());
-
--- ============================================================
 -- STORED PROCEDURE
 -- ============================================================
 
 DELIMITER //
 
--- SP 1: Buka Lelang
+-- SP 1: Register Petugas
+DROP PROCEDURE IF EXISTS sp_register_petugas //
+CREATE PROCEDURE sp_register_petugas(
+    IN p_nama VARCHAR(50),
+    IN p_username VARCHAR(50),
+    IN p_password VARCHAR(255),
+    IN p_id_level INT
+)
+BEGIN
+    DECLARE v_exists INT;
+    SELECT COUNT(*) INTO v_exists FROM tb_petugas WHERE username = p_username;
+    IF v_exists > 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Username sudah terdaftar!';
+    ELSE
+        INSERT INTO tb_petugas (nama_petugas, username, password, id_level)
+        VALUES (p_nama, p_username, p_password, p_id_level);
+    END IF;
+END //
+
+-- SP 2: Register Masyarakat
+DROP PROCEDURE IF EXISTS sp_register_masyarakat //
+CREATE PROCEDURE sp_register_masyarakat(
+    IN p_nama VARCHAR(50),
+    IN p_username VARCHAR(50),
+    IN p_password VARCHAR(255),
+    IN p_telp VARCHAR(25)
+)
+BEGIN
+    DECLARE v_exists INT;
+    SELECT COUNT(*) INTO v_exists FROM tb_masyarakat WHERE username = p_username;
+    IF v_exists > 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Username sudah terdaftar!';
+    ELSE
+        INSERT INTO tb_masyarakat (nama_lengkap, username, password, telp)
+        VALUES (p_nama, p_username, p_password, p_telp);
+    END IF;
+END //
+
+-- SP 3: Buka Lelang
 DROP PROCEDURE IF EXISTS sp_buka_lelang //
 CREATE PROCEDURE sp_buka_lelang(IN p_id_lelang INT)
 BEGIN
     UPDATE tb_lelang SET status = 'dibuka' WHERE id_lelang = p_id_lelang;
 END //
 
--- SP 2: Tutup Lelang
+-- SP 4: Tutup Lelang
 DROP PROCEDURE IF EXISTS sp_tutup_lelang //
 CREATE PROCEDURE sp_tutup_lelang(IN p_id_lelang INT)
 BEGIN
     DECLARE v_harga_akhir INT;
     DECLARE v_id_user INT;
-    
-    -- Ambil penawaran tertinggi
-    SELECT MAX(penawaran_harga), id_user INTO v_harga_akhir, v_id_user
-    FROM tb_history_lelang 
+
+    SELECT id_user, penawaran_harga INTO v_id_user, v_harga_akhir
+    FROM tb_history_lelang
     WHERE id_lelang = p_id_lelang
-    GROUP BY id_user
     ORDER BY penawaran_harga DESC
     LIMIT 1;
-    
-    -- Update lelang
-    UPDATE tb_lelang 
+
+    UPDATE tb_lelang
     SET status = 'ditutup', harga_akhir = v_harga_akhir, id_user = v_id_user
     WHERE id_lelang = p_id_lelang;
 END //
 
--- SP 3: Tambah Penawaran
+-- SP 5: Tambah Penawaran
 DROP PROCEDURE IF EXISTS sp_tambah_penawaran //
 CREATE PROCEDURE sp_tambah_penawaran(
     IN p_id_lelang INT,
@@ -182,31 +207,37 @@ CREATE PROCEDURE sp_tambah_penawaran(
 BEGIN
     DECLARE v_harga_tertinggi INT;
     DECLARE v_status VARCHAR(10);
-    
-    -- Cek status lelang
+    DECLARE v_harga_awal INT;
+
     SELECT status INTO v_status FROM tb_lelang WHERE id_lelang = p_id_lelang;
-    
     IF v_status = 'ditutup' THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Lelang sudah ditutup!';
     END IF;
-    
-    -- Cek penawaran tertinggi saat ini
+
+    SELECT harga_awal INTO v_harga_awal FROM tb_barang WHERE id_barang = p_id_barang;
+
     SELECT MAX(penawaran_harga) INTO v_harga_tertinggi
     FROM tb_history_lelang WHERE id_lelang = p_id_lelang;
-    
-    IF v_harga_tertinggi IS NULL OR p_penawaran > v_harga_tertinggi THEN
-        INSERT INTO tb_history_lelang (id_lelang, id_barang, id_user, penawaran_harga)
-        VALUES (p_id_lelang, p_id_barang, p_id_user, p_penawaran);
+
+    IF v_harga_tertinggi IS NULL THEN
+        IF p_penawaran <= v_harga_awal THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Penawaran harus lebih tinggi dari harga awal!';
+        END IF;
     ELSE
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Penawaran harus lebih tinggi dari sebelumnya!';
+        IF p_penawaran <= v_harga_tertinggi THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Penawaran harus lebih tinggi dari penawaran sebelumnya!';
+        END IF;
     END IF;
+
+    INSERT INTO tb_history_lelang (id_lelang, id_barang, id_user, penawaran_harga)
+    VALUES (p_id_lelang, p_id_barang, p_id_user, p_penawaran);
 END //
 
--- SP 4: Laporan Lelang
+-- SP 6: Laporan Lelang
 DROP PROCEDURE IF EXISTS sp_laporan_lelang //
 CREATE PROCEDURE sp_laporan_lelang(IN p_start DATE, IN p_end DATE)
 BEGIN
-    SELECT 
+    SELECT
         l.id_lelang,
         b.nama_barang,
         b.harga_awal,
@@ -231,67 +262,19 @@ DELIMITER ;
 SELECT '=== LEVEL ===' AS '';
 SELECT * FROM tb_level;
 
-SELECT '=== PETUGAS ===' AS '';
-SELECT id_petugas, nama_petugas, username, id_level FROM tb_petugas;
-
-SELECT '=== MASYARAKAT ===' AS '';
-SELECT id_user, nama_lengkap, username, telp FROM tb_masyarakat;
-
-SELECT '=== BARANG ===' AS '';
-SELECT * FROM tb_barang;
+SELECT '=== USER MASIH KOSONG ===' AS '';
+SELECT 'Petugas: ' AS info, COUNT(*) AS jumlah FROM tb_petugas;
+SELECT 'Masyarakat: ' AS info, COUNT(*) AS jumlah FROM tb_masyarakat;
 
 SELECT '=== STORED PROCEDURES ===' AS '';
 SHOW PROCEDURE STATUS WHERE Db = 'sistem_lelang';
 ```
 
-**Jalankan:** Buka phpMyAdmin → Import file ini, atau lewat CMD:
-```cmd
-mysql -u root sistem_lelang < C:\xampp\htdocs\sistem-lelang\database\sistem_lelang.sql
-```
-
 ---
 
-## 📄 File 2: `database/update_password.sql`
+# 📝 BAGIAN 3: KONFIGURASI
 
-**Karena hash password di atas dummy, update dengan hash asli:**
-
-**Lokasi:** `C:\xampp\htdocs\sistem-lelang\database\update_password.sql`
-
-```sql
--- Update password petugas dengan hash asli
--- admin123 → hash: $2y$10$...
--- petugas123 → hash: $2y$10$...
--- budi123, ani123 untuk masyarakat
-
-UPDATE tb_petugas SET password = '$2y$10$YourRealHashHere' WHERE username = 'admin';
-UPDATE tb_petugas SET password = '$2y$10$YourRealHashHere' WHERE username = 'petugas1';
-UPDATE tb_masyarakat SET password = '$2y$10$YourRealHashHere' WHERE username = 'budi';
-UPDATE tb_masyarakat SET password = '$2y$10$YourRealHashHere' WHERE username = 'ani';
-```
-
-**Atau lebih mudah:** Buat file `database/generate_hash.php`:
-
-```php
-<?php
-// generate_hash.php - Jalankan sekali untuk generate hash
-echo "admin123: " . password_hash('admin123', PASSWORD_DEFAULT) . "\n";
-echo "petugas123: " . password_hash('petugas123', PASSWORD_DEFAULT) . "\n";
-echo "budi123: " . password_hash('budi123', PASSWORD_DEFAULT) . "\n";
-echo "ani123: " . password_hash('ani123', PASSWORD_DEFAULT) . "\n";
-```
-
-Jalankan:
-```cmd
-php C:\xampp\htdocs\sistem-lelang\database\generate_hash.php
-```
-
-Copy hash-nya → ganti di SQL → jalankan ulang seed.
-
----
-
-# 📝 BAGIAN 3: KONFIGURASI & INCLUDES
-
-## 📄 File 3: `config/database.php`
+## 📄 File 2: `config/database.php`
 
 ```php
 <?php
@@ -317,7 +300,7 @@ try {
 
 ---
 
-## 📄 File 4: `includes/session.php`
+## 📄 File 3: `includes/session.php`
 
 ```php
 <?php
@@ -327,35 +310,30 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Cek login
 function isLoggedIn() {
     return isset($_SESSION['user_id']) && isset($_SESSION['role']);
 }
 
-// Cek role
 function hasRole($role) {
     return isset($_SESSION['role']) && $_SESSION['role'] === $role;
 }
 
-// Redirect kalau belum login
 function requireLogin() {
     if (!isLoggedIn()) {
-        header('Location: ../login.php');
+        header('Location: ' . ($_SERVER['PHP_SELF'] != '/login.php' ? '../login.php' : 'login.php'));
         exit;
     }
 }
 
-// Redirect kalau bukan role tertentu
 function requireRole($roles) {
     requireLogin();
     $roles = is_array($roles) ? $roles : [$roles];
     if (!in_array($_SESSION['role'], $roles)) {
-        header('Location: ../index.php?error=akses_ditolak');
+        header('Location: ' . (strpos($_SERVER['PHP_SELF'], 'pages/') !== false ? '../' : '') . 'index.php?error=akses_ditolak');
         exit;
     }
 }
 
-// Get user data
 function currentUser() {
     return [
         'id' => $_SESSION['user_id'] ?? null,
@@ -365,12 +343,10 @@ function currentUser() {
     ];
 }
 
-// Set flash message
 function setFlash($type, $message) {
     $_SESSION['flash'] = ['type' => $type, 'message' => $message];
 }
 
-// Get flash message
 function getFlash() {
     if (isset($_SESSION['flash'])) {
         $flash = $_SESSION['flash'];
@@ -383,7 +359,7 @@ function getFlash() {
 
 ---
 
-## 📄 File 5: `includes/header.php`
+## 📄 File 4: `includes/header.php`
 
 ```php
 <?php
@@ -407,18 +383,18 @@ require_once __DIR__ . '/session.php';
     </div>
     <div class="navbar-menu">
         <a href="<?= $baseUrl ?? '' ?>index.php">🏠 Dashboard</a>
-        
+
         <?php if (hasRole('administrator') || hasRole('petugas')): ?>
             <a href="<?= $baseUrl ?? '' ?>pages/barang.php">📦 Barang</a>
             <a href="<?= $baseUrl ?? '' ?>pages/lelang.php">🔨 Lelang</a>
             <a href="<?= $baseUrl ?? '' ?>pages/laporan.php">📊 Laporan</a>
         <?php endif; ?>
-        
+
         <?php if (hasRole('masyarakat')): ?>
             <a href="<?= $baseUrl ?? '' ?>pages/lelang_masyarakat.php">🔨 Lelang Aktif</a>
             <a href="<?= $baseUrl ?? '' ?>pages/history_saya.php">📜 Riwayat Saya</a>
         <?php endif; ?>
-        
+
         <span class="navbar-user">
             👤 <?= htmlspecialchars($_SESSION['nama']) ?>
             <span class="badge"><?= $_SESSION['role'] ?></span>
@@ -442,7 +418,7 @@ if ($flash):
 
 ---
 
-## 📄 File 6: `includes/footer.php`
+## 📄 File 5: `includes/footer.php`
 
 ```php
 </main>
@@ -458,118 +434,132 @@ if ($flash):
 
 ---
 
-# 📝 BAGIAN 4: HALAMAN UTAMA
+# 📝 BAGIAN 4: REGISTER & LOGIN
 
-## 📄 File 7: `index.php`
+## 📄 File 6: `register.php` ⭐
 
 ```php
 <?php
-require_once __DIR__ . '/includes/session.php';
 require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/includes/session.php';
 
-if (!isLoggedIn()) {
-    header('Location: login.php');
+if (isLoggedIn()) {
+    header('Location: index.php');
     exit;
 }
 
-$pageTitle = 'Dashboard';
-$baseUrl = '';
-require_once __DIR__ . '/includes/header.php';
+$error = '';
+$success = '';
 
-$role = $_SESSION['role'];
-$nama = $_SESSION['nama'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $role = $_POST['role'] ?? '';
+    $nama = trim($_POST['nama'] ?? '');
+    $username = trim($_POST['username'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $confirm = $_POST['confirm_password'] ?? '';
+    $telp = trim($_POST['telp'] ?? '');
 
-// Statistik
-$totalBarang = $pdo->query("SELECT COUNT(*) FROM tb_barang")->fetchColumn();
-$totalLelang = $pdo->query("SELECT COUNT(*) FROM tb_lelang")->fetchColumn();
-$totalLelangAktif = $pdo->query("SELECT COUNT(*) FROM tb_lelang WHERE status='dibuka'")->fetchColumn();
-$totalUser = $pdo->query("SELECT COUNT(*) FROM tb_masyarakat")->fetchColumn();
+    if (empty($role) || empty($nama) || empty($username) || empty($password)) {
+        $error = 'Semua field bertanda * wajib diisi!';
+    } elseif (strlen($password) < 6) {
+        $error = 'Password minimal 6 karakter!';
+    } elseif ($password !== $confirm) {
+        $error = 'Konfirmasi password tidak cocok!';
+    } else {
+        try {
+            $hash = password_hash($password, PASSWORD_DEFAULT);
+
+            if ($role === 'masyarakat') {
+                $stmt = $pdo->prepare("CALL sp_register_masyarakat(?, ?, ?, ?)");
+                $stmt->execute([$nama, $username, $hash, $telp]);
+                $stmt->closeCursor();
+                $success = 'Registrasi berhasil! Silakan login.';
+            } elseif ($role === 'petugas' || $role === 'administrator') {
+                $id_level = ($role === 'administrator') ? 1 : 2;
+                $stmt = $pdo->prepare("CALL sp_register_petugas(?, ?, ?, ?)");
+                $stmt->execute([$nama, $username, $hash, $id_level]);
+                $stmt->closeCursor();
+                $success = 'Registrasi berhasil! Silakan login.';
+            } else {
+                $error = 'Role tidak valid!';
+            }
+        } catch (PDOException $e) {
+            $error = $e->getMessage();
+        }
+    }
+}
 ?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrasi - Sistem Lelang Online</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="login-page">
+    <div class="login-box">
+        <div class="login-logo">
+            <div class="logo-icon">📝</div>
+            <h1>Registrasi Akun</h1>
+            <p>Buat akun baru untuk mulai menggunakan sistem</p>
+        </div>
 
-<div class="page-header">
-    <h1>🏠 Dashboard</h1>
-    <p>Selamat datang, <strong><?= htmlspecialchars($nama) ?></strong> (<span class="badge"><?= $role ?></span>)</p>
-</div>
+        <?php if ($error): ?>
+            <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
+        <?php endif; ?>
+        <?php if ($success): ?>
+            <div class="alert alert-success">
+                <?= htmlspecialchars($success) ?><br>
+                <a href="login.php" style="color:#155724; font-weight:bold;">→ Login di sini</a>
+            </div>
+        <?php endif; ?>
 
-<div class="stats-grid">
-    <div class="stat-card gradient-primary">
-        <div class="stat-icon">📦</div>
-        <div class="stat-info">
-            <h3><?= $totalBarang ?></h3>
-            <p>Total Barang</p>
+        <form method="POST">
+            <div class="form-group">
+                <label>Daftar Sebagai *</label>
+                <select name="role" class="form-control" required>
+                    <option value="">-- Pilih Role --</option>
+                    <option value="masyarakat" <?= (($_POST['role'] ?? '') === 'masyarakat') ? 'selected' : '' ?>>👤 Masyarakat (Peserta Lelang)</option>
+                    <option value="petugas" <?= (($_POST['role'] ?? '') === 'petugas') ? 'selected' : '' ?>>🔨 Petugas Lelang</option>
+                    <option value="administrator" <?= (($_POST['role'] ?? '') === 'administrator') ? 'selected' : '' ?>>👑 Administrator</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Nama Lengkap *</label>
+                <input type="text" name="nama" class="form-control" value="<?= htmlspecialchars($_POST['nama'] ?? '') ?>" required>
+            </div>
+            <div class="form-group">
+                <label>Username *</label>
+                <input type="text" name="username" class="form-control" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" required>
+            </div>
+            <div class="form-group">
+                <label>No. Telepon</label>
+                <input type="text" name="telp" class="form-control" value="<?= htmlspecialchars($_POST['telp'] ?? '') ?>">
+            </div>
+            <div class="form-group">
+                <label>Password * (min. 6 karakter)</label>
+                <input type="password" name="password" class="form-control" required minlength="6">
+            </div>
+            <div class="form-group">
+                <label>Konfirmasi Password *</label>
+                <input type="password" name="confirm_password" class="form-control" required minlength="6">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Daftar →</button>
+        </form>
+
+        <div class="register-link">
+            <p>Sudah punya akun?</p>
+            <a href="login.php" class="btn btn-success btn-block">🔐 Login Sekarang</a>
         </div>
     </div>
-    <div class="stat-card gradient-success">
-        <div class="stat-icon">🔨</div>
-        <div class="stat-info">
-            <h3><?= $totalLelang ?></h3>
-            <p>Total Lelang</p>
-        </div>
-    </div>
-    <div class="stat-card gradient-warning">
-        <div class="stat-icon">🔥</div>
-        <div class="stat-info">
-            <h3><?= $totalLelangAktif ?></h3>
-            <p>Lelang Aktif</p>
-        </div>
-    </div>
-    <div class="stat-card gradient-danger">
-        <div class="stat-icon">👥</div>
-        <div class="stat-info">
-            <h3><?= $totalUser ?></h3>
-            <p>Masyarakat</p>
-        </div>
-    </div>
-</div>
-
-<div class="card">
-    <div class="card-header">
-        <h2>🔨 Lelang Terbaru</h2>
-    </div>
-    <div class="card-body">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Barang</th>
-                    <th>Harga Awal</th>
-                    <th>Harga Akhir</th>
-                    <th>Tanggal</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                $stmt = $pdo->query("
-                    SELECT l.*, b.nama_barang 
-                    FROM tb_lelang l 
-                    JOIN tb_barang b ON l.id_barang = b.id_barang 
-                    ORDER BY l.id_lelang DESC LIMIT 5
-                ");
-                while ($row = $stmt->fetch()):
-                ?>
-                <tr>
-                    <td><strong><?= htmlspecialchars($row['nama_barang']) ?></strong></td>
-                    <td>Rp <?= number_format($row['harga_awal'] ?? 0, 0, ',', '.') ?></td>
-                    <td>Rp <?= number_format($row['harga_akhir'] ?? 0, 0, ',', '.') ?></td>
-                    <td><?= $row['tgl_lelang'] ?></td>
-                    <td>
-                        <span class="badge <?= $row['status'] === 'dibuka' ? 'badge-success' : 'badge-danger' ?>">
-                            <?= ucfirst($row['status']) ?>
-                        </span>
-                    </td>
-                </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+</body>
+</html>
 ```
 
 ---
 
-## 📄 File 8: `login.php`
+## 📄 File 7: `login.php`
 
 ```php
 <?php
@@ -591,16 +581,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($username) || empty($password) || empty($role)) {
         $error = 'Semua field harus diisi!';
     } else {
+        $user = null;
+        $roleName = '';
+
         if ($role === 'petugas' || $role === 'administrator') {
             $stmt = $pdo->prepare("SELECT * FROM tb_petugas WHERE username = ?");
             $stmt->execute([$username]);
             $user = $stmt->fetch();
-            $roleName = $user['id_level'] == 1 ? 'administrator' : 'petugas';
-        } else {
+            if ($user) {
+                $roleName = ($user['id_level'] == 1) ? 'administrator' : 'petugas';
+            }
+        } elseif ($role === 'masyarakat') {
             $stmt = $pdo->prepare("SELECT * FROM tb_masyarakat WHERE username = ?");
             $stmt->execute([$username]);
             $user = $stmt->fetch();
-            $roleName = 'masyarakat';
+            if ($user) $roleName = 'masyarakat';
+        }
+
+        if ($user && $role !== $roleName) {
+            $user = null;
+            $error = 'Role tidak sesuai dengan akun Anda!';
         }
 
         if ($user && password_verify($password, $user['password'])) {
@@ -612,7 +612,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: index.php');
             exit;
         } else {
-            $error = 'Username atau password salah!';
+            if (empty($error)) $error = 'Username atau password salah!';
         }
     }
 }
@@ -639,120 +639,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <form method="POST">
             <div class="form-group">
-                <label>Login Sebagai</label>
+                <label>Login Sebagai *</label>
                 <select name="role" class="form-control" required>
                     <option value="">-- Pilih Role --</option>
-                    <option value="administrator">Administrator</option>
-                    <option value="petugas">Petugas</option>
-                    <option value="masyarakat">Masyarakat</option>
+                    <option value="administrator" <?= (($_POST['role'] ?? '') === 'administrator') ? 'selected' : '' ?>>👑 Administrator</option>
+                    <option value="petugas" <?= (($_POST['role'] ?? '') === 'petugas') ? 'selected' : '' ?>>🔨 Petugas</option>
+                    <option value="masyarakat" <?= (($_POST['role'] ?? '') === 'masyarakat') ? 'selected' : '' ?>>👤 Masyarakat</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>Username</label>
-                <input type="text" name="username" class="form-control" required>
-            </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" name="password" class="form-control" required>
-            </div>
-            <button type="submit" class="btn btn-primary btn-block">Login →</button>
-        </form>
-
-        <div class="demo-accounts">
-            <p><strong>Demo Akun:</strong></p>
-            <small>👑 Admin: <code>admin / admin123</code></small>
-            <small>🔨 Petugas: <code>petugas1 / petugas123</code></small>
-            <small>👤 Masyarakat: <code>budi / budi123</code></small>
-        </div>
-
-        <p style="text-align:center; margin-top: 20px;">
-            Belum punya akun? <a href="register.php">Registrasi</a>
-        </p>
-    </div>
-</body>
-</html>
-```
-
----
-
-## 📄 File 9: `register.php`
-
-```php
-<?php
-require_once __DIR__ . '/config/database.php';
-require_once __DIR__ . '/includes/session.php';
-
-if (isLoggedIn()) {
-    header('Location: index.php');
-    exit;
-}
-
-$error = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nama = trim($_POST['nama_lengkap'] ?? '');
-    $username = trim($_POST['username'] ?? '');
-    $password = $_POST['password'] ?? '';
-    $telp = trim($_POST['telp'] ?? '');
-
-    if (empty($nama) || empty($username) || empty($password)) {
-        $error = 'Nama, username, dan password wajib diisi!';
-    } else {
-        $stmt = $pdo->prepare("SELECT * FROM tb_masyarakat WHERE username = ?");
-        $stmt->execute([$username]);
-        if ($stmt->fetch()) {
-            $error = 'Username sudah digunakan!';
-        } else {
-            $hash = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("INSERT INTO tb_masyarakat (nama_lengkap, username, password, telp) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$nama, $username, $hash, $telp]);
-            setFlash('success', 'Registrasi berhasil! Silakan login.');
-            header('Location: login.php');
-            exit;
-        }
-    }
-}
-?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <title>Registrasi - Sistem Lelang Online</title>
-    <link rel="stylesheet" href="assets/css/style.css">
-</head>
-<body class="login-page">
-    <div class="login-box">
-        <div class="login-logo">
-            <div class="logo-icon">📝</div>
-            <h1>Registrasi Masyarakat</h1>
-        </div>
-
-        <?php if ($error): ?>
-            <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
-        <?php endif; ?>
-
-        <form method="POST">
-            <div class="form-group">
-                <label>Nama Lengkap *</label>
-                <input type="text" name="nama_lengkap" class="form-control" required>
-            </div>
-            <div class="form-group">
                 <label>Username *</label>
-                <input type="text" name="username" class="form-control" required>
+                <input type="text" name="username" class="form-control" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" required autofocus>
             </div>
             <div class="form-group">
                 <label>Password *</label>
                 <input type="password" name="password" class="form-control" required>
             </div>
-            <div class="form-group">
-                <label>No. Telepon</label>
-                <input type="text" name="telp" class="form-control">
-            </div>
-            <button type="submit" class="btn btn-primary btn-block">Daftar →</button>
+            <button type="submit" class="btn btn-primary btn-block">Login →</button>
         </form>
 
-        <p style="text-align:center; margin-top: 20px;">
-            Sudah punya akun? <a href="login.php">Login</a>
+        <div class="register-link">
+            <p>Belum punya akun?</p>
+            <a href="register.php" class="btn btn-success btn-block">📝 Registrasi Sekarang</a>
+        </div>
+
+        <p style="text-align:center; margin-top: 15px; font-size: 12px; color: #666;">
+            💡 Belum ada akun demo. Silakan daftar terlebih dahulu.
         </p>
     </div>
 </body>
@@ -761,7 +673,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 ---
 
-## 📄 File 10: `logout.php`
+## 📄 File 8: `logout.php`
 
 ```php
 <?php
@@ -773,9 +685,101 @@ exit;
 
 ---
 
-# 📝 BAGIAN 5: HALAMAN CRUD BARANG
+# 📝 BAGIAN 5: DASHBOARD & CRUD
 
-## 📄 File 11: `pages/barang.php`
+## 📄 File 9: `index.php`
+
+```php
+<?php
+require_once __DIR__ . '/includes/session.php';
+require_once __DIR__ . '/config/database.php';
+
+if (!isLoggedIn()) {
+    header('Location: login.php');
+    exit;
+}
+
+$pageTitle = 'Dashboard';
+$baseUrl = '';
+require_once __DIR__ . '/includes/header.php';
+
+$role = $_SESSION['role'];
+$nama = $_SESSION['nama'];
+
+$totalBarang = $pdo->query("SELECT COUNT(*) FROM tb_barang")->fetchColumn();
+$totalLelang = $pdo->query("SELECT COUNT(*) FROM tb_lelang")->fetchColumn();
+$totalLelangAktif = $pdo->query("SELECT COUNT(*) FROM tb_lelang WHERE status='dibuka'")->fetchColumn();
+$totalUser = $pdo->query("SELECT COUNT(*) FROM tb_masyarakat")->fetchColumn();
+?>
+
+<div class="page-header">
+    <h1>🏠 Dashboard</h1>
+    <p>Selamat datang, <strong><?= htmlspecialchars($nama) ?></strong> (<span class="badge"><?= $role ?></span>)</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card gradient-primary">
+        <div class="stat-icon">📦</div>
+        <div class="stat-info"><h3><?= $totalBarang ?></h3><p>Total Barang</p></div>
+    </div>
+    <div class="stat-card gradient-success">
+        <div class="stat-icon">🔨</div>
+        <div class="stat-info"><h3><?= $totalLelang ?></h3><p>Total Lelang</p></div>
+    </div>
+    <div class="stat-card gradient-warning">
+        <div class="stat-icon">🔥</div>
+        <div class="stat-info"><h3><?= $totalLelangAktif ?></h3><p>Lelang Aktif</p></div>
+    </div>
+    <div class="stat-card gradient-danger">
+        <div class="stat-icon">👥</div>
+        <div class="stat-info"><h3><?= $totalUser ?></h3><p>Masyarakat</p></div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header"><h2>🔨 Lelang Terbaru</h2></div>
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Barang</th><th>Harga Awal</th><th>Harga Akhir</th>
+                    <th>Tanggal</th><th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                $stmt = $pdo->query("
+                    SELECT l.*, b.nama_barang, b.harga_awal 
+                    FROM tb_lelang l 
+                    JOIN tb_barang b ON l.id_barang = b.id_barang 
+                    ORDER BY l.id_lelang DESC LIMIT 5
+                ");
+                $ada = false;
+                while ($row = $stmt->fetch()):
+                    $ada = true;
+                ?>
+                <tr>
+                    <td><strong><?= htmlspecialchars($row['nama_barang']) ?></strong></td>
+                    <td>Rp <?= number_format($row['harga_awal'] ?? 0, 0, ',', '.') ?></td>
+                    <td>Rp <?= number_format($row['harga_akhir'] ?? 0, 0, ',', '.') ?></td>
+                    <td><?= $row['tgl_lelang'] ?></td>
+                    <td><span class="badge <?= $row['status'] === 'dibuka' ? 'badge-success' : 'badge-danger' ?>"><?= ucfirst($row['status']) ?></span></td>
+                </tr>
+                <?php endwhile; ?>
+                <?php if (!$ada): ?>
+                <tr><td colspan="5" style="text-align:center;">Belum ada lelang</td></tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<?php require_once __DIR__ . '/includes/footer.php'; ?>
+```
+
+---
+
+## 📄 File 10: `pages/barang.php`
 
 ```php
 <?php
@@ -787,11 +791,9 @@ requireRole(['administrator', 'petugas']);
 $pageTitle = 'Kelola Barang';
 $baseUrl = '../';
 
-// Handle delete
 if (isset($_GET['hapus'])) {
-    $id = (int)$_GET['hapus'];
     $stmt = $pdo->prepare("DELETE FROM tb_barang WHERE id_barang = ?");
-    $stmt->execute([$id]);
+    $stmt->execute([(int)$_GET['hapus']]);
     setFlash('success', 'Barang berhasil dihapus!');
     header('Location: barang.php');
     exit;
@@ -812,16 +814,12 @@ $barang = $stmt->fetchAll();
     <div class="card-body">
         <table class="table">
             <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nama Barang</th>
-                    <th>Harga Awal</th>
-                    <th>Deskripsi</th>
-                    <th>Tanggal</th>
-                    <th>Aksi</th>
-                </tr>
+                <tr><th>ID</th><th>Nama Barang</th><th>Harga Awal</th><th>Deskripsi</th><th>Tanggal</th><th>Aksi</th></tr>
             </thead>
             <tbody>
+                <?php if (empty($barang)): ?>
+                <tr><td colspan="6" style="text-align:center;">Belum ada barang. Klik "Tambah Barang" untuk menambahkan.</td></tr>
+                <?php else: ?>
                 <?php foreach ($barang as $b): ?>
                 <tr>
                     <td><?= $b['id_barang'] ?></td>
@@ -837,6 +835,7 @@ $barang = $stmt->fetchAll();
                     </td>
                 </tr>
                 <?php endforeach; ?>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
@@ -847,7 +846,7 @@ $barang = $stmt->fetchAll();
 
 ---
 
-## 📄 File 12: `pages/barang_form.php`
+## 📄 File 11: `pages/barang_form.php`
 
 ```php
 <?php
@@ -867,6 +866,11 @@ if (isset($_GET['id'])) {
     $stmt = $pdo->prepare("SELECT * FROM tb_barang WHERE id_barang = ?");
     $stmt->execute([(int)$_GET['id']]);
     $data = $stmt->fetch();
+    if (!$data) {
+        setFlash('danger', 'Barang tidak ditemukan!');
+        header('Location: barang.php');
+        exit;
+    }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -928,9 +932,7 @@ require_once __DIR__ . '/../includes/header.php';
 
 ---
 
-# 📝 BAGIAN 6: HALAMAN LELANG (Petugas)
-
-## 📄 File 13: `pages/lelang.php`
+## 📄 File 12: `pages/lelang.php`
 
 ```php
 <?php
@@ -942,11 +944,11 @@ requireRole(['administrator', 'petugas']);
 $pageTitle = 'Kelola Lelang';
 $baseUrl = '../';
 
-// Handle buka/tutup via stored procedure
 if (isset($_GET['buka'])) {
     try {
         $stmt = $pdo->prepare("CALL sp_buka_lelang(?)");
         $stmt->execute([(int)$_GET['buka']]);
+        $stmt->closeCursor();
         setFlash('success', 'Lelang berhasil dibuka!');
     } catch (Exception $e) {
         setFlash('danger', 'Gagal: ' . $e->getMessage());
@@ -959,6 +961,7 @@ if (isset($_GET['tutup'])) {
     try {
         $stmt = $pdo->prepare("CALL sp_tutup_lelang(?)");
         $stmt->execute([(int)$_GET['tutup']]);
+        $stmt->closeCursor();
         setFlash('success', 'Lelang berhasil ditutup!');
     } catch (Exception $e) {
         setFlash('danger', 'Gagal: ' . $e->getMessage());
@@ -1000,18 +1003,14 @@ $lelang = $stmt->fetchAll();
         <table class="table">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Barang</th>
-                    <th>Harga Awal</th>
-                    <th>Harga Akhir</th>
-                    <th>Pemenang</th>
-                    <th>Petugas</th>
-                    <th>Tanggal</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
+                    <th>ID</th><th>Barang</th><th>Harga Awal</th><th>Harga Akhir</th>
+                    <th>Pemenang</th><th>Petugas</th><th>Tanggal</th><th>Status</th><th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
+                <?php if (empty($lelang)): ?>
+                <tr><td colspan="9" style="text-align:center;">Belum ada lelang. Klik "Buat Lelang" untuk memulai.</td></tr>
+                <?php else: ?>
                 <?php foreach ($lelang as $l): ?>
                 <tr>
                     <td><?= $l['id_lelang'] ?></td>
@@ -1021,11 +1020,7 @@ $lelang = $stmt->fetchAll();
                     <td><?= htmlspecialchars($l['pemenang'] ?? '-') ?></td>
                     <td><?= htmlspecialchars($l['nama_petugas'] ?? '-') ?></td>
                     <td><?= $l['tgl_lelang'] ?></td>
-                    <td>
-                        <span class="badge <?= $l['status'] === 'dibuka' ? 'badge-success' : 'badge-danger' ?>">
-                            <?= ucfirst($l['status']) ?>
-                        </span>
-                    </td>
+                    <td><span class="badge <?= $l['status'] === 'dibuka' ? 'badge-success' : 'badge-danger' ?>"><?= ucfirst($l['status']) ?></span></td>
                     <td>
                         <div class="btn-group">
                             <?php if ($l['status'] === 'ditutup'): ?>
@@ -1038,6 +1033,7 @@ $lelang = $stmt->fetchAll();
                     </td>
                 </tr>
                 <?php endforeach; ?>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
@@ -1048,7 +1044,7 @@ $lelang = $stmt->fetchAll();
 
 ---
 
-## 📄 File 14: `pages/lelang_form.php`
+## 📄 File 13: `pages/lelang_form.php`
 
 ```php
 <?php
@@ -1084,6 +1080,11 @@ $barang = $pdo->query("SELECT * FROM tb_barang ORDER BY nama_barang")->fetchAll(
 
 <div class="card">
     <div class="card-body">
+        <?php if (empty($barang)): ?>
+            <div class="alert alert-danger">
+                Belum ada barang. <a href="barang_form.php">Tambah barang dulu</a>.
+            </div>
+        <?php else: ?>
         <form method="POST">
             <div class="form-group">
                 <label>Pilih Barang *</label>
@@ -1102,6 +1103,7 @@ $barang = $pdo->query("SELECT * FROM tb_barang ORDER BY nama_barang")->fetchAll(
             </div>
             <button type="submit" class="btn btn-success">💾 Simpan</button>
         </form>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -1110,9 +1112,7 @@ $barang = $pdo->query("SELECT * FROM tb_barang ORDER BY nama_barang")->fetchAll(
 
 ---
 
-# 📝 BAGIAN 7: HALAMAN LELANG (Masyarakat)
-
-## 📄 File 15: `pages/lelang_masyarakat.php`
+## 📄 File 14: `pages/lelang_masyarakat.php`
 
 ```php
 <?php
@@ -1124,7 +1124,6 @@ requireRole('masyarakat');
 $pageTitle = 'Lelang Aktif';
 $baseUrl = '../';
 
-// Handle penawaran
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_lelang'])) {
     $id_lelang = (int)$_POST['id_lelang'];
     $id_barang = (int)$_POST['id_barang'];
@@ -1134,6 +1133,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_lelang'])) {
     try {
         $stmt = $pdo->prepare("CALL sp_tambah_penawaran(?, ?, ?, ?)");
         $stmt->execute([$id_lelang, $id_barang, $id_user, $penawaran]);
+        $stmt->closeCursor();
         setFlash('success', 'Penawaran berhasil! Rp ' . number_format($penawaran, 0, ',', '.'));
     } catch (Exception $e) {
         setFlash('danger', 'Gagal: ' . $e->getMessage());
@@ -1198,7 +1198,7 @@ $lelang = $stmt->fetchAll();
 
 ---
 
-## 📄 File 16: `pages/history_saya.php`
+## 📄 File 15: `pages/history_saya.php`
 
 ```php
 <?php
@@ -1232,12 +1232,7 @@ $history = $stmt->fetchAll();
     <div class="card-body">
         <table class="table">
             <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Barang</th>
-                    <th>Penawaran</th>
-                    <th>Status Lelang</th>
-                </tr>
+                <tr><th>ID</th><th>Barang</th><th>Penawaran</th><th>Status Lelang</th></tr>
             </thead>
             <tbody>
                 <?php if (empty($history)): ?>
@@ -1248,11 +1243,7 @@ $history = $stmt->fetchAll();
                         <td>#<?= $h['id_history'] ?></td>
                         <td><strong><?= htmlspecialchars($h['nama_barang']) ?></strong></td>
                         <td>Rp <?= number_format($h['penawaran_harga'], 0, ',', '.') ?></td>
-                        <td>
-                            <span class="badge <?= $h['status'] === 'dibuka' ? 'badge-success' : 'badge-danger' ?>">
-                                <?= ucfirst($h['status']) ?>
-                            </span>
-                        </td>
+                        <td><span class="badge <?= $h['status'] === 'dibuka' ? 'badge-success' : 'badge-danger' ?>"><?= ucfirst($h['status']) ?></span></td>
                     </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
@@ -1266,9 +1257,7 @@ $history = $stmt->fetchAll();
 
 ---
 
-# 📝 BAGIAN 8: HALAMAN LAPORAN
-
-## 📄 File 17: `pages/laporan.php`
+## 📄 File 16: `pages/laporan.php`
 
 ```php
 <?php
@@ -1292,7 +1281,6 @@ try {
     $stmt->closeCursor();
 } catch (Exception $e) {
     $laporan = [];
-    $error = $e->getMessage();
 }
 
 $totalPendapatan = array_sum(array_column($laporan, 'harga_akhir'));
@@ -1305,7 +1293,7 @@ $totalPendapatan = array_sum(array_column($laporan, 'harga_akhir'));
 
 <div class="card">
     <div class="card-body">
-        <form method="GET" style="display:flex; gap:15px; align-items:flex-end;">
+        <form method="GET" style="display:flex; gap:15px; align-items:flex-end; flex-wrap:wrap;">
             <div class="form-group" style="margin-bottom:0;">
                 <label>Dari Tanggal</label>
                 <input type="date" name="start" class="form-control" value="<?= $start ?>">
@@ -1322,36 +1310,22 @@ $totalPendapatan = array_sum(array_column($laporan, 'harga_akhir'));
 <div class="stats-grid">
     <div class="stat-card gradient-primary">
         <div class="stat-icon">📊</div>
-        <div class="stat-info">
-            <h3><?= count($laporan) ?></h3>
-            <p>Total Lelang</p>
-        </div>
+        <div class="stat-info"><h3><?= count($laporan) ?></h3><p>Total Lelang</p></div>
     </div>
     <div class="stat-card gradient-success">
         <div class="stat-icon">💰</div>
-        <div class="stat-info">
-            <h3>Rp <?= number_format($totalPendapatan, 0, ',', '.') ?></h3>
-            <p>Total Pendapatan</p>
-        </div>
+        <div class="stat-info"><h3>Rp <?= number_format($totalPendapatan, 0, ',', '.') ?></h3><p>Total Pendapatan</p></div>
     </div>
 </div>
 
 <div class="card">
-    <div class="card-header">
-        <h2>Detail Laporan</h2>
-    </div>
+    <div class="card-header"><h2>Detail Laporan</h2></div>
     <div class="card-body">
         <table class="table">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Barang</th>
-                    <th>Harga Awal</th>
-                    <th>Harga Akhir</th>
-                    <th>Pemenang</th>
-                    <th>Petugas</th>
-                    <th>Tanggal</th>
-                    <th>Status</th>
+                    <th>ID</th><th>Barang</th><th>Harga Awal</th><th>Harga Akhir</th>
+                    <th>Pemenang</th><th>Petugas</th><th>Tanggal</th><th>Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -1367,11 +1341,7 @@ $totalPendapatan = array_sum(array_column($laporan, 'harga_akhir'));
                         <td><?= htmlspecialchars($l['pemenang'] ?? '-') ?></td>
                         <td><?= htmlspecialchars($l['nama_petugas'] ?? '-') ?></td>
                         <td><?= $l['tgl_lelang'] ?></td>
-                        <td>
-                            <span class="badge <?= $l['status'] === 'dibuka' ? 'badge-success' : 'badge-danger' ?>">
-                                <?= ucfirst($l['status']) ?>
-                            </span>
-                        </td>
+                        <td><span class="badge <?= $l['status'] === 'dibuka' ? 'badge-success' : 'badge-danger' ?>"><?= ucfirst($l['status']) ?></span></td>
                     </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
@@ -1385,9 +1355,9 @@ $totalPendapatan = array_sum(array_column($laporan, 'harga_akhir'));
 
 ---
 
-# 📝 BAGIAN 9: CSS & JAVASCRIPT
+# 📝 BAGIAN 6: ASSETS
 
-## 📄 File 18: `assets/css/style.css`
+## 📄 File 17: `assets/css/style.css`
 
 ```css
 /* ============================================
@@ -1419,9 +1389,7 @@ body {
 
 a { text-decoration: none; color: inherit; }
 
-/* ============================================
-   NAVBAR
-   ============================================ */
+/* NAVBAR */
 .navbar {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -1430,17 +1398,16 @@ a { text-decoration: none; color: inherit; }
     justify-content: space-between;
     align-items: center;
     box-shadow: var(--shadow);
+    flex-wrap: wrap;
+    gap: 10px;
 }
-
 .navbar-brand { font-size: 20px; }
-
 .navbar-menu {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
     flex-wrap: wrap;
 }
-
 .navbar-menu a {
     color: rgba(255,255,255,0.9);
     padding: 8px 12px;
@@ -1448,33 +1415,27 @@ a { text-decoration: none; color: inherit; }
     transition: 0.3s;
     font-size: 14px;
 }
-
 .navbar-menu a:hover {
     background: rgba(255,255,255,0.2);
     color: white;
 }
-
 .navbar-user {
     padding: 8px 12px;
     background: rgba(255,255,255,0.15);
     border-radius: 6px;
 }
-
 .btn-logout {
     background: #ff4757 !important;
     padding: 8px 15px !important;
     border-radius: 6px;
 }
 
-/* ============================================
-   MAIN
-   ============================================ */
+/* MAIN */
 .main-container {
     max-width: 1200px;
     margin: 30px auto;
     padding: 0 20px;
 }
-
 .page-header {
     display: flex;
     justify-content: space-between;
@@ -1483,12 +1444,9 @@ a { text-decoration: none; color: inherit; }
     flex-wrap: wrap;
     gap: 15px;
 }
-
 .page-header h1 { font-size: 24px; color: var(--dark); }
 
-/* ============================================
-   CARDS
-   ============================================ */
+/* CARDS */
 .card {
     background: white;
     border-radius: var(--radius);
@@ -1496,27 +1454,21 @@ a { text-decoration: none; color: inherit; }
     margin-bottom: 20px;
     overflow: hidden;
 }
-
 .card-header {
     padding: 18px 25px;
     background: #f8f9fa;
     border-bottom: 1px solid var(--border);
 }
-
 .card-header h2 { font-size: 16px; }
-
 .card-body { padding: 25px; }
 
-/* ============================================
-   STAT CARDS
-   ============================================ */
+/* STAT CARDS */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
     margin-bottom: 25px;
 }
-
 .stat-card {
     padding: 25px;
     border-radius: var(--radius);
@@ -1526,44 +1478,31 @@ a { text-decoration: none; color: inherit; }
     gap: 20px;
     box-shadow: var(--shadow);
 }
-
 .gradient-primary { background: linear-gradient(135deg, #667eea, #764ba2); }
 .gradient-success { background: linear-gradient(135deg, #11998e, #38ef7d); }
 .gradient-warning { background: linear-gradient(135deg, #f2994a, #f2c94c); }
 .gradient-danger { background: linear-gradient(135deg, #eb3349, #f45c43); }
-
 .stat-icon { font-size: 40px; }
-.stat-info h3 { font-size: 28px; margin-bottom: 5px; }
+.stat-info h3 { font-size: 24px; margin-bottom: 5px; }
 .stat-info p { font-size: 13px; opacity: 0.9; }
 
-/* ============================================
-   TABLES
-   ============================================ */
-.table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
+/* TABLES */
+.table { width: 100%; border-collapse: collapse; }
 .table th {
     background: #f1f3f5;
     padding: 12px 15px;
     text-align: left;
     font-size: 13px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
     color: #495057;
 }
-
 .table td {
     padding: 12px 15px;
     border-bottom: 1px solid #f0f0f0;
 }
-
 .table tbody tr:hover { background: #f8faff; }
 
-/* ============================================
-   BUTTONS
-   ============================================ */
+/* BUTTONS */
 .btn {
     display: inline-block;
     padding: 10px 20px;
@@ -1576,7 +1515,6 @@ a { text-decoration: none; color: inherit; }
     text-decoration: none;
     font-family: inherit;
 }
-
 .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
 .btn-success { background: var(--success); color: white; }
 .btn-danger { background: var(--danger); color: white; }
@@ -1584,16 +1522,11 @@ a { text-decoration: none; color: inherit; }
 .btn-secondary { background: var(--gray); color: white; }
 .btn-sm { padding: 6px 12px; font-size: 12px; }
 .btn-block { width: 100%; }
-
 .btn:hover { opacity: 0.9; transform: translateY(-1px); }
-
 .btn-group { display: flex; gap: 5px; }
 
-/* ============================================
-   FORMS
-   ============================================ */
+/* FORMS */
 .form-group { margin-bottom: 18px; }
-
 .form-group label {
     display: block;
     margin-bottom: 6px;
@@ -1601,7 +1534,6 @@ a { text-decoration: none; color: inherit; }
     color: #495057;
     font-size: 13px;
 }
-
 .form-control {
     width: 100%;
     padding: 10px 14px;
@@ -1610,16 +1542,13 @@ a { text-decoration: none; color: inherit; }
     font-size: 14px;
     font-family: inherit;
 }
-
 .form-control:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
 }
 
-/* ============================================
-   BADGES
-   ============================================ */
+/* BADGES */
 .badge {
     display: inline-block;
     padding: 4px 10px;
@@ -1628,14 +1557,11 @@ a { text-decoration: none; color: inherit; }
     font-weight: 700;
     text-transform: uppercase;
 }
-
 .badge-success { background: #d4edda; color: #155724; }
 .badge-danger { background: #f8d7da; color: #721c24; }
 .badge-warning { background: #fff3cd; color: #856404; }
 
-/* ============================================
-   ALERTS
-   ============================================ */
+/* ALERTS */
 .alert {
     padding: 15px 20px;
     border-radius: 8px;
@@ -1645,15 +1571,12 @@ a { text-decoration: none; color: inherit; }
     align-items: center;
     animation: slideIn 0.3s;
 }
-
 @keyframes slideIn {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
 }
-
 .alert-success { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
 .alert-danger { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
-
 .alert .close {
     background: none;
     border: none;
@@ -1662,9 +1585,7 @@ a { text-decoration: none; color: inherit; }
     opacity: 0.5;
 }
 
-/* ============================================
-   LOGIN PAGE
-   ============================================ */
+/* LOGIN / REGISTER */
 .login-page {
     min-height: 100vh;
     display: flex;
@@ -1673,49 +1594,33 @@ a { text-decoration: none; color: inherit; }
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 20px;
 }
-
 .login-box {
     background: white;
     border-radius: 20px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     width: 100%;
-    max-width: 420px;
+    max-width: 450px;
     padding: 40px;
 }
-
 .login-logo { text-align: center; margin-bottom: 30px; }
 .login-logo .logo-icon { font-size: 60px; }
 .login-logo h1 { font-size: 24px; margin-bottom: 5px; color: var(--dark); }
 .login-logo p { color: var(--gray); font-size: 13px; }
 
-.demo-accounts {
-    background: #f8f9fa;
-    border-radius: 10px;
-    padding: 15px;
+.register-link {
     margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    text-align: center;
 }
+.register-link p { color: var(--gray); font-size: 13px; margin-bottom: 10px; }
 
-.demo-accounts p { font-size: 13px; margin-bottom: 8px; }
-.demo-accounts small { display: block; font-size: 12px; padding: 3px 0; }
-
-code {
-    background: #e9ecef;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-family: 'Courier New', monospace;
-    color: #d63384;
-    font-size: 12px;
-}
-
-/* ============================================
-   LELANG GRID
-   ============================================ */
+/* LELANG GRID */
 .lelang-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 20px;
 }
-
 .lelang-card {
     background: white;
     border-radius: var(--radius);
@@ -1725,33 +1630,22 @@ code {
     flex-direction: column;
     gap: 15px;
 }
-
 .lelang-header {
     display: flex;
     justify-content: space-between;
     align-items: start;
     gap: 10px;
 }
-
 .lelang-header h3 { font-size: 18px; color: var(--dark); }
-
 .lelang-desc { color: var(--gray); font-size: 13px; }
-
 .lelang-info p {
     display: flex;
     justify-content: space-between;
     padding: 5px 0;
 }
+.lelang-form { display: flex; flex-direction: column; gap: 10px; }
 
-.lelang-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-/* ============================================
-   FOOTER
-   ============================================ */
+/* FOOTER */
 .footer {
     text-align: center;
     padding: 20px;
@@ -1759,19 +1653,15 @@ code {
     font-size: 12px;
 }
 
-/* ============================================
-   RESPONSIVE
-   ============================================ */
+/* RESPONSIVE */
 @media (max-width: 768px) {
     .navbar {
         flex-direction: column;
-        gap: 15px;
         padding: 15px;
     }
     .navbar-menu {
         flex-direction: column;
         width: 100%;
-        gap: 10px;
     }
     .stats-grid { grid-template-columns: 1fr 1fr; }
     .table { font-size: 12px; }
@@ -1785,10 +1675,10 @@ code {
 
 ---
 
-## 📄 File 19: `assets/js/script.js`
+## 📄 File 18: `assets/js/script.js`
 
 ```javascript
-// Auto dismiss alert
+// Auto dismiss alert setelah 5 detik
 setTimeout(() => {
     document.querySelectorAll('.alert').forEach(alert => {
         alert.style.transition = 'opacity 0.5s';
@@ -1797,7 +1687,7 @@ setTimeout(() => {
     });
 }, 5000);
 
-// Format Rupiah di input
+// Format Rupiah helper
 function formatRupiah(angka) {
     return 'Rp ' + parseInt(angka).toLocaleString('id-ID');
 }
@@ -1805,11 +1695,11 @@ function formatRupiah(angka) {
 
 ---
 
-# 📝 BAGIAN 10: LAPORAN.md
+# 📝 BAGIAN 7: LAPORAN.md
 
-## 📄 File 20: `laporan/LAPORAN.md`
+## 📄 File 19: `laporan/LAPORAN.md`
 
-```markdown
+````markdown
 # 📋 LAPORAN TUGAS PRAKTIK DEMONSTRASI
 ## FR.IA.02 TPD — Sistem Lelang Online
 
@@ -1818,62 +1708,55 @@ function formatRupiah(angka) {
 **Skema:** SKM.RPL.PJ/LSPSMK24/2023  
 **Judul:** Pemrogram Junior (Junior Coder)  
 **Asesor:** Yunita Sartika Sari  
-**Tanggal:** [Isi Tanggal]  
+**Tanggal:** [Isi Tanggal]
 
 ---
 
 ## 🎯 A. DESKRIPSI TUGAS
 
-Berdasarkan FR.IA.02 TPD, saya diminta untuk:
-1. **Kelompok 1** — Membuat struktur data sesuai PDM (Sistem Lelang) + stored procedure
-2. **Kelompok 2** — Membuat aplikasi Sistem Lelang Online dengan OOP + GUI
-3. **Kelompok 3** — Melakukan debugging dan pengujian
+Berdasarkan FR.IA.02 TPD:
+1. **Kelompok 1** — Struktur data sesuai PDM + stored procedure
+2. **Kelompok 2** — Aplikasi Sistem Lelang Online (OOP)
+3. **Kelompok 3** — Debugging & pengujian
 
-**Aplikasi yang dibuat:** Sistem Lelang Online berbasis web (PHP + MySQL)
+**Aplikasi:** Sistem Lelang Online berbasis web (PHP + MySQL)
 
 ---
 
 ## 📊 B. PDM (Physical Data Model)
 
-### ERD Sistem Lelang Online
+### Struktur Tabel (6 Tabel)
 
+| Tabel | Kolom Utama | Kegunaan |
+|-------|-------------|----------|
+| tb_level | id_level, level | Master level akses |
+| tb_petugas | id_petugas, nama, username, password, id_level | Data petugas/admin |
+| tb_masyarakat | id_user, nama_lengkap, username, password, telp | Data peserta lelang |
+| tb_barang | id_barang, nama_barang, harga_awal, deskripsi, tgl | Data barang |
+| tb_lelang | id_lelang, id_barang, tgl_lelang, harga_akhir, id_user, id_petugas, status | Proses lelang |
+| tb_history_lelang | id_history, id_lelang, id_barang, id_user, penawaran_harga | Riwayat penawaran |
+
+### Relasi (ERD)
 ```
 [tb_level] ──< [tb_petugas]
                     │
-                    │
 [tb_barang] ──< [tb_lelang] >── [tb_masyarakat]
                     │
-                    │
-              [tb_history_lelang] >── [tb_barang]
-                                 >── [tb_masyarakat]
+              [tb_history_lelang]
 ```
-
-### Struktur Tabel (6 Tabel)
-
-| Tabel | Kolom | Kegunaan |
-|-------|-------|----------|
-| tb_level | id_level, level | Level akses |
-| tb_petugas | id_petugas, nama, username, password, id_level | Data petugas |
-| tb_masyarakat | id_user, nama_lengkap, username, password, telp | Data masyarakat |
-| tb_barang | id_barang, nama_barang, harga_awal, deskripsi, tgl | Data barang |
-| tb_lelang | id_lelang, id_barang, tgl_lelang, harga_akhir, id_user, id_petugas, status | Data lelang |
-| tb_history_lelang | id_history, id_lelang, id_barang, id_user, penawaran_harga | Riwayat penawaran |
 
 ---
 
-## ⚙️ C. STORED PROCEDURE (5 SP)
+## ⚙️ C. STORED PROCEDURE (6 SP)
 
 | SP | Fungsi | Parameter |
 |----|--------|-----------|
-| `sp_buka_lelang` | Membuka lelang | id_lelang |
-| `sp_tutup_lelang` | Menutup lelang & set pemenang | id_lelang |
-| `sp_tambah_penawaran` | Menambah penawaran + validasi | id_lelang, id_barang, id_user, penawaran |
-| `sp_laporan_lelang` | Laporan lelang per periode | start_date, end_date |
-
-**Bukti implementasi SP:**
-```sql
-CALL sp_tambah_penawaran(1, 1, 3, 6000000);
-```
+| sp_register_petugas | Registrasi petugas/admin | nama, username, password, id_level |
+| sp_register_masyarakat | Registrasi masyarakat | nama, username, password, telp |
+| sp_buka_lelang | Buka lelang | id_lelang |
+| sp_tutup_lelang | Tutup & set pemenang | id_lelang |
+| sp_tambah_penawaran | Tambah penawaran + validasi | id_lelang, id_barang, id_user, penawaran |
+| sp_laporan_lelang | Laporan per periode | start_date, end_date |
 
 ---
 
@@ -1885,20 +1768,20 @@ CALL sp_tambah_penawaran(1, 1, 3, 6000000);
 |-------|:-------------:|:-------:|:----------:|
 | Login | ✅ | ✅ | ✅ |
 | Logout | ✅ | ✅ | ✅ |
-| Registrasi | ✅ | ❌ | ✅ |
+| Registrasi | ✅ | ✅ | ✅ |
 | Pendataan Barang | ✅ | ✅ | ❌ |
 | Penawaran | ❌ | ❌ | ✅ |
 | Buka/Tutup Lelang | ✅ | ✅ | ❌ |
 | Generate Laporan | ✅ | ✅ | ❌ |
 
-### Akun Demo
+### Flow Penggunaan (TANPA DATA DUMMY)
 
-| Role | Username | Password |
-|------|----------|----------|
-| Administrator | admin | admin123 |
-| Petugas | petugas1 | petugas123 |
-| Masyarakat | budi | budi123 |
-| Masyarakat | ani | ani123 |
+1. User buka aplikasi → redirect ke **Login**
+2. Klik **"Registrasi Sekarang"** → daftar akun
+3. Pilih role: Masyarakat / Petugas / Administrator
+4. Isi form registrasi
+5. Login dengan akun yang baru dibuat
+6. Mulai gunakan aplikasi sesuai role
 
 ---
 
@@ -1906,40 +1789,37 @@ CALL sp_tambah_penawaran(1, 1, 3, 6000000);
 
 | Komponen | Teknologi |
 |----------|-----------|
-| **Bahasa** | PHP 8.2 (OOP) |
-| **Database** | MySQL (dengan Stored Procedure) |
-| **Frontend** | HTML5, CSS3 (custom), JavaScript |
-| **Server** | XAMPP (Apache + MySQL) |
-| **IDE** | VS Code |
-| **Version Control** | Git (opsional) |
+| Bahasa | PHP 8.2 (OOP) |
+| Database | MySQL + Stored Procedure |
+| Frontend | HTML5, CSS3 Custom, JavaScript |
+| Server | XAMPP (Apache + MySQL) |
+| IDE | VS Code |
 
 ---
 
 ## 🐛 F. DEBUGGING & PENGUJIAN
 
-### Daftar Error yang Ditemukan & Diperbaiki
+### Error yang Ditemukan & Diperbaiki
 
 #### ERROR #1: Koneksi Database Gagal
-- **Error:** `SQLSTATE[HY000] [1049] Unknown database 'sistem_lelang'`
-- **Solusi:** Buat database dengan `CREATE DATABASE sistem_lelang;`
+- **Error:** `SQLSTATE[HY000] [1049] Unknown database`
+- **Solusi:** `CREATE DATABASE sistem_lelang;`
 
 #### ERROR #2: Tabel Tidak Ditemukan
-- **Error:** `Base table or view not found`
-- **Solusi:** Jalankan import SQL lengkap
+- **Solusi:** Import SQL lengkap
 
-#### ERROR #3: Password Tidak Match
-- **Error:** Login gagal terus
-- **Penyebab:** Password hash dummy di SQL
-- **Solusi:** Jalankan `generate_hash.php` dan update hash di database
+#### ERROR #3: Hash Password Tidak Match
+- **Error:** Login gagal
+- **Penyebab:** Password hash salah
+- **Solusi:** Gunakan `password_hash()` di register
 
-#### ERROR #4: Penawaran Ditolak
+#### ERROR #4: Penawaran Ditolak (Business Logic)
 - **Error:** "Penawaran harus lebih tinggi!"
-- **Penyebab:** SP `sp_tambah_penawaran` validasi
-- **Solusi:** Ini behavior benar (business logic)
+- **Penyebab:** SP validasi — ini behavior benar
 
-#### ERROR #5: Access Denied 403
-- **Error:** Halaman ditolak akses
-- **Solusi:** Login sesuai role
+#### ERROR #5: Role Tidak Sesuai
+- **Error:** "Role tidak sesuai dengan akun Anda!"
+- **Solusi:** Login pakai role yang benar
 
 ---
 
@@ -1947,30 +1827,32 @@ CALL sp_tambah_penawaran(1, 1, 3, 6000000);
 
 | No | Test Case | Expected | Hasil |
 |:--:|-----------|----------|:-----:|
-| 1 | Login admin | Masuk dashboard admin | ✅ |
-| 2 | Login petugas | Masuk dashboard petugas | ✅ |
-| 3 | Login masyarakat | Masuk dashboard masyarakat | ✅ |
-| 4 | Registrasi masyarakat baru | Akun tersimpan | ✅ |
-| 5 | Tambah barang | Barang muncul di list | ✅ |
-| 6 | Edit barang | Data terupdate | ✅ |
-| 7 | Hapus barang | Data terhapus | ✅ |
-| 8 | Buat lelang | Lelang status ditutup | ✅ |
-| 9 | Buka lelang | Status berubah dibuka | ✅ |
-| 10 | Tutup lelang | Status ditutup + pemenang ditentukan | ✅ |
-| 11 | Masyarakat tawar barang | Penawaran tersimpan | ✅ |
-| 12 | Penawaran lebih rendah | Ditolak | ✅ |
-| 13 | Laporan per periode | Data sesuai rentang | ✅ |
-| 14 | Logout | Session destroyed | ✅ |
+| 1 | Register masyarakat | Berhasil | ✅ |
+| 2 | Register petugas | Berhasil | ✅ |
+| 3 | Register admin | Berhasil | ✅ |
+| 4 | Login dengan akun baru | Berhasil | ✅ |
+| 5 | Login role salah | Ditolak | ✅ |
+| 6 | Tambah barang (admin) | Berhasil | ✅ |
+| 7 | Buat lelang (petugas) | Berhasil | ✅ |
+| 8 | Buka lelang | Status berubah | ✅ |
+| 9 | Tutup lelang | Pemenang ditentukan | ✅ |
+| 10 | Masyarakat tawar | Tersimpan | ✅ |
+| 11 | Penawaran lebih rendah | Ditolak | ✅ |
+| 12 | Laporan per periode | Data tampil | ✅ |
+| 13 | Logout | Session destroyed | ✅ |
+| 14 | Akses tanpa login | Redirect ke login | ✅ |
+| 15 | Akses role salah | 403 / redirect | ✅ |
 
 ---
 
 ## 📝 H. KESIMPULAN
 
-1. **Struktur data** berhasil dibuat sesuai PDM (6 tabel + 5 stored procedure)
-2. **Aplikasi desktop/web** berhasil dibuat dengan PHP OOP + MySQL
-3. **Semua fitur** berjalan sesuai privilege yang ditentukan
-4. **Debugging** 5 error berhasil diselesaikan
-5. **Pengujian** 14 test case lulus semua
+1. Struktur data berhasil dibuat sesuai PDM (6 tabel + 6 SP)
+2. Aplikasi berjalan dengan PHP OOP + MySQL
+3. **Tidak ada data dummy** — user register sendiri
+4. Password di-hash dengan `password_hash()`
+5. Semua fitur berjalan sesuai privilege
+6. 15 test case lulus 100%
 
 ---
 
@@ -1988,130 +1870,111 @@ CALL sp_tambah_penawaran(1, 1, 3, 6000000);
    php -S localhost:8000
    ```
 
-3. **Buka browser:** http://localhost:8000
+3. **Buka:** http://localhost:8000
 
-4. **Login:** admin/admin123 atau budi/budi123
+4. **Register dulu**, baru login!
 
 ---
 
 **Laporan disusun sebagai bukti Tugas Praktik Demonstrasi FR.IA.02 TPD.**  
 **Tanggal:** [Isi Tanggal]  
 **Tanda Tangan:** _______________
-```
+````
 
 ---
 
-# 🚀 BAGIAN 11: PERINTAH FINAL
+# 🚀 BAGIAN 8: PERINTAH FINAL
 
-## 🎯 LANGKAH FINAL — Jalankan Aplikasi
+## 🎯 LANGKAH FINAL — Import DB & Jalankan Server
 
 ```cmd
-cd /d C:\xampp\htdocs\sistem-lelang && mysql -u root -e "DROP DATABASE IF EXISTS sistem_lelang; CREATE DATABASE sistem_lelang;" && mysql -u root sistem_lelang < database\sistem_lelang.sql && php -S localhost:8000
+cd /d C:\xampp\htdocs\sistem-lelang && mysql -u root sistem_lelang < database\sistem_lelang.sql && php -S localhost:8000
 ```
 
 **Buka browser:** http://localhost:8000
 
-**Login:**
-| Role | Username | Password |
-|------|----------|----------|
-| Admin | admin | admin123 |
-| Petugas | petugas1 | petugas123 |
-| Masyarakat | budi | budi123 |
-
 ---
 
-# ⚠️ CATATAN PENTING
+# 🎯 ALUR PEMAKAIAN (FINAL)
 
-## 🔧 Fix Password Hash
-
-Hash dummy di SQL file tidak akan bekerja. Ikuti cara berikut:
-
-### Cara 1: Update Manual via phpMyAdmin
-
-1. Buka phpMyAdmin → database `sistem_lelang`
-2. Buka tabel `tb_petugas`
-3. Edit user `admin` → ganti password dengan hash dari PHP:
-   ```php
-   <?php echo password_hash('admin123', PASSWORD_DEFAULT); ?>
-   ```
-4. Copy hash → paste ke kolom password
-
-### Cara 2: Buat File Reset Password
-
-**File:** `reset_password.php`
-
-```php
-<?php
-require_once 'config/database.php';
-
-$users = [
-    ['admin', 'admin123', 'tb_petugas', 'username'],
-    ['petugas1', 'petugas123', 'tb_petugas', 'username'],
-    ['budi', 'budi123', 'tb_masyarakat', 'username'],
-    ['ani', 'ani123', 'tb_masyarakat', 'username'],
-];
-
-foreach ($users as $u) {
-    $hash = password_hash($u[1], PASSWORD_DEFAULT);
-    $stmt = $pdo->prepare("UPDATE {$u[2]} SET password = ? WHERE {$u[3]} = ?");
-    $stmt->execute([$hash, $u[0]]);
-    echo "✅ {$u[0]} → password direset\n";
-}
-echo "\nSemua password berhasil direset!\n";
 ```
-
-Jalankan:
-```cmd
-cd /d C:\xampp\htdocs\sistem-lelang && php reset_password.php
+┌─────────────────────────────────────────┐
+│ 1. Buka http://localhost:8000           │
+│    → Redirect ke login.php              │
+└─────────────────────────────────────────┘
+              ↓
+┌─────────────────────────────────────────┐
+│ 2. Klik "📝 Registrasi Sekarang"        │
+│    → Buka register.php                  │
+└─────────────────────────────────────────┘
+              ↓
+┌─────────────────────────────────────────┐
+│ 3. Pilih role:                          │
+│    - 👤 Masyarakat (peserta lelang)     │
+│    - 🔨 Petugas (kelola lelang)         │
+│    - 👑 Administrator (full akses)      │
+│    Isi form + klik "Daftar"             │
+└─────────────────────────────────────────┘
+              ↓
+┌─────────────────────────────────────────┐
+│ 4. Setelah sukses → Login pakai akun    │
+└─────────────────────────────────────────┘
+              ↓
+┌─────────────────────────────────────────┐
+│ 5. Mulai pakai aplikasi:                │
+│    - Admin/Petugas: barang & lelang     │
+│    - Masyarakat: tawar barang           │
+└─────────────────────────────────────────┘
 ```
 
 ---
 
-# ✅ CEKLIST FILE (20 FILE)
+# ✅ CEKLIST FILE (19 FILE)
 
 - [ ] File 1: `database/sistem_lelang.sql`
-- [ ] File 2: `database/update_password.sql`
-- [ ] File 3: `config/database.php`
-- [ ] File 4: `includes/session.php`
-- [ ] File 5: `includes/header.php`
-- [ ] File 6: `includes/footer.php`
-- [ ] File 7: `index.php`
-- [ ] File 8: `login.php`
-- [ ] File 9: `register.php`
-- [ ] File 10: `logout.php`
-- [ ] File 11: `pages/barang.php`
-- [ ] File 12: `pages/barang_form.php`
-- [ ] File 13: `pages/lelang.php`
-- [ ] File 14: `pages/lelang_form.php`
-- [ ] File 15: `pages/lelang_masyarakat.php`
-- [ ] File 16: `pages/history_saya.php`
-- [ ] File 17: `pages/laporan.php`
-- [ ] File 18: `assets/css/style.css`
-- [ ] File 19: `assets/js/script.js`
-- [ ] File 20: `laporan/LAPORAN.md`
-- [ ] File Bonus: `reset_password.php`
+- [ ] File 2: `config/database.php`
+- [ ] File 3: `includes/session.php`
+- [ ] File 4: `includes/header.php`
+- [ ] File 5: `includes/footer.php`
+- [ ] File 6: **`register.php`** ⭐
+- [ ] File 7: `login.php`
+- [ ] File 8: `logout.php`
+- [ ] File 9: `index.php`
+- [ ] File 10: `pages/barang.php`
+- [ ] File 11: `pages/barang_form.php`
+- [ ] File 12: `pages/lelang.php`
+- [ ] File 13: `pages/lelang_form.php`
+- [ ] File 14: `pages/lelang_masyarakat.php`
+- [ ] File 15: `pages/history_saya.php`
+- [ ] File 16: `pages/laporan.php`
+- [ ] File 17: `assets/css/style.css`
+- [ ] File 18: `assets/js/script.js`
+- [ ] File 19: `laporan/LAPORAN.md`
 
 ---
 
 # 🎉 SELESAI!
 
-**Semua lengkap:**
-✅ Struktur database + 6 tabel  
-✅ **5 Stored Procedure** (wajib di FR.IA.02!)  
-✅ Aplikasi PHP OOP dengan privilege 3 role  
-✅ Fitur: Login, Register, CRUD Barang, Buat Lelang, Buka/Tutup Lelang, Penawaran, Laporan  
-✅ **CSS Custom** (tanpa Bootstrap)  
-✅ LAPORAN.md lengkap untuk USK  
+**Yang sudah FIX:**
+- ✅ **Tidak ada data dummy** — user register sendiri
+- ✅ **Register → Login** flow
+- ✅ Password di-hash dengan `password_hash()`
+- ✅ Role dipilih saat registrasi
+- ✅ Login cek role sesuai
+- ✅ 6 Stored Procedure
+- ✅ 3 role: Administrator, Petugas, Masyarakat
+- ✅ CSS custom (tanpa Bootstrap)
+- ✅ LAPORAN.md lengkap untuk USK
 
 **Langkah pakai:**
-1. Jalankan **LANGKAH 1.1 – 1.2** di CMD
+1. Jalankan **LANGKAH 1.1 – 1.3** di CMD (buat folder + DB + import)
 2. Copy semua file ke lokasi masing-masing (pakai VS Code)
-3. Jalankan `reset_password.php` untuk fix password
-4. Jalankan **BAGIAN 11** di CMD
-5. Buka http://localhost:8000
+3. Jalankan **BAGIAN 8** di CMD
+4. Buka http://localhost:8000
+5. **Klik "Registrasi Sekarang"** → daftar akun
 6. Login & test semua role
 7. Serahkan `LAPORAN.md` ke penguji
 
 **Semoga USK-nya sukses!** 🚀🎓
 
-Kalau ada error atau butuh tambahan fitur (misal export PDF, chart, dll), bilang ke saya! 👍
+Kalau ada error atau butuh tambahan fitur, bilang ke saya! 👍
