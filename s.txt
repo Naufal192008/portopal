@@ -1,0 +1,2440 @@
+
+
+
+Buka **CMD** (XAMPP harus running):
+
+```cmd
+cd /d C:\xampp\htdocs && rmdir /s /q kasir-restoran 2>nul & composer create-project laravel/laravel kasir-restoran && cd kasir-restoran && php artisan key:generate && mysql -u root -e "DROP DATABASE IF EXISTS kasir_restoran; CREATE DATABASE kasir_restoran;" && echo SELESAI LANGKAH 1
+```
+
+
+```cmd
+cd /d C:\xampp\htdocs\kasir-restoran && php artisan make:migration create_users_table && php artisan make:migration create_menu_items_table && php artisan make:migration create_tables_table && php artisan make:migration create_orders_table && php artisan make:migration create_order_items_table && php artisan make:migration create_transactions_table && php artisan make:migration create_stored_procedures && php artisan make:seeder LevelSeeder && php artisan make:seeder MenuSeeder && php artisan make:controller AuthController && php artisan make:controller DashboardController && php artisan make:controller MenuController --resource && php artisan make:controller MejaController --resource && php artisan make:controller OrderController && php artisan make:controller TransaksiController && php artisan make:controller LaporanController && php artisan make:middleware RoleMiddleware && echo SELESAI LANGKAH 2
+```
+
+
+```cmd
+cd /d C:\xampp\htdocs\kasir-restoran && del /q database\migrations\0001_01_01_000000_create_users_table.php database\migrations\0001_01_01_000001_create_cache_table.php database\migrations\0001_01_01_000002_create_jobs_table.php 2>nul & echo SELESAI LANGKAH 3
+```
+
+---
+
+# 📝 BAGIAN 2: KONFIGURASI
+
+## 📄 File 1: `.env`
+
+**Lokasi:** `C:\xampp\htdocs\kasir-restoran\.env`
+
+```env
+APP_NAME=KasirRestoran
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_TIMEZONE=Asia/Jakarta
+APP_URL=http://localhost:8000
+
+LOG_CHANNEL=stack
+LOG_LEVEL=debug
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=kasir_restoran
+DB_USERNAME=root
+DB_PASSWORD=
+
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+SESSION_ENCRYPT=false
+SESSION_PATH=/
+SESSION_DOMAIN=null
+
+BROADCAST_CONNECTION=log
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=database
+
+CACHE_STORE=database
+CACHE_PREFIX=
+
+MAIL_MAILER=log
+MAIL_HOST=127.0.0.1
+MAIL_PORT=2525
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+
+VITE_APP_NAME="${APP_NAME}"
+```
+
+Setelah disimpan, jalankan:
+```cmd
+cd /d C:\xampp\htdocs\kasir-restoran && php artisan key:generate
+```
+
+---
+
+
+
+## 📄 File 2: `database/migrations/2024_01_01_000001_create_users_table.php`
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('name', 100);
+            $table->string('username', 50)->unique();
+            $table->string('password');
+            $table->enum('role', ['owner', 'administrator', 'waiter', 'kasir'])->default('waiter');
+            $table->boolean('is_active')->default(true);
+            $table->rememberToken();
+            $table->timestamps();
+        });
+
+        Schema::create('sessions', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->foreignId('user_id')->nullable()->index();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->longText('payload');
+            $table->integer('last_activity')->index();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('sessions');
+        Schema::dropIfExists('users');
+    }
+};
+```
+
+---
+
+## 📄 File 3: `database/migrations/2024_01_01_000002_create_menu_items_table.php`
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('menu_items', function (Blueprint $table) {
+            $table->id();
+            $table->string('item_code', 20)->unique();
+            $table->string('item_name', 100);
+            $table->string('category', 50)->nullable();
+            $table->decimal('price', 10, 2);
+            $table->boolean('is_available')->default(true);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('menu_items');
+    }
+};
+```
+
+---
+
+## 📄 File 4: `database/migrations/2024_01_01_000003_create_tables_table.php`
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('resto_tables', function (Blueprint $table) {
+            $table->id();
+            $table->string('table_number', 10)->unique();
+            $table->integer('capacity')->default(4);
+            $table->enum('status', ['available', 'occupied', 'reserved'])->default('available');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('resto_tables');
+    }
+};
+```
+
+> **Catatan:** Tabel `tables` di MySQL bentrok dengan keyword, jadi pakai `resto_tables`.
+
+---
+
+## 📄 File 5: `database/migrations/2024_01_01_000004_create_orders_table.php`
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('orders', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('table_id')->constrained('resto_tables')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->enum('status', ['pending', 'preparing', 'ready', 'served', 'paid'])->default('pending');
+            $table->decimal('subtotal', 12, 2)->default(0);
+            $table->decimal('tax', 12, 2)->default(0);
+            $table->decimal('total', 12, 2)->default(0);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('orders');
+    }
+};
+```
+
+---
+
+## 📄 File 6: `database/migrations/2024_01_01_000005_create_order_items_table.php`
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('order_items', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
+            $table->foreignId('menu_item_id')->constrained('menu_items')->onDelete('cascade');
+            $table->integer('quantity');
+            $table->decimal('price_per_unit', 12, 2);
+            $table->decimal('subtotal', 12, 2);
+            $table->text('note')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('order_items');
+    }
+};
+```
+
+---
+
+## 📄 File 7: `database/migrations/2024_01_01_000006_create_transactions_table.php`
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('transactions', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->enum('payment_method', ['cash', 'credit_card', 'debit_card', 'qr_code']);
+            $table->decimal('amount_paid', 12, 2);
+            $table->decimal('change_amount', 12, 2)->default(0);
+            $table->enum('status', ['completed', 'cancelled'])->default('completed');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('transactions');
+    }
+};
+```
+
+---
+
+## 📄 File 8: `database/migrations/2024_01_01_000007_create_stored_procedures.php`
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        // SP 1: Register User
+        DB::unprepared("
+            DROP PROCEDURE IF EXISTS sp_register_user;
+            CREATE PROCEDURE sp_register_user(
+                IN p_name VARCHAR(100),
+                IN p_username VARCHAR(50),
+                IN p_password VARCHAR(255),
+                IN p_role VARCHAR(20)
+            )
+            BEGIN
+                DECLARE v_exists INT;
+                SELECT COUNT(*) INTO v_exists FROM users WHERE username = p_username;
+                IF v_exists > 0 THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Username sudah terdaftar!';
+                ELSE
+                    INSERT INTO users (name, username, password, role, is_active, created_at, updated_at)
+                    VALUES (p_name, p_username, p_password, p_role, 1, NOW(), NOW());
+                END IF;
+            END
+        ");
+
+        // SP 2: Tambah Item ke Order
+        DB::unprepared("
+            DROP PROCEDURE IF EXISTS sp_add_order_item;
+            CREATE PROCEDURE sp_add_order_item(
+                IN p_order_id INT,
+                IN p_menu_item_id INT,
+                IN p_quantity INT,
+                IN p_note TEXT
+            )
+            BEGIN
+                DECLARE v_price DECIMAL(12,2);
+                DECLARE v_subtotal DECIMAL(12,2);
+                DECLARE v_total_subtotal DECIMAL(12,2);
+                DECLARE v_tax DECIMAL(12,2);
+                DECLARE v_total DECIMAL(12,2);
+
+                SELECT price INTO v_price FROM menu_items WHERE id = p_menu_item_id;
+                SET v_subtotal = v_price * p_quantity;
+
+                INSERT INTO order_items (order_id, menu_item_id, quantity, price_per_unit, subtotal, note, created_at, updated_at)
+                VALUES (p_order_id, p_menu_item_id, p_quantity, v_price, v_subtotal, p_note, NOW(), NOW());
+
+                SELECT IFNULL(SUM(subtotal), 0) INTO v_total_subtotal FROM order_items WHERE order_id = p_order_id;
+                SET v_tax = v_total_subtotal * 0.10;
+                SET v_total = v_total_subtotal + v_tax;
+
+                UPDATE orders
+                SET subtotal = v_total_subtotal, tax = v_tax, total = v_total, updated_at = NOW()
+                WHERE id = p_order_id;
+            END
+        ");
+
+        // SP 3: Complete Transaction
+        DB::unprepared("
+            DROP PROCEDURE IF EXISTS sp_complete_transaction;
+            CREATE PROCEDURE sp_complete_transaction(
+                IN p_order_id INT,
+                IN p_user_id INT,
+                IN p_payment_method VARCHAR(20),
+                IN p_amount_paid DECIMAL(12,2)
+            )
+            BEGIN
+                DECLARE v_total DECIMAL(12,2);
+                DECLARE v_change DECIMAL(12,2);
+                DECLARE v_table_id INT;
+
+                SELECT total, table_id INTO v_total, v_table_id FROM orders WHERE id = p_order_id;
+                SET v_change = p_amount_paid - v_total;
+
+                INSERT INTO transactions (order_id, user_id, payment_method, amount_paid, change_amount, status, created_at, updated_at)
+                VALUES (p_order_id, p_user_id, p_payment_method, p_amount_paid, v_change, 'completed', NOW(), NOW());
+
+                UPDATE orders SET status = 'paid', updated_at = NOW() WHERE id = p_order_id;
+                UPDATE resto_tables SET status = 'available', updated_at = NOW() WHERE id = v_table_id;
+            END
+        ");
+
+        // SP 4: Daily Report
+        DB::unprepared("
+            DROP PROCEDURE IF EXISTS sp_daily_report;
+            CREATE PROCEDURE sp_daily_report(IN p_date DATE)
+            BEGIN
+                SELECT
+                    t.id AS transaction_id,
+                    t.created_at AS transaction_date,
+                    u.name AS kasir_name,
+                    o.id AS order_id,
+                    t.payment_method,
+                    o.total,
+                    t.amount_paid,
+                    t.change_amount
+                FROM transactions t
+                JOIN orders o ON t.order_id = o.id
+                JOIN users u ON t.user_id = u.id
+                WHERE DATE(t.created_at) = p_date
+                ORDER BY t.created_at DESC;
+            END
+        ");
+
+        // SP 5: Best Selling Menu
+        DB::unprepared("
+            DROP PROCEDURE IF EXISTS sp_best_selling_menu;
+            CREATE PROCEDURE sp_best_selling_menu(IN p_start DATE, IN p_end DATE)
+            BEGIN
+                SELECT
+                    mi.item_name,
+                    mi.category,
+                    SUM(oi.quantity) AS total_quantity,
+                    SUM(oi.subtotal) AS total_revenue
+                FROM order_items oi
+                JOIN orders o ON oi.order_id = o.id
+                JOIN menu_items mi ON oi.menu_item_id = mi.id
+                WHERE DATE(o.created_at) BETWEEN p_start AND p_end
+                AND o.status = 'paid'
+                GROUP BY mi.id
+                ORDER BY total_quantity DESC
+                LIMIT 10;
+            END
+        ");
+    }
+
+    public function down(): void
+    {
+        DB::unprepared("DROP PROCEDURE IF EXISTS sp_register_user");
+        DB::unprepared("DROP PROCEDURE IF EXISTS sp_add_order_item");
+        DB::unprepared("DROP PROCEDURE IF EXISTS sp_complete_transaction");
+        DB::unprepared("DROP PROCEDURE IF EXISTS sp_daily_report");
+        DB::unprepared("DROP PROCEDURE IF EXISTS sp_best_selling_menu");
+    }
+};
+```
+
+---
+
+# 📝 BAGIAN 4: SEEDER
+
+## 📄 File 9: `database/seeders/LevelSeeder.php`
+
+```php
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class LevelSeeder extends Seeder
+{
+    public function run(): void
+    {
+        // Tidak ada data dummy - semua user register sendiri
+        // Seeder ini hanya template
+        $this->command->info('LevelSeeder: Tidak ada data dummy. User register sendiri.');
+    }
+}
+```
+
+---
+
+## 📄 File 10: `database/seeders/MenuSeeder.php`
+
+```php
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class MenuSeeder extends Seeder
+{
+    public function run(): void
+    {
+        // Tidak ada menu dummy - admin/petugas input sendiri lewat UI
+        $this->command->info('MenuSeeder: Tidak ada data dummy. Admin input menu sendiri.');
+    }
+}
+```
+
+---
+
+## 📄 File 11: `database/seeders/DatabaseSeeder.php`
+
+```php
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+
+class DatabaseSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $this->call([
+            // Kosong - user register sendiri
+        ]);
+    }
+}
+```
+
+---
+
+# 📝 BAGIAN 5: MODEL
+
+## 📄 File 12: `app/Models/User.php`
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+
+class User extends Authenticatable
+{
+    use Notifiable;
+
+    protected $fillable = ['name', 'username', 'password', 'role', 'is_active'];
+    protected $hidden = ['password', 'remember_token'];
+
+    protected function casts(): array
+    {
+        return [
+            'password' => 'hashed',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+}
+```
+
+---
+
+## 📄 File 13: `app/Models/MenuItem.php`
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class MenuItem extends Model
+{
+    protected $fillable = ['item_code', 'item_name', 'category', 'price', 'is_available'];
+
+    protected $casts = [
+        'is_available' => 'boolean',
+        'price' => 'decimal:2',
+    ];
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+}
+```
+
+---
+
+## 📄 File 14: `app/Models/RestoTable.php`
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class RestoTable extends Model
+{
+    protected $table = 'resto_tables';
+    protected $fillable = ['table_number', 'capacity', 'status'];
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'table_id');
+    }
+}
+```
+
+> **Catatan:** Model `Table` bentrok dengan Facade Laravel, jadi pakai `RestoTable`.
+
+---
+
+## 📄 File 15: `app/Models/Order.php`
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Order extends Model
+{
+    protected $fillable = ['table_id', 'user_id', 'status', 'subtotal', 'tax', 'total'];
+
+    public function table()
+    {
+        return $this->belongsTo(RestoTable::class, 'table_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function items()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function transaction()
+    {
+        return $this->hasOne(Transaction::class);
+    }
+}
+```
+
+---
+
+## 📄 File 16: `app/Models/OrderItem.php`
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class OrderItem extends Model
+{
+    protected $fillable = ['order_id', 'menu_item_id', 'quantity', 'price_per_unit', 'subtotal', 'note'];
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+
+    public function menuItem()
+    {
+        return $this->belongsTo(MenuItem::class);
+    }
+}
+```
+
+---
+
+## 📄 File 17: `app/Models/Transaction.php`
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Transaction extends Model
+{
+    protected $fillable = ['order_id', 'user_id', 'payment_method', 'amount_paid', 'change_amount', 'status'];
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+}
+```
+
+---
+
+# 📝 BAGIAN 6: MIDDLEWARE
+
+## 📄 File 18: `app/Http/Middleware/RoleMiddleware.php`
+
+```php
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+
+class RoleMiddleware
+{
+    public function handle(Request $request, Closure $next, ...$roles)
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        if (!in_array(auth()->user()->role, $roles)) {
+            abort(403, 'Akses ditolak. Role Anda tidak diizinkan.');
+        }
+
+        return $next($request);
+    }
+}
+```
+
+---
+
+## 📄 File 19: `bootstrap/app.php`
+
+```php
+<?php
+
+use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Foundation\Configuration\Middleware;
+
+return Application::configure(basePath: dirname(__DIR__))
+    ->withRouting(
+        web: __DIR__.'/../routes/web.php',
+        commands: __DIR__.'/../routes/console.php',
+        health: '/up',
+    )
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->alias([
+            'role' => \App\Http\Middleware\RoleMiddleware::class,
+        ]);
+    })
+    ->withExceptions(function (Exceptions $exceptions) {
+        //
+    })->create();
+```
+
+---
+
+# 📝 BAGIAN 7: CONTROLLER
+
+## 📄 File 20: `app/Http/Controllers/AuthController.php`
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+
+class AuthController extends Controller
+{
+    // ============ LOGIN ============
+    public function showLogin()
+    {
+        if (Auth::check()) {
+            return redirect()->route('dashboard');
+        }
+        return view('auth.login');
+    }
+
+    public function login(Request $request)
+    {
+        $request->validate([
+            'username' => 'required',
+            'password' => 'required',
+        ]);
+
+        $user = User::where('username', $request->username)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return back()->withErrors(['username' => 'Username atau password salah!'])->withInput();
+        }
+
+        if (!$user->is_active) {
+            return back()->withErrors(['username' => 'Akun Anda dinonaktifkan!'])->withInput();
+        }
+
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect()->route('dashboard')->with('success', 'Selamat datang, ' . $user->name . '!');
+    }
+
+    // ============ REGISTER ============
+    public function showRegister()
+    {
+        if (Auth::check()) {
+            return redirect()->route('dashboard');
+        }
+        return view('auth.register');
+    }
+
+    public function register(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|min:3|max:100',
+            'username' => 'required|min:3|max:50',
+            'password' => 'required|min:6|confirmed',
+            'role' => 'required|in:owner,administrator,waiter,kasir',
+        ]);
+
+        try {
+            $hash = Hash::make($request->password);
+
+            DB::statement("CALL sp_register_user(?, ?, ?, ?)", [
+                $request->name,
+                $request->username,
+                $hash,
+                $request->role,
+            ]);
+
+            return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['username' => $e->getMessage()])->withInput();
+        }
+    }
+
+    // ============ LOGOUT ============
+    public function logout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect()->route('login');
+    }
+}
+```
+
+---
+
+## 📄 File 21: `app/Http/Controllers/DashboardController.php`
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\MenuItem;
+use App\Models\Order;
+use App\Models\RestoTable;
+use App\Models\Transaction;
+
+class DashboardController extends Controller
+{
+    public function index()
+    {
+        $data = [
+            'totalMenu' => MenuItem::count(),
+            'totalMeja' => RestoTable::count(),
+            'totalOrder' => Order::count(),
+            'totalTransaksi' => Transaction::count(),
+            'totalRevenue' => Transaction::where('status', 'completed')->sum('amount_paid'),
+            'activeOrders' => Order::with('table')->where('status', '!=', 'paid')->latest()->take(5)->get(),
+        ];
+
+        return view('dashboard', $data);
+    }
+}
+```
+
+---
+
+## 📄 File 22: `app/Http/Controllers/MenuController.php`
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\MenuItem;
+use Illuminate\Http\Request;
+
+class MenuController extends Controller
+{
+    public function index()
+    {
+        $items = MenuItem::orderBy('category')->orderBy('item_name')->paginate(10);
+        return view('menu.index', compact('items'));
+    }
+
+    public function create()
+    {
+        return view('menu.form');
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'item_code' => 'required|unique:menu_items',
+            'item_name' => 'required|min:3',
+            'price' => 'required|numeric|min:0',
+        ]);
+
+        MenuItem::create([
+            'item_code' => $request->item_code,
+            'item_name' => $request->item_name,
+            'category' => $request->category,
+            'price' => $request->price,
+            'is_available' => $request->has('is_available') ? 1 : 0,
+        ]);
+
+        return redirect()->route('menu.index')->with('success', 'Menu berhasil ditambahkan!');
+    }
+
+    public function show(MenuItem $menu)
+    {
+        return view('menu.show', compact('menu'));
+    }
+
+    public function edit(MenuItem $menu)
+    {
+        return view('menu.form', compact('menu'));
+    }
+
+    public function update(Request $request, MenuItem $menu)
+    {
+        $request->validate([
+            'item_code' => 'required|unique:menu_items,item_code,' . $menu->id,
+            'item_name' => 'required|min:3',
+            'price' => 'required|numeric|min:0',
+        ]);
+
+        $menu->update([
+            'item_code' => $request->item_code,
+            'item_name' => $request->item_name,
+            'category' => $request->category,
+            'price' => $request->price,
+            'is_available' => $request->has('is_available') ? 1 : 0,
+        ]);
+
+        return redirect()->route('menu.index')->with('success', 'Menu berhasil diupdate!');
+    }
+
+    public function destroy(MenuItem $menu)
+    {
+        $menu->delete();
+        return redirect()->route('menu.index')->with('success', 'Menu berhasil dihapus!');
+    }
+}
+```
+
+---
+
+## 📄 File 23: `app/Http/Controllers/MejaController.php`
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\RestoTable;
+use Illuminate\Http\Request;
+
+class MejaController extends Controller
+{
+    public function index()
+    {
+        $tables = RestoTable::orderBy('table_number')->get();
+        return view('meja.index', compact('tables'));
+    }
+
+    public function create()
+    {
+        return view('meja.form');
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'table_number' => 'required|unique:resto_tables',
+            'capacity' => 'required|integer|min:1',
+        ]);
+
+        RestoTable::create($request->all());
+        return redirect()->route('meja.index')->with('success', 'Meja berhasil ditambahkan!');
+    }
+
+    public function show(RestoTable $meja)
+    {
+        return view('meja.show', compact('meja'));
+    }
+
+    public function edit(RestoTable $meja)
+    {
+        return view('meja.form', compact('meja'));
+    }
+
+    public function update(Request $request, RestoTable $meja)
+    {
+        $request->validate([
+            'table_number' => 'required|unique:resto_tables,table_number,' . $meja->id,
+            'capacity' => 'required|integer|min:1',
+        ]);
+
+        $meja->update($request->all());
+        return redirect()->route('meja.index')->with('success', 'Meja berhasil diupdate!');
+    }
+
+    public function destroy(RestoTable $meja)
+    {
+        $meja->delete();
+        return redirect()->route('meja.index')->with('success', 'Meja berhasil dihapus!');
+    }
+}
+```
+
+---
+
+## 📄 File 24: `app/Http/Controllers/OrderController.php`
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\MenuItem;
+use App\Models\Order;
+use App\Models\RestoTable;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class OrderController extends Controller
+{
+    public function index()
+    {
+        $tables = RestoTable::where('status', 'available')->get();
+        $menuItems = MenuItem::where('is_available', true)->orderBy('category')->get();
+        $activeOrders = Order::with(['table', 'user'])->where('status', '!=', 'paid')->latest()->get();
+
+        return view('orders.index', compact('tables', 'menuItems', 'activeOrders'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate(['table_id' => 'required|exists:resto_tables,id']);
+
+        DB::beginTransaction();
+        try {
+            $order = Order::create([
+                'table_id' => $request->table_id,
+                'user_id' => auth()->id(),
+                'status' => 'pending',
+            ]);
+
+            RestoTable::where('id', $request->table_id)->update(['status' => 'occupied']);
+
+            DB::commit();
+            return redirect()->route('orders.show', $order)->with('success', 'Order berhasil dibuat! Silakan tambah item.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal membuat order: ' . $e->getMessage());
+        }
+    }
+
+    public function show(Order $order)
+    {
+        $order->load(['table', 'user', 'items.menuItem']);
+        $menuItems = MenuItem::where('is_available', true)->orderBy('category')->get();
+        return view('orders.show', compact('order', 'menuItems'));
+    }
+
+    public function addItem(Request $request, Order $order)
+    {
+        $request->validate([
+            'menu_item_id' => 'required|exists:menu_items,id',
+            'quantity' => 'required|integer|min:1',
+        ]);
+
+        try {
+            DB::statement("CALL sp_add_order_item(?, ?, ?, ?)", [
+                $order->id,
+                $request->menu_item_id,
+                $request->quantity,
+                $request->note ?? '',
+            ]);
+
+            return back()->with('success', 'Item berhasil ditambahkan!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal: ' . $e->getMessage());
+        }
+    }
+
+    public function destroy(Order $order)
+    {
+        RestoTable::where('id', $order->table_id)->update(['status' => 'available']);
+        $order->delete();
+        return redirect()->route('orders.index')->with('success', 'Order dibatalkan!');
+    }
+}
+```
+
+---
+
+## 📄 File 25: `app/Http/Controllers/TransaksiController.php`
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Order;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class TransaksiController extends Controller
+{
+    public function index()
+    {
+        $activeOrders = Order::with(['table', 'user'])->where('status', '!=', 'paid')->latest()->get();
+        return view('transaksi.index', compact('activeOrders'));
+    }
+
+    public function proses(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:orders,id',
+            'payment_method' => 'required|in:cash,credit_card,debit_card,qr_code',
+            'amount_paid' => 'required|numeric|min:0',
+        ]);
+
+        $order = Order::findOrFail($request->order_id);
+
+        if ($request->amount_paid < $order->total) {
+            return back()->with('error', 'Jumlah bayar kurang dari total!');
+        }
+
+        try {
+            DB::statement("CALL sp_complete_transaction(?, ?, ?, ?)", [
+                $order->id,
+                auth()->id(),
+                $request->payment_method,
+                $request->amount_paid,
+            ]);
+
+            $kembalian = $request->amount_paid - $order->total;
+            return redirect()->route('transaksi.index')->with('success', 'Pembayaran berhasil! Kembalian: Rp ' . number_format($kembalian, 0, ',', '.'));
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal: ' . $e->getMessage());
+        }
+    }
+}
+```
+
+---
+
+## 📄 File 26: `app/Http/Controllers/LaporanController.php`
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class LaporanController extends Controller
+{
+    public function index(Request $request)
+    {
+        $date = $request->get('date', date('Y-m-d'));
+
+        try {
+            $transactions = DB::select("CALL sp_daily_report(?)", [$date]);
+        } catch (\Exception $e) {
+            $transactions = [];
+        }
+
+        $totalTransactions = count($transactions);
+        $totalRevenue = array_sum(array_column($transactions, 'amount_paid'));
+        $average = $totalTransactions > 0 ? $totalRevenue / $totalTransactions : 0;
+
+        return view('laporan.daily', compact('transactions', 'date', 'totalTransactions', 'totalRevenue', 'average'));
+    }
+
+    public function bestSelling(Request $request)
+    {
+        $start = $request->get('start_date', date('Y-m-d', strtotime('-30 days')));
+        $end = $request->get('end_date', date('Y-m-d'));
+
+        try {
+            $items = DB::select("CALL sp_best_selling_menu(?, ?)", [$start, $end]);
+        } catch (\Exception $e) {
+            $items = [];
+        }
+
+        return view('laporan.best_selling', compact('items', 'start', 'end'));
+    }
+}
+```
+
+---
+
+# 📝 BAGIAN 8: ROUTES
+
+## 📄 File 27: `routes/web.php`
+
+```php
+<?php
+
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\MejaController;
+use App\Http\Controllers\MenuController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\TransaksiController;
+use Illuminate\Support\Facades\Route;
+
+// ============ AUTH ============
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// ============ PROTECTED ============
+Route::middleware('auth')->group(function () {
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Kelola Meja - Admin only
+    Route::middleware('role:administrator')->group(function () {
+        Route::resource('meja', MejaController::class);
+    });
+
+    // Menu + Orders - Admin & Waiter
+    Route::middleware('role:administrator,waiter')->group(function () {
+        Route::resource('menu', MenuController::class);
+        Route::resource('orders', OrderController::class)->except(['edit', 'update']);
+        Route::post('orders/{order}/add-item', [OrderController::class, 'addItem'])->name('orders.addItem');
+    });
+
+    // Transaksi - Admin & Kasir
+    Route::middleware('role:administrator,kasir')->group(function () {
+        Route::get('transaksi', [TransaksiController::class, 'index'])->name('transaksi.index');
+        Route::post('transaksi/proses', [TransaksiController::class, 'proses'])->name('transaksi.proses');
+    });
+
+    // Laporan - Owner, Admin, Kasir
+    Route::middleware('role:owner,administrator,kasir')->group(function () {
+        Route::get('laporan/daily', [LaporanController::class, 'index'])->name('laporan.daily');
+        Route::get('laporan/best-selling', [LaporanController::class, 'bestSelling'])->name('laporan.best_selling');
+    });
+});
+```
+
+---
+
+# 📝 BAGIAN 9: VIEWS
+
+## 📄 File 28: `resources/views/layouts/app.blade.php`
+
+```blade
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('title', 'Kasir Restoran')</title>
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <h2>🍽️ RestoPOS</h2>
+        <small>Sistem Kasir Restoran</small>
+    </div>
+    <div class="sidebar-user">
+        <div class="avatar">{{ strtoupper(substr(auth()->user()->name ?? 'G', 0, 1)) }}</div>
+        <div class="name">{{ auth()->user()->name ?? 'Guest' }}</div>
+        <span class="badge badge-{{
+            auth()->user()->role == 'owner' ? 'dark' :
+            (auth()->user()->role == 'administrator' ? 'danger' :
+            (auth()->user()->role == 'waiter' ? 'success' : 'warning'))
+        }}">
+            {{ ucfirst(auth()->user()->role ?? '') }}
+        </span>
+    </div>
+    <ul class="sidebar-menu">
+        <li>
+            <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                <span class="icon">🏠</span> <span>Dashboard</span>
+            </a>
+        </li>
+
+        @if(auth()->user()->role == 'administrator')
+        <li>
+            <a href="{{ route('meja.index') }}" class="{{ request()->routeIs('meja.*') ? 'active' : '' }}">
+                <span class="icon">🪑</span> <span>Kelola Meja</span>
+            </a>
+        </li>
+        @endif
+
+        @if(in_array(auth()->user()->role, ['administrator', 'waiter']))
+        <li>
+            <a href="{{ route('menu.index') }}" class="{{ request()->routeIs('menu.*') ? 'active' : '' }}">
+                <span class="icon">🍕</span> <span>Kelola Menu</span>
+            </a>
+        </li>
+        <li>
+            <a href="{{ route('orders.index') }}" class="{{ request()->routeIs('orders.*') ? 'active' : '' }}">
+                <span class="icon">📋</span> <span>Buat Order</span>
+            </a>
+        </li>
+        @endif
+
+        @if(in_array(auth()->user()->role, ['administrator', 'kasir']))
+        <li>
+            <a href="{{ route('transaksi.index') }}" class="{{ request()->routeIs('transaksi.*') ? 'active' : '' }}">
+                <span class="icon">💰</span> <span>Transaksi</span>
+            </a>
+        </li>
+        @endif
+
+        @if(in_array(auth()->user()->role, ['owner', 'administrator', 'kasir']))
+        <li>
+            <a href="{{ route('laporan.daily') }}" class="{{ request()->routeIs('laporan.*') ? 'active' : '' }}">
+                <span class="icon">📊</span> <span>Laporan</span>
+            </a>
+        </li>
+        @endif
+    </ul>
+    <div class="sidebar-footer">
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit">
+                <span class="icon">🚪</span> <span>Logout</span>
+            </button>
+        </form>
+    </div>
+</aside>
+
+<main class="main-content">
+    @if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+            <button class="close" onclick="this.parentElement.remove()">×</button>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+            <button class="close" onclick="this.parentElement.remove()">×</button>
+        </div>
+    @endif
+    @if($errors->any())
+        <div class="alert alert-danger">
+            {{ $errors->first() }}
+            <button class="close" onclick="this.parentElement.remove()">×</button>
+        </div>
+    @endif
+
+    @yield('content')
+</main>
+
+<script src="{{ asset('js/script.js') }}"></script>
+@stack('scripts')
+</body>
+</html>
+```
+
+---
+
+## 📄 File 29: `resources/views/auth/login.blade.php`
+
+```blade
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Kasir Restoran</title>
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+</head>
+<body class="login-page">
+    <div class="login-box">
+        <div class="login-logo">
+            <div class="logo-icon">🍽️</div>
+            <h1>RestoPOS</h1>
+            <p>Sistem Kasir Restoran</p>
+        </div>
+
+        @if($errors->any())
+            <div class="alert alert-danger">{{ $errors->first() }}</div>
+        @endif
+
+        <form method="POST" action="{{ route('login') }}">
+            @csrf
+            <div class="form-group">
+                <label>👤 Username *</label>
+                <input type="text" name="username" class="form-control" value="{{ old('username') }}" required autofocus>
+            </div>
+            <div class="form-group">
+                <label>🔒 Password *</label>
+                <input type="password" name="password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Login →</button>
+        </form>
+
+        <div class="register-link">
+            <p>Belum punya akun?</p>
+            <a href="{{ route('register') }}" class="btn btn-success btn-block">📝 Registrasi Sekarang</a>
+        </div>
+
+        <p style="text-align:center; margin-top: 15px; font-size: 12px; color: #666;">
+            💡 Belum ada akun demo. Silakan daftar terlebih dahulu.
+        </p>
+    </div>
+</body>
+</html>
+```
+
+---
+
+## 📄 File 30: `resources/views/auth/register.blade.php`
+
+```blade
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrasi - Kasir Restoran</title>
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+</head>
+<body class="login-page">
+    <div class="login-box">
+        <div class="login-logo">
+            <div class="logo-icon">📝</div>
+            <h1>Registrasi Akun</h1>
+            <p>Buat akun baru untuk mulai menggunakan sistem</p>
+        </div>
+
+        @if($errors->any())
+            <div class="alert alert-danger">{{ $errors->first() }}</div>
+        @endif
+
+        <form method="POST" action="{{ route('register') }}">
+            @csrf
+            <div class="form-group">
+                <label>Daftar Sebagai *</label>
+                <select name="role" class="form-control" required>
+                    <option value="">-- Pilih Role --</option>
+                    <option value="owner" {{ old('role') == 'owner' ? 'selected' : '' }}>👑 Owner</option>
+                    <option value="administrator" {{ old('role') == 'administrator' ? 'selected' : '' }}>🛠️ Administrator</option>
+                    <option value="waiter" {{ old('role') == 'waiter' ? 'selected' : '' }}>👨‍🍳 Waiter</option>
+                    <option value="kasir" {{ old('role') == 'kasir' ? 'selected' : '' }}>💰 Kasir</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Nama Lengkap *</label>
+                <input type="text" name="name" class="form-control" value="{{ old('name') }}" required>
+            </div>
+            <div class="form-group">
+                <label>Username *</label>
+                <input type="text" name="username" class="form-control" value="{{ old('username') }}" required>
+            </div>
+            <div class="form-group">
+                <label>Password * (min. 6 karakter)</label>
+                <input type="password" name="password" class="form-control" required minlength="6">
+            </div>
+            <div class="form-group">
+                <label>Konfirmasi Password *</label>
+                <input type="password" name="password_confirmation" class="form-control" required minlength="6">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Daftar →</button>
+        </form>
+
+        <div class="register-link">
+            <p>Sudah punya akun?</p>
+            <a href="{{ route('login') }}" class="btn btn-success btn-block">🔐 Login Sekarang</a>
+        </div>
+    </div>
+</body>
+</html>
+```
+
+---
+
+## 📄 File 31: `resources/views/dashboard.blade.php`
+
+```blade
+@extends('layouts.app')
+
+@section('title', 'Dashboard')
+
+@section('content')
+    <div class="page-header">
+        <div>
+            <h1>🏠 Dashboard</h1>
+            <div class="subtitle">Selamat datang di RestoPOS</div>
+        </div>
+    </div>
+
+    <div class="welcome-banner">
+        <h2>🎉 Selamat Datang, {{ auth()->user()->name }}!</h2>
+        <p>Anda login sebagai <strong>{{ ucfirst(auth()->user()->role) }}</strong></p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card gradient-primary">
+            <div class="stat-icon">🍕</div>
+            <div class="stat-info"><h3>{{ $totalMenu }}</h3><p>Total Menu</p></div>
+        </div>
+        <div class="stat-card gradient-success">
+            <div class="stat-icon">🪑</div>
+            <div class="stat-info"><h3>{{ $totalMeja }}</h3><p>Total Meja</p></div>
+        </div>
+        <div class="stat-card gradient-warning">
+            <div class="stat-icon">📋</div>
+            <div class="stat-info"><h3>{{ $totalOrder }}</h3><p>Total Order</p></div>
+        </div>
+        <div class="stat-card gradient-danger">
+            <div class="stat-icon">💰</div>
+            <div class="stat-info"><h3>{{ $totalTransaksi }}</h3><p>Total Transaksi</p></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h3>📋 Order Aktif</h3></div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr><th>ID</th><th>Meja</th><th>Waiter</th><th>Status</th><th>Total</th></tr>
+                </thead>
+                <tbody>
+                    @forelse($activeOrders as $order)
+                    <tr>
+                        <td>#{{ $order->id }}</td>
+                        <td>{{ $order->table->table_number ?? '-' }}</td>
+                        <td>{{ $order->user->name ?? '-' }}</td>
+                        <td><span class="badge badge-warning">{{ ucfirst($order->status) }}</span></td>
+                        <td>Rp {{ number_format($order->total, 0, ',', '.') }}</td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="5" style="text-align:center;">Tidak ada order aktif</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+@endsection
+```
+
+---
+
+## 📄 File 32: `resources/views/menu/index.blade.php`
+
+```blade
+@extends('layouts.app')
+
+@section('title', 'Kelola Menu')
+
+@section('content')
+    <div class="page-header">
+        <div>
+            <h1>🍕 Kelola Menu</h1>
+            <div class="subtitle">Daftar menu restoran</div>
+        </div>
+        <a href="{{ route('menu.create') }}" class="btn btn-primary">+ Tambah Menu</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr><th>Kode</th><th>Nama</th><th>Kategori</th><th>Harga</th><th>Status</th><th>Aksi</th></tr>
+                </thead>
+                <tbody>
+                    @forelse($items as $item)
+                    <tr>
+                        <td>{{ $item->item_code }}</td>
+                        <td><strong>{{ $item->item_name }}</strong></td>
+                        <td>{{ $item->category }}</td>
+                        <td>Rp {{ number_format($item->price, 0, ',', '.') }}</td>
+                        <td>
+                            @if($item->is_available)
+                                <span class="badge badge-success">Tersedia</span>
+                            @else
+                                <span class="badge badge-danger">Tidak Tersedia</span>
+                            @endif
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{{ route('menu.edit', $item) }}" class="btn btn-warning btn-sm">✏️</a>
+                                <form action="{{ route('menu.destroy', $item) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin hapus?')">
+                                    @csrf @method('DELETE')
+                                    <button class="btn btn-danger btn-sm">🗑️</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="6" style="text-align:center;">Belum ada data menu</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+            <div class="mt-20">{{ $items->links() }}</div>
+        </div>
+    </div>
+@endsection
+```
+
+---
+
+## 📄 File 33: `resources/views/menu/form.blade.php`
+
+```blade
+@extends('layouts.app')
+
+@section('title', isset($menu) ? 'Edit Menu' : 'Tambah Menu')
+
+@section('content')
+    <div class="page-header">
+        <div>
+            <h1>{{ isset($menu) ? '✏️ Edit' : '➕ Tambah' }} Menu</h1>
+        </div>
+        <a href="{{ route('menu.index') }}" class="btn btn-secondary">← Kembali</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" action="{{ isset($menu) ? route('menu.update', $menu) : route('menu.store') }}">
+                @csrf
+                @if(isset($menu)) @method('PUT') @endif
+
+                <div class="form-group">
+                    <label>Kode Barang *</label>
+                    <input type="text" name="item_code" class="form-control" value="{{ old('item_code', $menu->item_code ?? '') }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Nama Barang *</label>
+                    <input type="text" name="item_name" class="form-control" value="{{ old('item_name', $menu->item_name ?? '') }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Kategori</label>
+                    <input type="text" name="category" class="form-control" value="{{ old('category', $menu->category ?? '') }}" placeholder="Makanan / Minuman / Dessert">
+                </div>
+                <div class="form-group">
+                    <label>Harga (Rp) *</label>
+                    <input type="number" name="price" class="form-control" value="{{ old('price', $menu->price ?? 0) }}" required min="0">
+                </div>
+                <div class="form-group form-check">
+                    <input type="checkbox" name="is_available" id="is_available" {{ old('is_available', $menu->is_available ?? 1) ? 'checked' : '' }}>
+                    <label for="is_available">Tersedia</label>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-success">💾 Simpan</button>
+                    <a href="{{ route('menu.index') }}" class="btn btn-secondary">Batal</a>
+                </div>
+            </form>
+        </div>
+    </div>
+@endsection
+```
+
+---
+
+## 📄 File 34: `resources/views/menu/show.blade.php`
+
+```blade
+@extends('layouts.app')
+
+@section('title', 'Detail Menu')
+
+@section('content')
+    <div class="page-header">
+        <h1>🍕 Detail Menu</h1>
+        <a href="{{ route('menu.index') }}" class="btn btn-secondary">← Kembali</a>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <p><strong>Kode:</strong> {{ $menu->item_code }}</p>
+            <p><strong>Nama:</strong> {{ $menu->item_name }}</p>
+            <p><strong>Kategori:</strong> {{ $menu->category }}</p>
+            <p><strong>Harga:</strong> Rp {{ number_format($menu->price, 0, ',', '.') }}</p>
+            <p><strong>Status:</strong> {{ $menu->is_available ? 'Tersedia' : 'Tidak Tersedia' }}</p>
+        </div>
+    </div>
+@endsection
+```
+
+---
+
+## 📄 File 35: `resources/views/meja/index.blade.php`
+
+```blade
+@extends('layouts.app')
+
+@section('title', 'Kelola Meja')
+
+@section('content')
+    <div class="page-header">
+        <div>
+            <h1>🪑 Kelola Meja</h1>
+            <div class="subtitle">Daftar meja restoran</div>
+        </div>
+        <a href="{{ route('meja.create') }}" class="btn btn-primary">+ Tambah Meja</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr><th>No. Meja</th><th>Kapasitas</th><th>Status</th><th>Aksi</th></tr>
+                </thead>
+                <tbody>
+                    @forelse($tables as $table)
+                    <tr>
+                        <td><strong>{{ $table->table_number }}</strong></td>
+                        <td>{{ $table->capacity }} orang</td>
+                        <td><span class="badge badge-{{ $table->status == 'available' ? 'success' : ($table->status == 'occupied' ? 'danger' : 'warning') }}">{{ ucfirst($table->status) }}</span></td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{{ route('meja.edit', $table) }}" class="btn btn-warning btn-sm">✏️</a>
+                                <form action="{{ route('meja.destroy', $table) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin hapus?')">
+                                    @csrf @method('DELETE')
+                                    <button class="btn btn-danger btn-sm">🗑️</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="4" style="text-align:center;">Belum ada data meja</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+@endsection
+```
+
+---
+
+## 📄 File 36: `resources/views/meja/form.blade.php`
+
+```blade
+@extends('layouts.app')
+
+@section('title', isset($meja) ? 'Edit Meja' : 'Tambah Meja')
+
+@section('content')
+    <div class="page-header">
+        <div>
+            <h1>{{ isset($meja) ? '✏️ Edit' : '➕ Tambah' }} Meja</h1>
+        </div>
+        <a href="{{ route('meja.index') }}" class="btn btn-secondary">← Kembali</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" action="{{ isset($meja) ? route('meja.update', $meja) : route('meja.store') }}">
+                @csrf
+                @if(isset($meja)) @method('PUT') @endif
+
+                <div class="form-group">
+                    <label>Nomor Meja *</label>
+                    <input type="text" name="table_number" class="form-control" value="{{ old('table_number', $meja->table_number ?? '') }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Kapasitas *</label>
+                    <input type="number" name="capacity" class="form-control" value="{{ old('capacity', $meja->capacity ?? 4) }}" required min="1">
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="status" class="form-select form-control">
+                        <option value="available" {{ old('status', $meja->status ?? '') == 'available' ? 'selected' : '' }}>Tersedia</option>
+                        <option value="occupied" {{ old('status', $meja->status ?? '') == 'occupied' ? 'selected' : '' }}>Terisi</option>
+                        <option value="reserved" {{ old('status', $meja->status ?? '') == 'reserved' ? 'selected' : '' }}>Reservasi</option>
+                    </select>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-success">💾 Simpan</button>
+                    <a href="{{ route('meja.index') }}" class="btn btn-secondary">Batal</a>
+                </div>
+            </form>
+        </div>
+    </div>
+@endsection
+```
+
+---
+
+## 📄 File 37: `resources/views/meja/show.blade.php`
+
+```blade
+@extends('layouts.app')
+
+@section('title', 'Detail Meja')
+
+@section('content')
+    <div class="page-header">
+        <h1>🪑 Detail Meja</h1>
+        <a href="{{ route('meja.index') }}" class="btn btn-secondary">← Kembali</a>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <p><strong>Nomor Meja:</strong> {{ $meja->table_number }}</p>
+            <p><strong>Kapasitas:</strong> {{ $meja->capacity }} orang</p>
+            <p><strong>Status:</strong> {{ ucfirst($meja->status) }}</p>
+        </div>
+    </div>
+@endsection
+```
+
+---
+
+## 📄 File 38: `resources/views/orders/index.blade.php`
+
+```blade
+@extends('layouts.app')
+
+@section('title', 'Entri Order')
+
+@section('content')
+    <div class="page-header">
+        <div>
+            <h1>📋 Entri Order</h1>
+            <div class="subtitle">Buat dan kelola order pelanggan</div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
+        <div class="card">
+            <div class="card-header"><h3>➕ Buat Order Baru</h3></div>
+            <div class="card-body">
+                <form method="POST" action="{{ route('orders.store') }}">
+                    @csrf
+                    <div class="form-group">
+                        <label>Pilih Meja *</label>
+                        <select name="table_id" class="form-control" required>
+                            <option value="">-- Pilih Meja --</option>
+                            @foreach($tables as $table)
+                                <option value="{{ $table->id }}">Meja {{ $table->table_number }} ({{ $table->capacity }} orang)</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-block">📋 Buat Order</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><h3>📋 Order Aktif</h3></div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr><th>ID</th><th>Meja</th><th>Waiter</th><th>Status</th><th>Total</th><th>Aksi</th></tr>
+                    </thead>
+                    <tbody>
+                        @forelse($activeOrders as $order)
+                        <tr>
+                            <td>#{{ $order->id }}</td>
+                            <td>{{ $order->table->table_number ?? '-' }}</td>
+                            <td>{{ $order->user->name ?? '-' }}</td>
+                            <td><span class="badge badge-warning">{{ ucfirst($order->status) }}</span></td>
+                            <td>Rp {{ number_format($order->total, 0, ',', '.') }}</td>
+                            <td><a href="{{ route('orders.show', $order) }}" class="btn btn-primary btn-sm">👁️ Detail</a></td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="6" style="text-align:center;">Tidak ada order aktif</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+@endsection
+```
+
+---
+
+## 📄 File 39: `resources/views/orders/show.blade.php`
+
+```blade
+@extends('layouts.app')
+
+@section('title', 'Detail Order #' . $order->id)
+
+@section('content')
+    <div class="page-header">
+        <div>
+            <h1>🧾 Order #{{ $order->id }}</h1>
+        </div>
+        <a href="{{ route('orders.index') }}" class="btn btn-secondary">← Kembali</a>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
+        <div class="card">
+            <div class="card-header"><h3>ℹ️ Info Order</h3></div>
+            <div class="card-body">
+                <p><strong>Meja:</strong> {{ $order->table->table_number ?? '-' }}</p>
+                <p><strong>Waiter:</strong> {{ $order->user->name ?? '-' }}</p>
+                <p><strong>Status:</strong> <span class="badge badge-warning">{{ ucfirst($order->status) }}</span></p>
+                <hr style="margin: 15px 0;">
+                <p>Subtotal: <strong>Rp {{ number_format($order->subtotal, 0, ',', '.') }}</strong></p>
+                <p>Pajak (10%): <strong>Rp {{ number_format($order->tax, 0, ',', '.') }}</strong></p>
+                <hr style="margin: 15px 0;">
+                <p style="font-size: 20px; color: #28a745;">Total: <strong>Rp {{ number_format($order->total, 0, ',', '.') }}</strong></p>
+            </div>
+        </div>
+
+        <div>
+            <div class="card">
+                <div class="card-header"><h3>➕ Tambah Item</h3></div>
+                <div class="card-body">
+                    <form method="POST" action="{{ route('orders.addItem', $order) }}">
+                        @csrf
+                        <div class="form-group">
+                            <label>Pilih Menu *</label>
+                            <select name="menu_item_id" class="form-control" required>
+                                <option value="">-- Pilih Menu --</option>
+                                @foreach($menuItems as $item)
+                                    <option value="{{ $item->id }}">{{ $item->item_name }} - Rp {{ number_format($item->price, 0, ',', '.') }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px;">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>Qty *</label>
+                                <input type="number" name="quantity" class="form-control" value="1" min="1" required>
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>Catatan</label>
+                                <input type="text" name="note" class="form-control" placeholder="Opsional">
+                            </div>
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>&nbsp;</label>
+                                <button type="submit" class="btn btn-success">+ Tambah</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><h3>🍽️ Daftar Item</h3></div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr><th>Menu</th><th>Qty</th><th>Harga</th><th>Subtotal</th><th>Catatan</th></tr>
+                        </thead>
+                        <tbody>
+                            @forelse($order->items as $item)
+                            <tr>
+                                <td>{{ $item->menuItem->item_name ?? '-' }}</td>
+                                <td>{{ $item->quantity }}</td>
+                                <td>Rp {{ number_format($item->price_per_unit, 0, ',', '.') }}</td>
+                                <td>Rp {{ number_format($item->subtotal, 0, ',', '.') }}</td>
+                                <td>{{ $item->note ?? '-' }}</td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="5" style="text-align:center;">Belum ada item</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+```
+
+---
+
+## 📄 File 40: `resources/views/transaksi/index.blade.php`
+
+```blade
+@extends('layouts.app')
+
+@section('title', 'Transaksi')
+
+@section('content')
+    <div class="page-header">
+        <div>
+            <h1>💰 Entri Transaksi</h1>
+            <div class="subtitle">Proses pembayaran order</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h3>📋 Daftar Order Siap Bayar</h3></div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr><th>ID</th><th>Meja</th><th>Waiter</th><th>Status</th><th>Total</th><th>Aksi</th></tr>
+                </thead>
+                <tbody>
+                    @forelse($activeOrders as $order)
+                    <tr>
+                        <td>#{{ $order->id }}</td>
+                        <td>{{ $order->table->table_number ?? '-' }}</td>
+                        <td>{{ $order->user->name ?? '-' }}</td>
+                        <td><span class="badge badge-warning">{{ ucfirst($order->status) }}</span></td>
+                        <td><strong>Rp {{ number_format($order->total, 0, ',', '.') }}</strong></td>
+                        <td>
+                            <button class="btn btn-success btn-sm pay-btn"
+                                    data-order="{{ $order->id }}"
+                                    data-total="{{ $order->total }}"
+                                    onclick="openPaymentModal(this)">
+                                💵 Bayar
+                            </button>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="6" style="text-align:center;">Tidak ada order siap bayar</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="paymentModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>💰 Proses Pembayaran</h3>
+                <button class="close" onclick="closePaymentModal()">×</button>
+            </div>
+            <form method="POST" action="{{ route('transaksi.proses') }}">
+                @csrf
+                <div class="modal-body">
+                    <input type="hidden" name="order_id" id="order_id">
+                    <div class="form-group">
+                        <label>Total Harus Dibayar</label>
+                        <h2 style="color: #667eea; font-size: 28px;" id="total_display">Rp 0</h2>
+                    </div>
+                    <div class="form-group">
+                        <label>Metode Pembayaran</label>
+                        <select name="payment_method" class="form-control" required>
+                            <option value="cash">💵 Tunai</option>
+                            <option value="credit_card">💳 Kartu Kredit</option>
+                            <option value="debit_card">💳 Kartu Debit</option>
+                            <option value="qr_code">📱 QR Code</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Jumlah Dibayar</label>
+                        <input type="number" name="amount_paid" class="form-control" placeholder="Masukkan jumlah uang" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closePaymentModal()">Batal</button>
+                    <button type="submit" class="btn btn-success">✓ Proses</button>
+                </div>
+            </form>
+        </div>
+    </div>
+@endsection
+
+@push('scripts')
+<script>
+function openPaymentModal(btn) {
+    document.getElementById('order_id').value = btn.dataset.order;
+    document.getElementById('total_display').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(btn.dataset.total);
+    document.getElementById('paymentModal').classList.add('active');
+}
+function closePaymentModal() {
+    document.getElementById('paymentModal').classList.remove('active');
+}
+document.getElementById('paymentModal').addEventListener('click', function(e) {
+    if (e.target === this) closePaymentModal();
+});
+</script>
+@endpush
+```
+
+---
+
+## 📄 File 41: `resources/views/laporan/daily.blade.php`
+
+```blade
+@extends('layouts.app')
+
+@section('title', 'Laporan Harian')
+
+@section('content')
+    <div class="page-header">
+        <div>
+            <h1>📊 Laporan Harian</h1>
+            <div class="subtitle">Rekap transaksi harian</div>
+        </div>
+        <a href="{{ route('laporan.best_selling') }}" class="btn btn-warning">🏆 Menu Terlaris</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="GET" style="display:flex; gap:15px; align-items:flex-end;">
+                <div class="form-group" style="margin-bottom:0; flex:1;">
+                    <label>Pilih Tanggal</label>
+                    <input type="date" name="date" class="form-control" value="{{ $date }}">
+                </div>
+                <button type="submit" class="btn btn-primary">🔍 Tampilkan</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card gradient-success">
+            <div class="stat-icon">💰</div>
+            <div class="stat-info"><h3>Rp {{ number_format($totalRevenue, 0, ',', '.') }}</h3><p>Total Pendapatan</p></div>
+        </div>
+        <div class="stat-card gradient-primary">
+            <div class="stat-icon">📊</div>
+            <div class="stat-info"><h3>{{ $totalTransactions }}</h3><p>Total Transaksi</p></div>
+        </div>
+        <div class="stat-card gradient-warning">
+            <div class="stat-icon">📈</div>
+            <div class="stat-info"><h3>Rp {{ number_format($average, 0, ',', '.') }}</h3><p>Rata-rata</p></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h3>📋 Daftar Transaksi</h3></div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr><th>ID</th><th>Waktu</th><th>Kasir</th><th>Metode</th><th>Total</th><th>Dibayar</th><th>Kembali</th></tr>
+                </thead>
+                <tbody>
+                    @forelse($transactions as $trx)
+                    <tr>
+                        <td>#{{ $trx->transaction_id }}</td>
+                        <td>{{ date('H:i', strtotime($trx->transaction_date)) }}</td>
+                        <td>{{ $trx->kasir_name }}</td>
+                        <td><span class="badge badge-warning">{{ strtoupper($trx->payment_method) }}</span></td>
+                        <td>Rp {{ number_format($trx->total, 0, ',', '.') }}</td>
+                        <td>Rp {{ number_format($trx->amount_paid, 0, ',', '.') }}</td>
+                        <td>Rp {{ number_format($trx->change_amount, 0, ',', '.') }}</td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="7" style="text-align:center;">Tidak ada transaksi</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+@endsection
+```
+
+---
+
+## 📄 File 42: `resources/views/laporan/best_selling.blade.php`
+
+```blade
+@extends('layouts.app')
+
+@section('title', 'Menu Terlaris')
+
+@section('content')
+    <div class="page-header">
+        <div>
+            <h1>🏆 Menu Terlaris</h1>
+            <div class="subtitle">Top 10 menu paling laris</div>
+        </div>
+        <a href="{{ route('laporan.daily') }}" class="btn btn-secondary">← Kembali</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="GET" style="display:grid; grid-template-columns: 1fr 1fr auto; gap:15px; align-items:flex-end;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Tanggal Mulai</label>
+                    <input type="date" name="start_date" class="form-control" value="{{ $start }}">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Tanggal Selesai</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ $end }}">
+                </div>
+                <button type="submit" class="btn btn-primary">🔍 Tampilkan</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h3>🏆 10 Menu Terlaris</h3></div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr><th>#</th><th>Nama Menu</th><th>Kategori</th><th>Total Terjual</th><th>Total Pendapatan</th></tr>
+                </thead>
+                <tbody>
+                    @forelse($items as $index => $item)
+                    <tr>
+                        <td>
+                            @if($index == 0) 🥇
+                            @elseif($index == 1) 🥈
+                            @elseif($index == 2) 🥉
+                            @else {{ $index + 1 }}
+                            @endif
+                        </td>
+                        <td><strong>{{ $item->item_name }}</strong></td>
+                        <td>{{ $item->category }}</td>
+                        <td>{{ $item->total_quantity }}</td>
+                        <td>Rp {{ number_format($item->total_revenue, 0, ',', '.') }}</td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="5" style="text-align:center;">Tidak ada data</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+@endsection
+```
+
+---
+
+# 📝 BAGIAN 10: CSS & JS
+
+## 📄 File 43: `public/css/style.css`
+
+```css
+/* RESET & GLOBAL */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --primary: #667eea;
+    --secondary: #764ba2;
+    --success: #28a745;
+    --danger: #dc3545;
+    --warning: #ffc107;
+    --dark: #2c3e50;
+    --light: #f8f9fa;
+    --gray: #6c757d;
+    --border: #dee2e6;
+    --shadow: 0 2px 10px rgba(0,0,0,0.08);
+    --radius: 10px;
+}
+
+body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--light); color: #333; font-size: 14px; line-height: 1.6; }
+a { text-decoration: none; color: inherit; }
+
+/* SIDEBAR */
+.sidebar {
+    width: 250px;
+    background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    position: fixed;
+    top: 0; left: 0;
+    height: 100vh;
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+}
+.sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.sidebar-header h2 { font-size: 22px; margin-bottom: 5px; }
+.sidebar-header small { color: rgba(255,255,255,0.7); font-size: 12px; }
+.sidebar-user { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.sidebar-user .avatar {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 10px;
+    font-size: 24px; font-weight: bold;
+}
+.sidebar-user .name { font-weight: 600; font-size: 14px; margin-bottom: 5px; }
+.sidebar-menu { list-style: none; padding: 15px 10px; flex: 1; }
+.sidebar-menu li { margin: 5px 0; }
+.sidebar-menu a {
+    display: flex; align-items: center;
+    padding: 12px 15px; border-radius: 8px;
+    color: rgba(255,255,255,0.8); transition: all 0.3s;
+    font-size: 14px;
+}
+.sidebar-menu a:hover, .sidebar-menu a.active { background: var(--primary); color: white; }
+.sidebar-menu .icon { width: 25px; margin-right: 10px; font-size: 16px; }
+.sidebar-footer { padding: 15px; border-top: 1px solid rgba(255,255,255,0.1); }
+.sidebar-footer button {
+    display: flex; align-items: center;
+    padding: 12px 15px; border-radius: 8px;
+    color: #ff6b6b; background: none; border: none;
+    width: 100%; cursor: pointer;
+    font-size: 14px; gap: 10px; font-family: inherit;
+}
+.sidebar-footer button:hover { background: rgba(255,107,107,0.2); }
+
+/* MAIN */
+.main-content { margin-left: 250px; padding: 20px 30px; min-height: 100vh; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+.page-header h1 { font-size: 26px; color: var(--dark); }
+.page-header .subtitle { color: var(--gray); font-size: 14px; }
+
+/* CARDS */
+.card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+.card-header { padding: 18px 25px; background: #f8f9fa; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.card-header h3 { font-size: 16px; }
+.card-body { padding: 25px; }
+
+/* WELCOME BANNER */
+.welcome-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: var(--radius);
+    margin-bottom: 25px;
+    box-shadow: var(--shadow);
+}
+.welcome-banner h2 { font-size: 26px; margin-bottom: 8px; }
+.welcome-banner p { opacity: 0.9; }
+
+/* STAT CARDS */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px; }
+.stat-card { padding: 25px; border-radius: var(--radius); color: white; display: flex; align-items: center; gap: 20px; box-shadow: var(--shadow); }
+.gradient-primary { background: linear-gradient(135deg, #667eea, #764ba2); }
+.gradient-success { background: linear-gradient(135deg, #11998e, #38ef7d); }
+.gradient-warning { background: linear-gradient(135deg, #f2994a, #f2c94c); }
+.gradient-danger { background: linear-gradient(135deg, #eb3349, #f45c43); }
+.stat-icon { font-size: 40px; }
+.stat-info h3 { font-size: 24px; margin-bottom: 5px; }
+.stat-info p { font-size: 13px; opacity: 0.9; }
+
+/* TABLES */
+.table { width: 100%; border-collapse: collapse; }
+.table th { background: #f1f3f5; padding: 12px 15px; text-align: left; font-size: 13px; text-transform: uppercase; color: #495057; }
+.table td { padding: 12px 15px; border-bottom: 1px solid #f0f0f0; }
+.table tbody tr:hover { background: #f8faff; }
+
+/* BUTTONS */
+.btn { display: inline-block; padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; text-decoration: none; font-family: inherit; }
+.btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+.btn-success { background: var(--success); color: white; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-warning { background: var(--warning); color: #333; }
+.btn-secondary { background: var(--gray); color: white; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-block { width: 100%; }
+.btn:hover { opacity: 0.9; transform: translateY(-1px); }
+.btn-group { display: flex; gap: 5px; }
+
+/* FORMS */
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; margin-bottom: 6px; font-weight: 600; color: #495057; font-size: 13px; }
+.form-control { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; background: white; }
+.form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15); }
+.form-check { display: flex; align-items: center; gap: 8px; }
+
+/* BADGES */
+.badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.badge-success { background: #d4edda; color: #155724; }
+.badge-danger { background: #f8d7da; color: #721c24; }
+.badge-warning { background: #fff3cd; color: #856404; }
+.badge-dark { background: #d3d3d3; color: #1a1a1a; }
+
+/* ALERTS */
+.alert { padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; animation: slideIn 0.3s; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+.alert-success { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+.alert-danger { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+.alert .close { background: none; border: none; font-size: 20px; cursor: pointer; opacity: 0.5; }
+
+/* LOGIN / REGISTER */
+.login-page {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+    margin: 0;
+}
+.login-box {
+    background: white; border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    width: 100%; max-width: 450px; padding: 40px;
+}
+.login-logo { text-align: center; margin-bottom: 30px; }
+.login-logo .logo-icon { font-size: 60px; }
+.login-logo h1 { font-size: 24px; margin-bottom: 5px; color: var(--dark); }
+.login-logo p { color: var(--gray); font-size: 13px; }
+.register-link { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; }
+.register-link p { color: var(--gray); font-size: 13px; margin-bottom: 10px; }
+
+/* MODAL */
+.modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: none; align-items: center; justify-content: center;
+    z-index: 999; padding: 20px;
+}
+.modal-overlay.active { display: flex; }
+.modal { background: white; border-radius: var(--radius); max-width: 500px; width: 100%; animation: fadeUp 0.3s; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.modal-header { padding: 20px 25px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--success); color: white; border-radius: var(--radius) var(--radius) 0 0; }
+.modal-header h3 { font-size: 18px; }
+.modal-header .close { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+.modal-body { padding: 25px; }
+.modal-footer { padding: 15px 25px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+
+/* UTILITIES */
+.mt-20 { margin-top: 20px; }
+.text-center { text-align: center; }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .sidebar { width: 70px; }
+    .sidebar-header h2, .sidebar-header small,
+    .sidebar-user .name, .sidebar-user .badge,
+    .sidebar-menu a span:not(.icon) { display: none; }
+    .sidebar-menu a { justify-content: center; padding: 15px; }
+    .sidebar-menu .icon { margin-right: 0; width: auto; }
+    .main-content { margin-left: 70px; padding: 15px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .table { font-size: 12px; }
+    .table th, .table td { padding: 8px; }
+}
+```
+
+---
+
+## 📄 File 44: `public/js/script.js`
+
+```javascript
+// Auto dismiss alert
+setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(alert => {
+        alert.style.transition = 'opacity 0.5s';
+        alert.style.opacity = '0';
+        setTimeout(() => alert.remove(), 500);
+    });
+}, 5000);
+```
+
+---
+
+```cmd
+cd /d C:\xampp\htdocs\kasir-restoran && php artisan migrate:fresh --seed && php artisan route:clear && php artisan config:clear && php artisan cache:clear && php artisan view:clear && php artisan serve
+```
+

@@ -1,0 +1,82 @@
+
+
+ Nama:  Naufal Murtadho  
+ Kelas:  XII RPL 1  
+ Skema:  SKM.RPL.PJ/LSPSMK24/2023  
+ Asesor:  Yunita Sartika Sari  
+
+---
+
+Aplikasi  Kasir Restoran  berbasis  Laravel 11  dengan:
+- Flow:  Register → Login → Pakai  (tanpa data dummy)
+-  4 Role : Owner, Administrator, Waiter, Kasir
+-  5 Stored Procedure  (MySQL)
+-  6 tabel  +  7 migration  +  Seeder 
+
+---
+
+
+| Tabel | Kolom Utama | Kegunaan |
+|-------|-------------|----------|
+| users | id, name, username, password, role | Data user (4 role) |
+| menu_items | id, item_code, item_name, price | Data menu |
+| resto_tables | id, table_number, capacity, status | Data meja |
+| orders | id, table_id, user_id, total | Data order |
+| order_items | id, order_id, menu_item_id, qty | Detail order |
+| transactions | id, order_id, user_id, amount_paid | Data transaksi |
+
+---
+
+
+1. `sp_register_user` — Daftar user baru (semua role)
+2. `sp_add_order_item` — Tambah item + auto-calc total
+3. `sp_complete_transaction` — Proses bayar + reset meja
+4. `sp_daily_report` — Laporan harian
+5. `sp_best_selling_menu` — Top 10 menu
+
+---
+
+
+| Fitur | Owner | Administrator | Waiter | Kasir |
+|-------|:-----:|:-------------:|:------:|:-----:|
+| Registrasi | ✅ | ✅ | ✅ | ✅ |
+| Login/Logout | ✅ | ✅ | ✅ | ✅ |
+| Kelola Meja | ❌ | ✅ | ❌ | ❌ |
+| Kelola Menu | ❌ | ✅ | ✅ | ❌ |
+| Buat Order | ❌ | ✅ | ✅ | ❌ |
+| Transaksi | ❌ | ✅ | ❌ | ✅ |
+| Laporan | ✅ | ✅ | ❌ | ✅ |
+
+---
+
+
+```cmd
+composer create-project laravel/laravel kasir-restoran
+cd kasir-restoran
+# Edit .env → DB_DATABASE=kasir_restoran
+php artisan key:generate
+php artisan migrate --seed
+php artisan serve
+```
+
+Buka: http://localhost:8000 →  Register dulu  → Login
+
+---
+
+
+| No | Test | Hasil |
+|:--:|------|:-----:|
+| 1 | Register owner/admin/waiter/kasir | ✅ |
+| 2 | Login sesuai role | ✅ |
+| 3 | CRUD menu | ✅ |
+| 4 | CRUD meja | ✅ |
+| 5 | Buat order + tambah item | ✅ |
+| 6 | Auto-calc total + pajak | ✅ |
+| 7 | Bayar + reset meja | ✅ |
+| 8 | Validasi bayar kurang | ✅ |
+| 9 | Laporan harian | ✅ |
+| 10 | Menu terlaris | ✅ |
+
+---
+
+ Tanda Tangan:  _______________
