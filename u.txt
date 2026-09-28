@@ -1977,4 +1977,4 @@ cd /d C:\xampp\htdocs\sistem-lelang && mysql -u root sistem_lelang < database\si
 
 **Semoga USK-nya sukses!** 🚀🎓
 
-Kalau ada error atau butuh tambahan fitur, bilang ke saya! 👍
+Kalau ada error atau butuh tambahan fitur, bilang ke saya! 
