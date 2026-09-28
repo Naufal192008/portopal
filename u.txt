@@ -1,629 +1,1283 @@
-# 🚀 FULL LENGKAP FINAL — SISTEM LELANG ONLINE (REGISTER → LOGIN, TANPA DUMMY)
+# 🚀 FULL LENGKAP LARAVEL: SISTEM LELANG ONLINE
+## Register → Login (Tanpa Dummy) + Migration + Seeder + Stored Procedure + Laporan
 
-Semua yang kamu butuhkan dari **nol sampai selesai**. Ikuti urut dari atas ke bawah. Tinggal copy-paste.
+Oke, saya paham. Ini versi **LARAVEL ASLI** lengkap dari nol sampai jalan. Semua pakai **migration, seeder, model, controller, view** Laravel. Tinggal copy-paste.
 
 ---
 
-# 📦 BAGIAN 1: PERINTAH CMD
+# 📦 BAGIAN 1: PERINTAH CMD (CREATE PROJECT)
 
-## 🎯 LANGKAH 1.1 — Buat Folder Project
+## 🎯 LANGKAH 1.1 — Buat Project Laravel
 
 Buka **CMD** (XAMPP harus running), copy-paste:
 
 ```cmd
-cd /d C:\xampp\htdocs && rmdir /s /q sistem-lelang 2>nul & mkdir sistem-lelang && cd sistem-lelang && mkdir config includes pages assets assets\css assets\js database laporan && echo SELESAI LANGKAH 1
+cd /d C:\xampp\htdocs && rmdir /s /q lelang-online 2>nul & composer create-project laravel/laravel lelang-online && cd lelang-online && npm install && php artisan key:generate && echo SELESAI LANGKAH 1
 ```
 
 ## 🎯 LANGKAH 1.2 — Buat Database Kosong
 
 ```cmd
-mysql -u root -e "DROP DATABASE IF EXISTS sistem_lelang; CREATE DATABASE sistem_lelang;" && echo SELESAI LANGKAH 2
+mysql -u root -e "DROP DATABASE IF EXISTS lelang_online; CREATE DATABASE lelang_online;" && echo SELESAI LANGKAH 2
 ```
 
-## 🎯 LANGKAH 1.3 — Import Schema Database
+## 🎯 LANGKAH 1.3 — Buat Migration + Seeder + Controller via Artisan
 
 ```cmd
-cd /d C:\xampp\htdocs\sistem-lelang && mysql -u root sistem_lelang < database\sistem_lelang.sql && echo SELESAI LANGKAH 3
+cd /d C:\xampp\htdocs\lelang-online && php artisan make:migration create_level_table && php artisan make:migration create_petugas_table && php artisan make:migration create_masyarakat_table && php artisan make:migration create_barang_table && php artisan make:migration create_lelang_table && php artisan make:migration create_history_lelang_table && php artisan make:migration create_stored_procedures && php artisan make:seeder LevelSeeder && php artisan make:seeder BarangSeeder && php artisan make:controller AuthController && php artisan make:controller DashboardController && php artisan make:controller BarangController --resource && php artisan make:controller LelangController --resource && php artisan make:controller LaporanController && php artisan make:middleware RoleMiddleware && echo SELESAI LANGKAH 3
 ```
 
-> ⚠️ Jalankan LANGKAH 1.3 **setelah** kamu buat file `database/sistem_lelang.sql` di bawah.
+## 🎯 LANGKAH 1.4 — Hapus Migration Bawaan Laravel
 
----
-
-# 📝 BAGIAN 2: DATABASE
-
-## 📄 File 1: `database/sistem_lelang.sql`
-
-**Lokasi:** `C:\xampp\htdocs\sistem-lelang\database\sistem_lelang.sql`
-
-```sql
--- ============================================================
--- DATABASE: sistem_lelang
--- Aplikasi Lelang Online - TANPA DATA DUMMY
--- Flow: Register → Login → Pakai Aplikasi
--- ============================================================
-
-USE sistem_lelang;
-
--- ============================================================
--- 1. TABEL LEVEL
--- ============================================================
-DROP TABLE IF EXISTS tb_history_lelang;
-DROP TABLE IF EXISTS tb_lelang;
-DROP TABLE IF EXISTS tb_barang;
-DROP TABLE IF EXISTS tb_masyarakat;
-DROP TABLE IF EXISTS tb_petugas;
-DROP TABLE IF EXISTS tb_level;
-
-CREATE TABLE tb_level (
-    id_level INT AUTO_INCREMENT PRIMARY KEY,
-    level ENUM('administrator', 'petugas') NOT NULL
-);
-
--- Level (hanya master data, bukan user)
-INSERT INTO tb_level (level) VALUES ('administrator'), ('petugas');
-
--- ============================================================
--- 2. TABEL PETUGAS (KOSONG - user register sendiri)
--- ============================================================
-CREATE TABLE tb_petugas (
-    id_petugas INT AUTO_INCREMENT PRIMARY KEY,
-    nama_petugas VARCHAR(50) NOT NULL,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    id_level INT,
-    FOREIGN KEY (id_level) REFERENCES tb_level(id_level) ON DELETE SET NULL
-);
-
--- ============================================================
--- 3. TABEL MASYARAKAT (KOSONG - user register sendiri)
--- ============================================================
-CREATE TABLE tb_masyarakat (
-    id_user INT AUTO_INCREMENT PRIMARY KEY,
-    nama_lengkap VARCHAR(50) NOT NULL,
-    username VARCHAR(50) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    telp VARCHAR(25)
-);
-
--- ============================================================
--- 4. TABEL BARANG
--- ============================================================
-CREATE TABLE tb_barang (
-    id_barang INT AUTO_INCREMENT PRIMARY KEY,
-    nama_barang VARCHAR(100) NOT NULL,
-    harga_awal INT NOT NULL,
-    deskripsi_barang VARCHAR(255),
-    tgl DATE
-);
-
--- ============================================================
--- 5. TABEL LELANG
--- ============================================================
-CREATE TABLE tb_lelang (
-    id_lelang INT AUTO_INCREMENT PRIMARY KEY,
-    id_barang INT NOT NULL,
-    tgl_lelang DATE,
-    harga_akhir INT,
-    id_user INT,
-    id_petugas INT,
-    status ENUM('dibuka', 'ditutup') DEFAULT 'ditutup',
-    FOREIGN KEY (id_barang) REFERENCES tb_barang(id_barang) ON DELETE CASCADE,
-    FOREIGN KEY (id_user) REFERENCES tb_masyarakat(id_user) ON DELETE SET NULL,
-    FOREIGN KEY (id_petugas) REFERENCES tb_petugas(id_petugas) ON DELETE SET NULL
-);
-
--- ============================================================
--- 6. TABEL HISTORY LELANG
--- ============================================================
-CREATE TABLE tb_history_lelang (
-    id_history INT AUTO_INCREMENT PRIMARY KEY,
-    id_lelang INT,
-    id_barang INT,
-    id_user INT,
-    penawaran_harga INT,
-    FOREIGN KEY (id_lelang) REFERENCES tb_lelang(id_lelang) ON DELETE CASCADE,
-    FOREIGN KEY (id_barang) REFERENCES tb_barang(id_barang) ON DELETE CASCADE,
-    FOREIGN KEY (id_user) REFERENCES tb_masyarakat(id_user) ON DELETE CASCADE
-);
-
--- ============================================================
--- STORED PROCEDURE
--- ============================================================
-
-DELIMITER //
-
--- SP 1: Register Petugas
-DROP PROCEDURE IF EXISTS sp_register_petugas //
-CREATE PROCEDURE sp_register_petugas(
-    IN p_nama VARCHAR(50),
-    IN p_username VARCHAR(50),
-    IN p_password VARCHAR(255),
-    IN p_id_level INT
-)
-BEGIN
-    DECLARE v_exists INT;
-    SELECT COUNT(*) INTO v_exists FROM tb_petugas WHERE username = p_username;
-    IF v_exists > 0 THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Username sudah terdaftar!';
-    ELSE
-        INSERT INTO tb_petugas (nama_petugas, username, password, id_level)
-        VALUES (p_nama, p_username, p_password, p_id_level);
-    END IF;
-END //
-
--- SP 2: Register Masyarakat
-DROP PROCEDURE IF EXISTS sp_register_masyarakat //
-CREATE PROCEDURE sp_register_masyarakat(
-    IN p_nama VARCHAR(50),
-    IN p_username VARCHAR(50),
-    IN p_password VARCHAR(255),
-    IN p_telp VARCHAR(25)
-)
-BEGIN
-    DECLARE v_exists INT;
-    SELECT COUNT(*) INTO v_exists FROM tb_masyarakat WHERE username = p_username;
-    IF v_exists > 0 THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Username sudah terdaftar!';
-    ELSE
-        INSERT INTO tb_masyarakat (nama_lengkap, username, password, telp)
-        VALUES (p_nama, p_username, p_password, p_telp);
-    END IF;
-END //
-
--- SP 3: Buka Lelang
-DROP PROCEDURE IF EXISTS sp_buka_lelang //
-CREATE PROCEDURE sp_buka_lelang(IN p_id_lelang INT)
-BEGIN
-    UPDATE tb_lelang SET status = 'dibuka' WHERE id_lelang = p_id_lelang;
-END //
-
--- SP 4: Tutup Lelang
-DROP PROCEDURE IF EXISTS sp_tutup_lelang //
-CREATE PROCEDURE sp_tutup_lelang(IN p_id_lelang INT)
-BEGIN
-    DECLARE v_harga_akhir INT;
-    DECLARE v_id_user INT;
-
-    SELECT id_user, penawaran_harga INTO v_id_user, v_harga_akhir
-    FROM tb_history_lelang
-    WHERE id_lelang = p_id_lelang
-    ORDER BY penawaran_harga DESC
-    LIMIT 1;
-
-    UPDATE tb_lelang
-    SET status = 'ditutup', harga_akhir = v_harga_akhir, id_user = v_id_user
-    WHERE id_lelang = p_id_lelang;
-END //
-
--- SP 5: Tambah Penawaran
-DROP PROCEDURE IF EXISTS sp_tambah_penawaran //
-CREATE PROCEDURE sp_tambah_penawaran(
-    IN p_id_lelang INT,
-    IN p_id_barang INT,
-    IN p_id_user INT,
-    IN p_penawaran INT
-)
-BEGIN
-    DECLARE v_harga_tertinggi INT;
-    DECLARE v_status VARCHAR(10);
-    DECLARE v_harga_awal INT;
-
-    SELECT status INTO v_status FROM tb_lelang WHERE id_lelang = p_id_lelang;
-    IF v_status = 'ditutup' THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Lelang sudah ditutup!';
-    END IF;
-
-    SELECT harga_awal INTO v_harga_awal FROM tb_barang WHERE id_barang = p_id_barang;
-
-    SELECT MAX(penawaran_harga) INTO v_harga_tertinggi
-    FROM tb_history_lelang WHERE id_lelang = p_id_lelang;
-
-    IF v_harga_tertinggi IS NULL THEN
-        IF p_penawaran <= v_harga_awal THEN
-            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Penawaran harus lebih tinggi dari harga awal!';
-        END IF;
-    ELSE
-        IF p_penawaran <= v_harga_tertinggi THEN
-            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Penawaran harus lebih tinggi dari penawaran sebelumnya!';
-        END IF;
-    END IF;
-
-    INSERT INTO tb_history_lelang (id_lelang, id_barang, id_user, penawaran_harga)
-    VALUES (p_id_lelang, p_id_barang, p_id_user, p_penawaran);
-END //
-
--- SP 6: Laporan Lelang
-DROP PROCEDURE IF EXISTS sp_laporan_lelang //
-CREATE PROCEDURE sp_laporan_lelang(IN p_start DATE, IN p_end DATE)
-BEGIN
-    SELECT
-        l.id_lelang,
-        b.nama_barang,
-        b.harga_awal,
-        l.harga_akhir,
-        l.tgl_lelang,
-        l.status,
-        m.nama_lengkap AS pemenang,
-        p.nama_petugas
-    FROM tb_lelang l
-    JOIN tb_barang b ON l.id_barang = b.id_barang
-    LEFT JOIN tb_masyarakat m ON l.id_user = m.id_user
-    LEFT JOIN tb_petugas p ON l.id_petugas = p.id_petugas
-    WHERE l.tgl_lelang BETWEEN p_start AND p_end
-    ORDER BY l.tgl_lelang DESC;
-END //
-
-DELIMITER ;
-
--- ============================================================
--- VERIFIKASI
--- ============================================================
-SELECT '=== LEVEL ===' AS '';
-SELECT * FROM tb_level;
-
-SELECT '=== USER MASIH KOSONG ===' AS '';
-SELECT 'Petugas: ' AS info, COUNT(*) AS jumlah FROM tb_petugas;
-SELECT 'Masyarakat: ' AS info, COUNT(*) AS jumlah FROM tb_masyarakat;
-
-SELECT '=== STORED PROCEDURES ===' AS '';
-SHOW PROCEDURE STATUS WHERE Db = 'sistem_lelang';
+```cmd
+cd /d C:\xampp\htdocs\lelang-online && del /q database\migrations\0001_01_01_000000_create_users_table.php database\migrations\0001_01_01_000001_create_cache_table.php database\migrations\0001_01_01_000002_create_jobs_table.php 2>nul & echo SELESAI LANGKAH 4
 ```
 
 ---
 
-# 📝 BAGIAN 3: KONFIGURASI
+# 📝 BAGIAN 2: KONFIGURASI
 
-## 📄 File 2: `config/database.php`
+## 📄 File 1: `.env`
+
+**Lokasi:** `C:\xampp\htdocs\lelang-online\.env`
+
+```env
+APP_NAME=LelangOnline
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_TIMEZONE=Asia/Jakarta
+APP_URL=http://localhost:8000
+
+LOG_CHANNEL=stack
+LOG_LEVEL=debug
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=lelang_online
+DB_USERNAME=root
+DB_PASSWORD=
+
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+SESSION_ENCRYPT=false
+SESSION_PATH=/
+SESSION_DOMAIN=null
+
+BROADCAST_CONNECTION=log
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=database
+
+CACHE_STORE=database
+CACHE_PREFIX=
+
+MAIL_MAILER=log
+MAIL_HOST=127.0.0.1
+MAIL_PORT=2525
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+
+VITE_APP_NAME="${APP_NAME}"
+```
+
+Setelah disimpan, jalankan:
+```cmd
+cd /d C:\xampp\htdocs\lelang-online && php artisan key:generate
+```
+
+---
+
+# 📝 BAGIAN 3: MIGRATION FILES
+
+## 📄 File 2: `database/migrations/2024_01_01_000001_create_level_table.php`
 
 ```php
 <?php
-// config/database.php - Koneksi Database
 
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'sistem_lelang');
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-try {
-    $pdo = new PDO(
-        "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
-        DB_USER,
-        DB_PASS
-    );
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    die("Koneksi database gagal: " . $e->getMessage());
-}
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('tb_level', function (Blueprint $table) {
+            $table->id('id_level');
+            $table->enum('level', ['administrator', 'petugas']);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('tb_level');
+    }
+};
 ```
 
 ---
 
-## 📄 File 3: `includes/session.php`
+## 📄 File 3: `database/migrations/2024_01_01_000002_create_petugas_table.php`
 
 ```php
 <?php
-// includes/session.php - Manajemen Session
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
-function isLoggedIn() {
-    return isset($_SESSION['user_id']) && isset($_SESSION['role']);
-}
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('tb_petugas', function (Blueprint $table) {
+            $table->id('id_petugas');
+            $table->string('nama_petugas', 50);
+            $table->string('username', 50)->unique();
+            $table->string('password');
+            $table->unsignedBigInteger('id_level')->nullable();
+            $table->foreign('id_level')->references('id_level')->on('tb_level')->onDelete('set null');
+            $table->timestamps();
+        });
+    }
 
-function hasRole($role) {
-    return isset($_SESSION['role']) && $_SESSION['role'] === $role;
-}
+    public function down(): void
+    {
+        Schema::dropIfExists('tb_petugas');
+    }
+};
+```
 
-function requireLogin() {
-    if (!isLoggedIn()) {
-        header('Location: ' . ($_SERVER['PHP_SELF'] != '/login.php' ? '../login.php' : 'login.php'));
-        exit;
+---
+
+## 📄 File 4: `database/migrations/2024_01_01_000003_create_masyarakat_table.php`
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('tb_masyarakat', function (Blueprint $table) {
+            $table->id('id_user');
+            $table->string('nama_lengkap', 50);
+            $table->string('username', 50)->unique();
+            $table->string('password');
+            $table->string('telp', 25)->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('tb_masyarakat');
+    }
+};
+```
+
+---
+
+## 📄 File 5: `database/migrations/2024_01_01_000004_create_barang_table.php`
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('tb_barang', function (Blueprint $table) {
+            $table->id('id_barang');
+            $table->string('nama_barang', 100);
+            $table->integer('harga_awal');
+            $table->string('deskripsi_barang', 255)->nullable();
+            $table->date('tgl')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('tb_barang');
+    }
+};
+```
+
+---
+
+## 📄 File 6: `database/migrations/2024_01_01_000005_create_lelang_table.php`
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('tb_lelang', function (Blueprint $table) {
+            $table->id('id_lelang');
+            $table->unsignedBigInteger('id_barang');
+            $table->date('tgl_lelang')->nullable();
+            $table->integer('harga_akhir')->nullable();
+            $table->unsignedBigInteger('id_user')->nullable();
+            $table->unsignedBigInteger('id_petugas')->nullable();
+            $table->enum('status', ['dibuka', 'ditutup'])->default('ditutup');
+            $table->timestamps();
+
+            $table->foreign('id_barang')->references('id_barang')->on('tb_barang')->onDelete('cascade');
+            $table->foreign('id_user')->references('id_user')->on('tb_masyarakat')->onDelete('set null');
+            $table->foreign('id_petugas')->references('id_petugas')->on('tb_petugas')->onDelete('set null');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('tb_lelang');
+    }
+};
+```
+
+---
+
+## 📄 File 7: `database/migrations/2024_01_01_000006_create_history_lelang_table.php`
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('tb_history_lelang', function (Blueprint $table) {
+            $table->id('id_history');
+            $table->unsignedBigInteger('id_lelang')->nullable();
+            $table->unsignedBigInteger('id_barang')->nullable();
+            $table->unsignedBigInteger('id_user')->nullable();
+            $table->integer('penawaran_harga')->nullable();
+            $table->timestamps();
+
+            $table->foreign('id_lelang')->references('id_lelang')->on('tb_lelang')->onDelete('cascade');
+            $table->foreign('id_barang')->references('id_barang')->on('tb_barang')->onDelete('cascade');
+            $table->foreign('id_user')->references('id_user')->on('tb_masyarakat')->onDelete('cascade');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('tb_history_lelang');
+    }
+};
+```
+
+---
+
+## 📄 File 8: `database/migrations/2024_01_01_000007_create_stored_procedures.php`
+
+```php
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Support\Facades\DB;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        // SP 1: Register Petugas
+        DB::unprepared("
+            DROP PROCEDURE IF EXISTS sp_register_petugas;
+            CREATE PROCEDURE sp_register_petugas(
+                IN p_nama VARCHAR(50),
+                IN p_username VARCHAR(50),
+                IN p_password VARCHAR(255),
+                IN p_id_level INT
+            )
+            BEGIN
+                DECLARE v_exists INT;
+                SELECT COUNT(*) INTO v_exists FROM tb_petugas WHERE username = p_username;
+                IF v_exists > 0 THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Username sudah terdaftar!';
+                ELSE
+                    INSERT INTO tb_petugas (nama_petugas, username, password, id_level, created_at, updated_at)
+                    VALUES (p_nama, p_username, p_password, p_id_level, NOW(), NOW());
+                END IF;
+            END
+        ");
+
+        // SP 2: Register Masyarakat
+        DB::unprepared("
+            DROP PROCEDURE IF EXISTS sp_register_masyarakat;
+            CREATE PROCEDURE sp_register_masyarakat(
+                IN p_nama VARCHAR(50),
+                IN p_username VARCHAR(50),
+                IN p_password VARCHAR(255),
+                IN p_telp VARCHAR(25)
+            )
+            BEGIN
+                DECLARE v_exists INT;
+                SELECT COUNT(*) INTO v_exists FROM tb_masyarakat WHERE username = p_username;
+                IF v_exists > 0 THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Username sudah terdaftar!';
+                ELSE
+                    INSERT INTO tb_masyarakat (nama_lengkap, username, password, telp, created_at, updated_at)
+                    VALUES (p_nama, p_username, p_password, p_telp, NOW(), NOW());
+                END IF;
+            END
+        ");
+
+        // SP 3: Buka Lelang
+        DB::unprepared("
+            DROP PROCEDURE IF EXISTS sp_buka_lelang;
+            CREATE PROCEDURE sp_buka_lelang(IN p_id_lelang INT)
+            BEGIN
+                UPDATE tb_lelang SET status = 'dibuka', updated_at = NOW() WHERE id_lelang = p_id_lelang;
+            END
+        ");
+
+        // SP 4: Tutup Lelang
+        DB::unprepared("
+            DROP PROCEDURE IF EXISTS sp_tutup_lelang;
+            CREATE PROCEDURE sp_tutup_lelang(IN p_id_lelang INT)
+            BEGIN
+                DECLARE v_harga_akhir INT;
+                DECLARE v_id_user INT;
+                SELECT id_user, penawaran_harga INTO v_id_user, v_harga_akhir
+                FROM tb_history_lelang
+                WHERE id_lelang = p_id_lelang
+                ORDER BY penawaran_harga DESC LIMIT 1;
+                UPDATE tb_lelang
+                SET status = 'ditutup', harga_akhir = v_harga_akhir, id_user = v_id_user, updated_at = NOW()
+                WHERE id_lelang = p_id_lelang;
+            END
+        ");
+
+        // SP 5: Tambah Penawaran
+        DB::unprepared("
+            DROP PROCEDURE IF EXISTS sp_tambah_penawaran;
+            CREATE PROCEDURE sp_tambah_penawaran(
+                IN p_id_lelang INT,
+                IN p_id_barang INT,
+                IN p_id_user INT,
+                IN p_penawaran INT
+            )
+            BEGIN
+                DECLARE v_harga_tertinggi INT;
+                DECLARE v_status VARCHAR(10);
+                DECLARE v_harga_awal INT;
+
+                SELECT status INTO v_status FROM tb_lelang WHERE id_lelang = p_id_lelang;
+                IF v_status = 'ditutup' THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Lelang sudah ditutup!';
+                END IF;
+
+                SELECT harga_awal INTO v_harga_awal FROM tb_barang WHERE id_barang = p_id_barang;
+
+                SELECT MAX(penawaran_harga) INTO v_harga_tertinggi
+                FROM tb_history_lelang WHERE id_lelang = p_id_lelang;
+
+                IF v_harga_tertinggi IS NULL THEN
+                    IF p_penawaran <= v_harga_awal THEN
+                        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Penawaran harus lebih tinggi dari harga awal!';
+                    END IF;
+                ELSE
+                    IF p_penawaran <= v_harga_tertinggi THEN
+                        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Penawaran harus lebih tinggi dari sebelumnya!';
+                    END IF;
+                END IF;
+
+                INSERT INTO tb_history_lelang (id_lelang, id_barang, id_user, penawaran_harga, created_at, updated_at)
+                VALUES (p_id_lelang, p_id_barang, p_id_user, p_penawaran, NOW(), NOW());
+            END
+        ");
+
+        // SP 6: Laporan Lelang
+        DB::unprepared("
+            DROP PROCEDURE IF EXISTS sp_laporan_lelang;
+            CREATE PROCEDURE sp_laporan_lelang(IN p_start DATE, IN p_end DATE)
+            BEGIN
+                SELECT
+                    l.id_lelang,
+                    b.nama_barang,
+                    b.harga_awal,
+                    l.harga_akhir,
+                    l.tgl_lelang,
+                    l.status,
+                    m.nama_lengkap AS pemenang,
+                    p.nama_petugas
+                FROM tb_lelang l
+                JOIN tb_barang b ON l.id_barang = b.id_barang
+                LEFT JOIN tb_masyarakat m ON l.id_user = m.id_user
+                LEFT JOIN tb_petugas p ON l.id_petugas = p.id_petugas
+                WHERE l.tgl_lelang BETWEEN p_start AND p_end
+                ORDER BY l.tgl_lelang DESC;
+            END
+        ");
+    }
+
+    public function down(): void
+    {
+        DB::unprepared("DROP PROCEDURE IF EXISTS sp_register_petugas");
+        DB::unprepared("DROP PROCEDURE IF EXISTS sp_register_masyarakat");
+        DB::unprepared("DROP PROCEDURE IF EXISTS sp_buka_lelang");
+        DB::unprepared("DROP PROCEDURE IF EXISTS sp_tutup_lelang");
+        DB::unprepared("DROP PROCEDURE IF EXISTS sp_tambah_penawaran");
+        DB::unprepared("DROP PROCEDURE IF EXISTS sp_laporan_lelang");
+    }
+};
+```
+
+---
+
+# 📝 BAGIAN 4: SEEDER
+
+## 📄 File 9: `database/seeders/LevelSeeder.php`
+
+```php
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class LevelSeeder extends Seeder
+{
+    public function run(): void
+    {
+        DB::table('tb_level')->insert([
+            ['level' => 'administrator', 'created_at' => now(), 'updated_at' => now()],
+            ['level' => 'petugas', 'created_at' => now(), 'updated_at' => now()],
+        ]);
     }
 }
+```
 
-function requireRole($roles) {
-    requireLogin();
-    $roles = is_array($roles) ? $roles : [$roles];
-    if (!in_array($_SESSION['role'], $roles)) {
-        header('Location: ' . (strpos($_SERVER['PHP_SELF'], 'pages/') !== false ? '../' : '') . 'index.php?error=akses_ditolak');
-        exit;
+---
+
+## 📄 File 10: `database/seeders/BarangSeeder.php`
+
+```php
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class BarangSeeder extends Seeder
+{
+    public function run(): void
+    {
+        // Tidak ada barang dummy - user input sendiri
+        // Seeder ini hanya template kosong
+        $this->command->info('BarangSeeder: Tidak ada data dummy. User akan input barang sendiri.');
     }
 }
+```
 
-function currentUser() {
-    return [
-        'id' => $_SESSION['user_id'] ?? null,
-        'nama' => $_SESSION['nama'] ?? null,
-        'username' => $_SESSION['username'] ?? null,
-        'role' => $_SESSION['role'] ?? null,
-    ];
-}
+---
 
-function setFlash($type, $message) {
-    $_SESSION['flash'] = ['type' => $type, 'message' => $message];
-}
+## 📄 File 11: `database/seeders/DatabaseSeeder.php`
 
-function getFlash() {
-    if (isset($_SESSION['flash'])) {
-        $flash = $_SESSION['flash'];
-        unset($_SESSION['flash']);
-        return $flash;
+```php
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+
+class DatabaseSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $this->call([
+            LevelSeeder::class,
+            // BarangSeeder dan User TIDAK dipanggil karena user register sendiri
+        ]);
     }
-    return null;
 }
 ```
 
 ---
 
-## 📄 File 4: `includes/header.php`
+# 📝 BAGIAN 5: MODEL
+
+## 📄 File 12: `app/Models/Petugas.php`
 
 ```php
 <?php
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/session.php';
-?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $pageTitle ?? 'Sistem Lelang Online' ?></title>
-    <link rel="stylesheet" href="<?= $baseUrl ?? '' ?>assets/css/style.css">
-</head>
-<body>
 
-<?php if (isLoggedIn()): ?>
-<nav class="navbar">
-    <div class="navbar-brand">
-        🔨 <strong>Sistem Lelang Online</strong>
-    </div>
-    <div class="navbar-menu">
-        <a href="<?= $baseUrl ?? '' ?>index.php">🏠 Dashboard</a>
+namespace App\Models;
 
-        <?php if (hasRole('administrator') || hasRole('petugas')): ?>
-            <a href="<?= $baseUrl ?? '' ?>pages/barang.php">📦 Barang</a>
-            <a href="<?= $baseUrl ?? '' ?>pages/lelang.php">🔨 Lelang</a>
-            <a href="<?= $baseUrl ?? '' ?>pages/laporan.php">📊 Laporan</a>
-        <?php endif; ?>
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-        <?php if (hasRole('masyarakat')): ?>
-            <a href="<?= $baseUrl ?? '' ?>pages/lelang_masyarakat.php">🔨 Lelang Aktif</a>
-            <a href="<?= $baseUrl ?? '' ?>pages/history_saya.php">📜 Riwayat Saya</a>
-        <?php endif; ?>
+class Petugas extends Authenticatable
+{
+    protected $table = 'tb_petugas';
+    protected $primaryKey = 'id_petugas';
 
-        <span class="navbar-user">
-            👤 <?= htmlspecialchars($_SESSION['nama']) ?>
-            <span class="badge"><?= $_SESSION['role'] ?></span>
-        </span>
-        <a href="<?= $baseUrl ?? '' ?>logout.php" class="btn-logout">🚪 Logout</a>
-    </div>
-</nav>
-<?php endif; ?>
+    protected $fillable = ['nama_petugas', 'username', 'password', 'id_level'];
+    protected $hidden = ['password'];
 
-<main class="main-container">
-<?php
-$flash = getFlash();
-if ($flash):
-?>
-    <div class="alert alert-<?= $flash['type'] === 'success' ? 'success' : 'danger' ?>">
-        <?= htmlspecialchars($flash['message']) ?>
-        <button class="close" onclick="this.parentElement.remove()">×</button>
-    </div>
-<?php endif; ?>
-```
+    public function level()
+    {
+        return $this->belongsTo(Level::class, 'id_level', 'id_level');
+    }
 
----
+    public function lelang()
+    {
+        return $this->hasMany(Lelang::class, 'id_petugas', 'id_petugas');
+    }
 
-## 📄 File 5: `includes/footer.php`
-
-```php
-</main>
-
-<footer class="footer">
-    <p>&copy; <?= date('Y') ?> Sistem Lelang Online — Naufal Murtadho</p>
-</footer>
-
-<script src="<?= $baseUrl ?? '' ?>assets/js/script.js"></script>
-</body>
-</html>
-```
-
----
-
-# 📝 BAGIAN 4: REGISTER & LOGIN
-
-## 📄 File 6: `register.php` ⭐
-
-```php
-<?php
-require_once __DIR__ . '/config/database.php';
-require_once __DIR__ . '/includes/session.php';
-
-if (isLoggedIn()) {
-    header('Location: index.php');
-    exit;
+    public function getRoleAttribute()
+    {
+        return $this->level ? $this->level->level : 'petugas';
+    }
 }
+```
 
-$error = '';
-$success = '';
+---
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $role = $_POST['role'] ?? '';
-    $nama = trim($_POST['nama'] ?? '');
-    $username = trim($_POST['username'] ?? '');
-    $password = $_POST['password'] ?? '';
-    $confirm = $_POST['confirm_password'] ?? '';
-    $telp = trim($_POST['telp'] ?? '');
+## 📄 File 13: `app/Models/Masyarakat.php`
 
-    if (empty($role) || empty($nama) || empty($username) || empty($password)) {
-        $error = 'Semua field bertanda * wajib diisi!';
-    } elseif (strlen($password) < 6) {
-        $error = 'Password minimal 6 karakter!';
-    } elseif ($password !== $confirm) {
-        $error = 'Konfirmasi password tidak cocok!';
-    } else {
-        try {
-            $hash = password_hash($password, PASSWORD_DEFAULT);
+```php
+<?php
 
-            if ($role === 'masyarakat') {
-                $stmt = $pdo->prepare("CALL sp_register_masyarakat(?, ?, ?, ?)");
-                $stmt->execute([$nama, $username, $hash, $telp]);
-                $stmt->closeCursor();
-                $success = 'Registrasi berhasil! Silakan login.';
-            } elseif ($role === 'petugas' || $role === 'administrator') {
-                $id_level = ($role === 'administrator') ? 1 : 2;
-                $stmt = $pdo->prepare("CALL sp_register_petugas(?, ?, ?, ?)");
-                $stmt->execute([$nama, $username, $hash, $id_level]);
-                $stmt->closeCursor();
-                $success = 'Registrasi berhasil! Silakan login.';
-            } else {
-                $error = 'Role tidak valid!';
-            }
-        } catch (PDOException $e) {
-            $error = $e->getMessage();
+namespace App\Models;
+
+use Illuminate\Foundation\Auth\User as Authenticatable;
+
+class Masyarakat extends Authenticatable
+{
+    protected $table = 'tb_masyarakat';
+    protected $primaryKey = 'id_user';
+
+    protected $fillable = ['nama_lengkap', 'username', 'password', 'telp'];
+    protected $hidden = ['password'];
+
+    public function history()
+    {
+        return $this->hasMany(HistoryLelang::class, 'id_user', 'id_user');
+    }
+
+    public function lelangMenang()
+    {
+        return $this->hasMany(Lelang::class, 'id_user', 'id_user');
+    }
+}
+```
+
+---
+
+## 📄 File 14: `app/Models/Level.php`
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Level extends Model
+{
+    protected $table = 'tb_level';
+    protected $primaryKey = 'id_level';
+    protected $fillable = ['level'];
+
+    public function petugas()
+    {
+        return $this->hasMany(Petugas::class, 'id_level', 'id_level');
+    }
+}
+```
+
+---
+
+## 📄 File 15: `app/Models/Barang.php`
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Barang extends Model
+{
+    protected $table = 'tb_barang';
+    protected $primaryKey = 'id_barang';
+    protected $fillable = ['nama_barang', 'harga_awal', 'deskripsi_barang', 'tgl'];
+
+    public function lelang()
+    {
+        return $this->hasMany(Lelang::class, 'id_barang', 'id_barang');
+    }
+}
+```
+
+---
+
+## 📄 File 16: `app/Models/Lelang.php`
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Lelang extends Model
+{
+    protected $table = 'tb_lelang';
+    protected $primaryKey = 'id_lelang';
+    protected $fillable = ['id_barang', 'tgl_lelang', 'harga_akhir', 'id_user', 'id_petugas', 'status'];
+
+    public function barang()
+    {
+        return $this->belongsTo(Barang::class, 'id_barang', 'id_barang');
+    }
+
+    public function pemenang()
+    {
+        return $this->belongsTo(Masyarakat::class, 'id_user', 'id_user');
+    }
+
+    public function petugas()
+    {
+        return $this->belongsTo(Petugas::class, 'id_petugas', 'id_petugas');
+    }
+
+    public function history()
+    {
+        return $this->hasMany(HistoryLelang::class, 'id_lelang', 'id_lelang');
+    }
+
+    public function penawaranTertinggi()
+    {
+        return $this->history()->max('penawaran_harga');
+    }
+}
+```
+
+---
+
+## 📄 File 17: `app/Models/HistoryLelang.php`
+
+```php
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class HistoryLelang extends Model
+{
+    protected $table = 'tb_history_lelang';
+    protected $primaryKey = 'id_history';
+    protected $fillable = ['id_lelang', 'id_barang', 'id_user', 'penawaran_harga'];
+
+    public function lelang()
+    {
+        return $this->belongsTo(Lelang::class, 'id_lelang', 'id_lelang');
+    }
+
+    public function barang()
+    {
+        return $this->belongsTo(Barang::class, 'id_barang', 'id_barang');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(Masyarakat::class, 'id_user', 'id_user');
+    }
+}
+```
+
+---
+
+# 📝 BAGIAN 6: MIDDLEWARE
+
+## 📄 File 18: `app/Http/Middleware/RoleMiddleware.php`
+
+```php
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+
+class RoleMiddleware
+{
+    public function handle(Request $request, Closure $next, ...$roles)
+    {
+        if (!session()->has('user_id') || !session()->has('role')) {
+            return redirect()->route('login');
         }
+
+        if (!in_array(session('role'), $roles)) {
+            abort(403, 'Akses ditolak. Role Anda tidak diizinkan.');
+        }
+
+        return $next($request);
     }
 }
-?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrasi - Sistem Lelang Online</title>
-    <link rel="stylesheet" href="assets/css/style.css">
-</head>
-<body class="login-page">
-    <div class="login-box">
-        <div class="login-logo">
-            <div class="logo-icon">📝</div>
-            <h1>Registrasi Akun</h1>
-            <p>Buat akun baru untuk mulai menggunakan sistem</p>
-        </div>
-
-        <?php if ($error): ?>
-            <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
-        <?php endif; ?>
-        <?php if ($success): ?>
-            <div class="alert alert-success">
-                <?= htmlspecialchars($success) ?><br>
-                <a href="login.php" style="color:#155724; font-weight:bold;">→ Login di sini</a>
-            </div>
-        <?php endif; ?>
-
-        <form method="POST">
-            <div class="form-group">
-                <label>Daftar Sebagai *</label>
-                <select name="role" class="form-control" required>
-                    <option value="">-- Pilih Role --</option>
-                    <option value="masyarakat" <?= (($_POST['role'] ?? '') === 'masyarakat') ? 'selected' : '' ?>>👤 Masyarakat (Peserta Lelang)</option>
-                    <option value="petugas" <?= (($_POST['role'] ?? '') === 'petugas') ? 'selected' : '' ?>>🔨 Petugas Lelang</option>
-                    <option value="administrator" <?= (($_POST['role'] ?? '') === 'administrator') ? 'selected' : '' ?>>👑 Administrator</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Nama Lengkap *</label>
-                <input type="text" name="nama" class="form-control" value="<?= htmlspecialchars($_POST['nama'] ?? '') ?>" required>
-            </div>
-            <div class="form-group">
-                <label>Username *</label>
-                <input type="text" name="username" class="form-control" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" required>
-            </div>
-            <div class="form-group">
-                <label>No. Telepon</label>
-                <input type="text" name="telp" class="form-control" value="<?= htmlspecialchars($_POST['telp'] ?? '') ?>">
-            </div>
-            <div class="form-group">
-                <label>Password * (min. 6 karakter)</label>
-                <input type="password" name="password" class="form-control" required minlength="6">
-            </div>
-            <div class="form-group">
-                <label>Konfirmasi Password *</label>
-                <input type="password" name="confirm_password" class="form-control" required minlength="6">
-            </div>
-            <button type="submit" class="btn btn-primary btn-block">Daftar →</button>
-        </form>
-
-        <div class="register-link">
-            <p>Sudah punya akun?</p>
-            <a href="login.php" class="btn btn-success btn-block">🔐 Login Sekarang</a>
-        </div>
-    </div>
-</body>
-</html>
 ```
 
 ---
 
-## 📄 File 7: `login.php`
+## 📄 File 19: `bootstrap/app.php`
 
 ```php
 <?php
-require_once __DIR__ . '/config/database.php';
-require_once __DIR__ . '/includes/session.php';
 
-if (isLoggedIn()) {
-    header('Location: index.php');
-    exit;
-}
+use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Foundation\Configuration\Middleware;
 
-$error = '';
+return Application::configure(basePath: dirname(__DIR__))
+    ->withRouting(
+        web: __DIR__.'/../routes/web.php',
+        commands: __DIR__.'/../routes/console.php',
+        health: '/up',
+    )
+    ->withMiddleware(function (Middleware $middleware) {
+        $middleware->alias([
+            'role' => \App\Http\Middleware\RoleMiddleware::class,
+        ]);
+    })
+    ->withExceptions(function (Exceptions $exceptions) {
+        //
+    })->create();
+```
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username'] ?? '');
-    $password = $_POST['password'] ?? '';
-    $role = $_POST['role'] ?? '';
+---
 
-    if (empty($username) || empty($password) || empty($role)) {
-        $error = 'Semua field harus diisi!';
-    } else {
+# 📝 BAGIAN 7: CONTROLLER
+
+## 📄 File 20: `app/Http/Controllers/AuthController.php`
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Masyarakat;
+use App\Models\Petugas;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+
+class AuthController extends Controller
+{
+    // ============ LOGIN ============
+    public function showLogin()
+    {
+        if (session()->has('user_id')) {
+            return redirect()->route('dashboard');
+        }
+        return view('auth.login');
+    }
+
+    public function login(Request $request)
+    {
+        $request->validate([
+            'username' => 'required',
+            'password' => 'required',
+            'role' => 'required|in:administrator,petugas,masyarakat',
+        ]);
+
         $user = null;
         $roleName = '';
 
-        if ($role === 'petugas' || $role === 'administrator') {
-            $stmt = $pdo->prepare("SELECT * FROM tb_petugas WHERE username = ?");
-            $stmt->execute([$username]);
-            $user = $stmt->fetch();
+        if (in_array($request->role, ['administrator', 'petugas'])) {
+            $user = Petugas::where('username', $request->username)->first();
             if ($user) {
-                $roleName = ($user['id_level'] == 1) ? 'administrator' : 'petugas';
+                $roleName = ($user->id_level == 1) ? 'administrator' : 'petugas';
             }
-        } elseif ($role === 'masyarakat') {
-            $stmt = $pdo->prepare("SELECT * FROM tb_masyarakat WHERE username = ?");
-            $stmt->execute([$username]);
-            $user = $stmt->fetch();
+        } else {
+            $user = Masyarakat::where('username', $request->username)->first();
             if ($user) $roleName = 'masyarakat';
         }
 
-        if ($user && $role !== $roleName) {
-            $user = null;
-            $error = 'Role tidak sesuai dengan akun Anda!';
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return back()->withErrors(['username' => 'Username atau password salah!'])->withInput();
         }
 
-        if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['id_petugas'] ?? $user['id_user'];
-            $_SESSION['nama'] = $user['nama_petugas'] ?? $user['nama_lengkap'];
-            $_SESSION['username'] = $user['username'];
-            $_SESSION['role'] = $roleName;
-            setFlash('success', 'Selamat datang, ' . $_SESSION['nama'] . '!');
-            header('Location: index.php');
-            exit;
-        } else {
-            if (empty($error)) $error = 'Username atau password salah!';
+        if ($request->role !== $roleName) {
+            return back()->withErrors(['username' => 'Role tidak sesuai dengan akun Anda!'])->withInput();
+        }
+
+        session([
+            'user_id' => $user->id_petugas ?? $user->id_user,
+            'nama' => $user->nama_petugas ?? $user->nama_lengkap,
+            'username' => $user->username,
+            'role' => $roleName,
+        ]);
+
+        return redirect()->route('dashboard')->with('success', 'Selamat datang, ' . session('nama') . '!');
+    }
+
+    // ============ REGISTER ============
+    public function showRegister()
+    {
+        if (session()->has('user_id')) {
+            return redirect()->route('dashboard');
+        }
+        return view('auth.register');
+    }
+
+    public function register(Request $request)
+    {
+        $request->validate([
+            'role' => 'required|in:administrator,petugas,masyarakat',
+            'nama' => 'required|min:3',
+            'username' => 'required|min:3',
+            'password' => 'required|min:6|confirmed',
+            'telp' => 'nullable',
+        ]);
+
+        try {
+            $hash = Hash::make($request->password);
+
+            if ($request->role === 'masyarakat') {
+                DB::statement("CALL sp_register_masyarakat(?, ?, ?, ?)", [
+                    $request->nama,
+                    $request->username,
+                    $hash,
+                    $request->telp ?? '',
+                ]);
+            } else {
+                $idLevel = ($request->role === 'administrator') ? 1 : 2;
+                DB::statement("CALL sp_register_petugas(?, ?, ?, ?)", [
+                    $request->nama,
+                    $request->username,
+                    $hash,
+                    $idLevel,
+                ]);
+            }
+
+            return redirect()->route('login')->with('success', 'Registrasi berhasil! Silakan login.');
+        } catch (\Exception $e) {
+            return back()->withErrors(['username' => $e->getMessage()])->withInput();
         }
     }
+
+    // ============ LOGOUT ============
+    public function logout()
+    {
+        session()->flush();
+        return redirect()->route('login');
+    }
 }
-?>
+```
+
+---
+
+## 📄 File 21: `app/Http/Controllers/DashboardController.php`
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Barang;
+use App\Models\Lelang;
+use App\Models\Masyarakat;
+
+class DashboardController extends Controller
+{
+    public function index()
+    {
+        $data = [
+            'totalBarang' => Barang::count(),
+            'totalLelang' => Lelang::count(),
+            'totalLelangAktif' => Lelang::where('status', 'dibuka')->count(),
+            'totalUser' => Masyarakat::count(),
+            'lelangTerbaru' => Lelang::with('barang')->latest()->take(5)->get(),
+        ];
+
+        return view('dashboard', $data);
+    }
+}
+```
+
+---
+
+## 📄 File 22: `app/Http/Controllers/BarangController.php`
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Barang;
+use Illuminate\Http\Request;
+
+class BarangController extends Controller
+{
+    public function index()
+    {
+        $barang = Barang::latest()->get();
+        return view('barang.index', compact('barang'));
+    }
+
+    public function create()
+    {
+        return view('barang.form');
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'nama_barang' => 'required|min:3',
+            'harga_awal' => 'required|integer|min:0',
+            'tgl' => 'required|date',
+        ]);
+
+        Barang::create($request->all());
+        return redirect()->route('barang.index')->with('success', 'Barang berhasil ditambahkan!');
+    }
+
+    public function edit(Barang $barang)
+    {
+        return view('barang.form', compact('barang'));
+    }
+
+    public function update(Request $request, Barang $barang)
+    {
+        $request->validate([
+            'nama_barang' => 'required|min:3',
+            'harga_awal' => 'required|integer|min:0',
+            'tgl' => 'required|date',
+        ]);
+
+        $barang->update($request->all());
+        return redirect()->route('barang.index')->with('success', 'Barang berhasil diupdate!');
+    }
+
+    public function destroy(Barang $barang)
+    {
+        $barang->delete();
+        return redirect()->route('barang.index')->with('success', 'Barang berhasil dihapus!');
+    }
+}
+```
+
+---
+
+## 📄 File 23: `app/Http/Controllers/LelangController.php`
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Barang;
+use App\Models\HistoryLelang;
+use App\Models\Lelang;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class LelangController extends Controller
+{
+    // ============ UNTUK ADMIN/PETUGAS ============
+    public function index()
+    {
+        $lelang = Lelang::with(['barang', 'pemenang', 'petugas'])->latest()->get();
+        return view('lelang.index', compact('lelang'));
+    }
+
+    public function create()
+    {
+        $barang = Barang::orderBy('nama_barang')->get();
+        return view('lelang.form', compact('barang'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'id_barang' => 'required|exists:tb_barang,id_barang',
+            'tgl_lelang' => 'required|date',
+        ]);
+
+        Lelang::create([
+            'id_barang' => $request->id_barang,
+            'tgl_lelang' => $request->tgl_lelang,
+            'id_petugas' => session('user_id'),
+            'status' => 'ditutup',
+        ]);
+
+        return redirect()->route('lelang.index')->with('success', 'Lelang berhasil dibuat! Klik "Buka" untuk memulai.');
+    }
+
+    public function show(Lelang $lelang)
+    {
+        $lelang->load(['barang', 'pemenang', 'petugas', 'history.user']);
+        return view('lelang.show', compact('lelang'));
+    }
+
+    public function destroy(Lelang $lelang)
+    {
+        $lelang->delete();
+        return redirect()->route('lelang.index')->with('success', 'Lelang berhasil dihapus!');
+    }
+
+    public function buka($id)
+    {
+        try {
+            DB::statement("CALL sp_buka_lelang(?)", [$id]);
+            return redirect()->route('lelang.index')->with('success', 'Lelang dibuka!');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function tutup($id)
+    {
+        try {
+            DB::statement("CALL sp_tutup_lelang(?)", [$id]);
+            return redirect()->route('lelang.index')->with('success', 'Lelang ditutup! Pemenang sudah ditentukan.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    // ============ UNTUK MASYARAKAT ============
+    public function aktif()
+    {
+        $lelang = Lelang::with('barang')
+            ->where('status', 'dibuka')
+            ->orderByDesc('id_lelang')
+            ->get();
+
+        foreach ($lelang as $l) {
+            $l->penawaran_tertinggi = HistoryLelang::where('id_lelang', $l->id_lelang)->max('penawaran_harga');
+        }
+
+        return view('lelang.aktif', compact('lelang'));
+    }
+
+    public function tawar(Request $request)
+    {
+        $request->validate([
+            'id_lelang' => 'required|exists:tb_lelang,id_lelang',
+            'id_barang' => 'required|exists:tb_barang,id_barang',
+            'penawaran_harga' => 'required|integer|min:1',
+        ]);
+
+        try {
+            DB::statement("CALL sp_tambah_penawaran(?, ?, ?, ?)", [
+                $request->id_lelang,
+                $request->id_barang,
+                session('user_id'),
+                $request->penawaran_harga,
+            ]);
+
+            return back()->with('success', 'Penawaran berhasil! Rp ' . number_format($request->penawaran_harga, 0, ',', '.'));
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function riwayatSaya()
+    {
+        $history = HistoryLelang::with(['barang', 'lelang'])
+            ->where('id_user', session('user_id'))
+            ->latest()
+            ->get();
+
+        return view('lelang.riwayat', compact('history'));
+    }
+}
+```
+
+---
+
+## 📄 File 24: `app/Http/Controllers/LaporanController.php`
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class LaporanController extends Controller
+{
+    public function index(Request $request)
+    {
+        $start = $request->get('start', date('Y-m-01'));
+        $end = $request->get('end', date('Y-m-d'));
+
+        try {
+            $laporan = DB::select("CALL sp_laporan_lelang(?, ?)", [$start, $end]);
+        } catch (\Exception $e) {
+            $laporan = [];
+        }
+
+        $totalPendapatan = array_sum(array_column($laporan, 'harga_akhir'));
+
+        return view('laporan.index', compact('laporan', 'start', 'end', 'totalPendapatan'));
+    }
+}
+```
+
+---
+
+# 📝 BAGIAN 8: ROUTES
+
+## 📄 File 25: `routes/web.php`
+
+```php
+<?php
+
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BarangController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LelangController;
+use App\Http\Controllers\LaporanController;
+use Illuminate\Support\Facades\Route;
+
+// ============ AUTH (TIDAK PERLU LOGIN) ============
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// ============ PROTECTED (PERLU LOGIN) ============
+Route::middleware('role:administrator,petugas,masyarakat')->group(function () {
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Masyarakat
+    Route::get('/lelang-aktif', [LelangController::class, 'aktif'])->name('lelang.aktif');
+    Route::post('/tawar', [LelangController::class, 'tawar'])->name('lelang.tawar');
+    Route::get('/riwayat-saya', [LelangController::class, 'riwayatSaya'])->name('lelang.riwayat');
+});
+
+// ============ ADMIN & PETUGAS ============
+Route::middleware('role:administrator,petugas')->group(function () {
+    Route::resource('barang', BarangController::class);
+    Route::resource('lelang', LelangController::class);
+    Route::get('/lelang/{id}/buka', [LelangController::class, 'buka'])->name('lelang.buka');
+    Route::get('/lelang/{id}/tutup', [LelangController::class, 'tutup'])->name('lelang.tutup');
+    Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
+});
+```
+
+---
+
+# 📝 BAGIAN 9: VIEWS
+
+## 📄 File 26: `resources/views/layouts/app.blade.php`
+
+```blade
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@yield('title', 'Sistem Lelang Online')</title>
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+</head>
+<body>
+
+@if(session()->has('user_id'))
+<nav class="navbar">
+    <div class="navbar-brand">🔨 <strong>Sistem Lelang Online</strong></div>
+    <div class="navbar-menu">
+        <a href="{{ route('dashboard') }}">🏠 Dashboard</a>
+
+        @if(in_array(session('role'), ['administrator', 'petugas']))
+            <a href="{{ route('barang.index') }}">📦 Barang</a>
+            <a href="{{ route('lelang.index') }}">🔨 Lelang</a>
+            <a href="{{ route('laporan.index') }}">📊 Laporan</a>
+        @endif
+
+        @if(session('role') === 'masyarakat')
+            <a href="{{ route('lelang.aktif') }}">🔨 Lelang Aktif</a>
+            <a href="{{ route('lelang.riwayat') }}">📜 Riwayat Saya</a>
+        @endif
+
+        <span class="navbar-user">
+            👤 {{ session('nama') }}
+            <span class="badge">{{ session('role') }}</span>
+        </span>
+        <form method="POST" action="{{ route('logout') }}" style="display:inline;">
+            @csrf
+            <button type="submit" class="btn-logout">🚪 Logout</button>
+        </form>
+    </div>
+</nav>
+@endif
+
+<main class="main-container">
+    @if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+            <button class="close" onclick="this.parentElement.remove()">×</button>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger">
+            {{ session('error') }}
+            <button class="close" onclick="this.parentElement.remove()">×</button>
+        </div>
+    @endif
+    @if($errors->any())
+        <div class="alert alert-danger">
+            {{ $errors->first() }}
+            <button class="close" onclick="this.parentElement.remove()">×</button>
+        </div>
+    @endif
+
+    @yield('content')
+</main>
+
+<footer class="footer">
+    <p>&copy; {{ date('Y') }} Sistem Lelang Online — Naufal Murtadho</p>
+</footer>
+
+<script src="{{ asset('js/script.js') }}"></script>
+</body>
+</html>
+```
+
+---
+
+## 📄 File 27: `resources/views/auth/login.blade.php`
+
+```blade
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
     <title>Login - Sistem Lelang Online</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 </head>
 <body class="login-page">
     <div class="login-box">
@@ -633,23 +1287,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p>Silakan login untuk melanjutkan</p>
         </div>
 
-        <?php if ($error): ?>
-            <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
-        <?php endif; ?>
+        @if($errors->any())
+            <div class="alert alert-danger">{{ $errors->first() }}</div>
+        @endif
 
-        <form method="POST">
+        <form method="POST" action="{{ route('login') }}">
+            @csrf
             <div class="form-group">
                 <label>Login Sebagai *</label>
                 <select name="role" class="form-control" required>
                     <option value="">-- Pilih Role --</option>
-                    <option value="administrator" <?= (($_POST['role'] ?? '') === 'administrator') ? 'selected' : '' ?>>👑 Administrator</option>
-                    <option value="petugas" <?= (($_POST['role'] ?? '') === 'petugas') ? 'selected' : '' ?>>🔨 Petugas</option>
-                    <option value="masyarakat" <?= (($_POST['role'] ?? '') === 'masyarakat') ? 'selected' : '' ?>>👤 Masyarakat</option>
+                    <option value="administrator" {{ old('role') == 'administrator' ? 'selected' : '' }}>👑 Administrator</option>
+                    <option value="petugas" {{ old('role') == 'petugas' ? 'selected' : '' }}>🔨 Petugas</option>
+                    <option value="masyarakat" {{ old('role') == 'masyarakat' ? 'selected' : '' }}>👤 Masyarakat</option>
                 </select>
             </div>
             <div class="form-group">
                 <label>Username *</label>
-                <input type="text" name="username" class="form-control" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" required autofocus>
+                <input type="text" name="username" class="form-control" value="{{ old('username') }}" required autofocus>
             </div>
             <div class="form-group">
                 <label>Password *</label>
@@ -660,7 +1315,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="register-link">
             <p>Belum punya akun?</p>
-            <a href="register.php" class="btn btn-success btn-block">📝 Registrasi Sekarang</a>
+            <a href="{{ route('register') }}" class="btn btn-success btn-block">📝 Registrasi Sekarang</a>
         </div>
 
         <p style="text-align:center; margin-top: 15px; font-size: 12px; color: #666;">
@@ -673,696 +1328,502 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 ---
 
-## 📄 File 8: `logout.php`
+## 📄 File 28: `resources/views/auth/register.blade.php`
 
-```php
-<?php
-require_once __DIR__ . '/includes/session.php';
-session_destroy();
-header('Location: login.php');
-exit;
-```
+```blade
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrasi - Sistem Lelang Online</title>
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+</head>
+<body class="login-page">
+    <div class="login-box">
+        <div class="login-logo">
+            <div class="logo-icon">📝</div>
+            <h1>Registrasi Akun</h1>
+            <p>Buat akun baru untuk mulai menggunakan sistem</p>
+        </div>
 
----
+        @if($errors->any())
+            <div class="alert alert-danger">{{ $errors->first() }}</div>
+        @endif
 
-# 📝 BAGIAN 5: DASHBOARD & CRUD
-
-## 📄 File 9: `index.php`
-
-```php
-<?php
-require_once __DIR__ . '/includes/session.php';
-require_once __DIR__ . '/config/database.php';
-
-if (!isLoggedIn()) {
-    header('Location: login.php');
-    exit;
-}
-
-$pageTitle = 'Dashboard';
-$baseUrl = '';
-require_once __DIR__ . '/includes/header.php';
-
-$role = $_SESSION['role'];
-$nama = $_SESSION['nama'];
-
-$totalBarang = $pdo->query("SELECT COUNT(*) FROM tb_barang")->fetchColumn();
-$totalLelang = $pdo->query("SELECT COUNT(*) FROM tb_lelang")->fetchColumn();
-$totalLelangAktif = $pdo->query("SELECT COUNT(*) FROM tb_lelang WHERE status='dibuka'")->fetchColumn();
-$totalUser = $pdo->query("SELECT COUNT(*) FROM tb_masyarakat")->fetchColumn();
-?>
-
-<div class="page-header">
-    <h1>🏠 Dashboard</h1>
-    <p>Selamat datang, <strong><?= htmlspecialchars($nama) ?></strong> (<span class="badge"><?= $role ?></span>)</p>
-</div>
-
-<div class="stats-grid">
-    <div class="stat-card gradient-primary">
-        <div class="stat-icon">📦</div>
-        <div class="stat-info"><h3><?= $totalBarang ?></h3><p>Total Barang</p></div>
-    </div>
-    <div class="stat-card gradient-success">
-        <div class="stat-icon">🔨</div>
-        <div class="stat-info"><h3><?= $totalLelang ?></h3><p>Total Lelang</p></div>
-    </div>
-    <div class="stat-card gradient-warning">
-        <div class="stat-icon">🔥</div>
-        <div class="stat-info"><h3><?= $totalLelangAktif ?></h3><p>Lelang Aktif</p></div>
-    </div>
-    <div class="stat-card gradient-danger">
-        <div class="stat-icon">👥</div>
-        <div class="stat-info"><h3><?= $totalUser ?></h3><p>Masyarakat</p></div>
-    </div>
-</div>
-
-<div class="card">
-    <div class="card-header"><h2>🔨 Lelang Terbaru</h2></div>
-    <div class="card-body">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Barang</th><th>Harga Awal</th><th>Harga Akhir</th>
-                    <th>Tanggal</th><th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                $stmt = $pdo->query("
-                    SELECT l.*, b.nama_barang, b.harga_awal 
-                    FROM tb_lelang l 
-                    JOIN tb_barang b ON l.id_barang = b.id_barang 
-                    ORDER BY l.id_lelang DESC LIMIT 5
-                ");
-                $ada = false;
-                while ($row = $stmt->fetch()):
-                    $ada = true;
-                ?>
-                <tr>
-                    <td><strong><?= htmlspecialchars($row['nama_barang']) ?></strong></td>
-                    <td>Rp <?= number_format($row['harga_awal'] ?? 0, 0, ',', '.') ?></td>
-                    <td>Rp <?= number_format($row['harga_akhir'] ?? 0, 0, ',', '.') ?></td>
-                    <td><?= $row['tgl_lelang'] ?></td>
-                    <td><span class="badge <?= $row['status'] === 'dibuka' ? 'badge-success' : 'badge-danger' ?>"><?= ucfirst($row['status']) ?></span></td>
-                </tr>
-                <?php endwhile; ?>
-                <?php if (!$ada): ?>
-                <tr><td colspan="5" style="text-align:center;">Belum ada lelang</td></tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
-```
-
----
-
-## 📄 File 10: `pages/barang.php`
-
-```php
-<?php
-require_once __DIR__ . '/../includes/session.php';
-require_once __DIR__ . '/../config/database.php';
-
-requireRole(['administrator', 'petugas']);
-
-$pageTitle = 'Kelola Barang';
-$baseUrl = '../';
-
-if (isset($_GET['hapus'])) {
-    $stmt = $pdo->prepare("DELETE FROM tb_barang WHERE id_barang = ?");
-    $stmt->execute([(int)$_GET['hapus']]);
-    setFlash('success', 'Barang berhasil dihapus!');
-    header('Location: barang.php');
-    exit;
-}
-
-require_once __DIR__ . '/../includes/header.php';
-
-$stmt = $pdo->query("SELECT * FROM tb_barang ORDER BY id_barang DESC");
-$barang = $stmt->fetchAll();
-?>
-
-<div class="page-header">
-    <h1>📦 Kelola Barang</h1>
-    <a href="barang_form.php" class="btn btn-primary">+ Tambah Barang</a>
-</div>
-
-<div class="card">
-    <div class="card-body">
-        <table class="table">
-            <thead>
-                <tr><th>ID</th><th>Nama Barang</th><th>Harga Awal</th><th>Deskripsi</th><th>Tanggal</th><th>Aksi</th></tr>
-            </thead>
-            <tbody>
-                <?php if (empty($barang)): ?>
-                <tr><td colspan="6" style="text-align:center;">Belum ada barang. Klik "Tambah Barang" untuk menambahkan.</td></tr>
-                <?php else: ?>
-                <?php foreach ($barang as $b): ?>
-                <tr>
-                    <td><?= $b['id_barang'] ?></td>
-                    <td><strong><?= htmlspecialchars($b['nama_barang']) ?></strong></td>
-                    <td>Rp <?= number_format($b['harga_awal'], 0, ',', '.') ?></td>
-                    <td><?= htmlspecialchars($b['deskripsi_barang']) ?></td>
-                    <td><?= $b['tgl'] ?></td>
-                    <td>
-                        <div class="btn-group">
-                            <a href="barang_form.php?id=<?= $b['id_barang'] ?>" class="btn btn-sm btn-warning">✏️</a>
-                            <a href="?hapus=<?= $b['id_barang'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus?')">🗑️</a>
-                        </div>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
-```
-
----
-
-## 📄 File 11: `pages/barang_form.php`
-
-```php
-<?php
-require_once __DIR__ . '/../includes/session.php';
-require_once __DIR__ . '/../config/database.php';
-
-requireRole(['administrator', 'petugas']);
-
-$pageTitle = 'Form Barang';
-$baseUrl = '../';
-
-$edit = false;
-$data = ['id_barang' => '', 'nama_barang' => '', 'harga_awal' => '', 'deskripsi_barang' => '', 'tgl' => date('Y-m-d')];
-
-if (isset($_GET['id'])) {
-    $edit = true;
-    $stmt = $pdo->prepare("SELECT * FROM tb_barang WHERE id_barang = ?");
-    $stmt->execute([(int)$_GET['id']]);
-    $data = $stmt->fetch();
-    if (!$data) {
-        setFlash('danger', 'Barang tidak ditemukan!');
-        header('Location: barang.php');
-        exit;
-    }
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nama = trim($_POST['nama_barang']);
-    $harga = (int)$_POST['harga_awal'];
-    $deskripsi = trim($_POST['deskripsi_barang']);
-    $tgl = $_POST['tgl'];
-
-    if ($edit) {
-        $stmt = $pdo->prepare("UPDATE tb_barang SET nama_barang=?, harga_awal=?, deskripsi_barang=?, tgl=? WHERE id_barang=?");
-        $stmt->execute([$nama, $harga, $deskripsi, $tgl, $data['id_barang']]);
-        setFlash('success', 'Barang berhasil diupdate!');
-    } else {
-        $stmt = $pdo->prepare("INSERT INTO tb_barang (nama_barang, harga_awal, deskripsi_barang, tgl) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$nama, $harga, $deskripsi, $tgl]);
-        setFlash('success', 'Barang berhasil ditambahkan!');
-    }
-    header('Location: barang.php');
-    exit;
-}
-
-require_once __DIR__ . '/../includes/header.php';
-?>
-
-<div class="page-header">
-    <h1><?= $edit ? '✏️ Edit' : '➕ Tambah' ?> Barang</h1>
-    <a href="barang.php" class="btn btn-secondary">← Kembali</a>
-</div>
-
-<div class="card">
-    <div class="card-body">
-        <form method="POST">
+        <form method="POST" action="{{ route('register') }}">
+            @csrf
             <div class="form-group">
-                <label>Nama Barang *</label>
-                <input type="text" name="nama_barang" class="form-control" value="<?= htmlspecialchars($data['nama_barang']) ?>" required>
-            </div>
-            <div class="form-group">
-                <label>Harga Awal *</label>
-                <input type="number" name="harga_awal" class="form-control" value="<?= $data['harga_awal'] ?>" required min="0">
-            </div>
-            <div class="form-group">
-                <label>Deskripsi</label>
-                <textarea name="deskripsi_barang" class="form-control" rows="3"><?= htmlspecialchars($data['deskripsi_barang']) ?></textarea>
-            </div>
-            <div class="form-group">
-                <label>Tanggal *</label>
-                <input type="date" name="tgl" class="form-control" value="<?= $data['tgl'] ?>" required>
-            </div>
-            <div class="btn-group">
-                <button type="submit" class="btn btn-success">💾 Simpan</button>
-                <a href="barang.php" class="btn btn-secondary">Batal</a>
-            </div>
-        </form>
-    </div>
-</div>
-
-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
-```
-
----
-
-## 📄 File 12: `pages/lelang.php`
-
-```php
-<?php
-require_once __DIR__ . '/../includes/session.php';
-require_once __DIR__ . '/../config/database.php';
-
-requireRole(['administrator', 'petugas']);
-
-$pageTitle = 'Kelola Lelang';
-$baseUrl = '../';
-
-if (isset($_GET['buka'])) {
-    try {
-        $stmt = $pdo->prepare("CALL sp_buka_lelang(?)");
-        $stmt->execute([(int)$_GET['buka']]);
-        $stmt->closeCursor();
-        setFlash('success', 'Lelang berhasil dibuka!');
-    } catch (Exception $e) {
-        setFlash('danger', 'Gagal: ' . $e->getMessage());
-    }
-    header('Location: lelang.php');
-    exit;
-}
-
-if (isset($_GET['tutup'])) {
-    try {
-        $stmt = $pdo->prepare("CALL sp_tutup_lelang(?)");
-        $stmt->execute([(int)$_GET['tutup']]);
-        $stmt->closeCursor();
-        setFlash('success', 'Lelang berhasil ditutup!');
-    } catch (Exception $e) {
-        setFlash('danger', 'Gagal: ' . $e->getMessage());
-    }
-    header('Location: lelang.php');
-    exit;
-}
-
-if (isset($_GET['hapus'])) {
-    $stmt = $pdo->prepare("DELETE FROM tb_lelang WHERE id_lelang = ?");
-    $stmt->execute([(int)$_GET['hapus']]);
-    setFlash('success', 'Lelang berhasil dihapus!');
-    header('Location: lelang.php');
-    exit;
-}
-
-require_once __DIR__ . '/../includes/header.php';
-
-$stmt = $pdo->query("
-    SELECT l.*, b.nama_barang, b.harga_awal,
-           m.nama_lengkap AS pemenang,
-           p.nama_petugas
-    FROM tb_lelang l
-    JOIN tb_barang b ON l.id_barang = b.id_barang
-    LEFT JOIN tb_masyarakat m ON l.id_user = m.id_user
-    LEFT JOIN tb_petugas p ON l.id_petugas = p.id_petugas
-    ORDER BY l.id_lelang DESC
-");
-$lelang = $stmt->fetchAll();
-?>
-
-<div class="page-header">
-    <h1>🔨 Kelola Lelang</h1>
-    <a href="lelang_form.php" class="btn btn-primary">+ Buat Lelang</a>
-</div>
-
-<div class="card">
-    <div class="card-body">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>ID</th><th>Barang</th><th>Harga Awal</th><th>Harga Akhir</th>
-                    <th>Pemenang</th><th>Petugas</th><th>Tanggal</th><th>Status</th><th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($lelang)): ?>
-                <tr><td colspan="9" style="text-align:center;">Belum ada lelang. Klik "Buat Lelang" untuk memulai.</td></tr>
-                <?php else: ?>
-                <?php foreach ($lelang as $l): ?>
-                <tr>
-                    <td><?= $l['id_lelang'] ?></td>
-                    <td><strong><?= htmlspecialchars($l['nama_barang']) ?></strong></td>
-                    <td>Rp <?= number_format($l['harga_awal'], 0, ',', '.') ?></td>
-                    <td>Rp <?= number_format($l['harga_akhir'] ?? 0, 0, ',', '.') ?></td>
-                    <td><?= htmlspecialchars($l['pemenang'] ?? '-') ?></td>
-                    <td><?= htmlspecialchars($l['nama_petugas'] ?? '-') ?></td>
-                    <td><?= $l['tgl_lelang'] ?></td>
-                    <td><span class="badge <?= $l['status'] === 'dibuka' ? 'badge-success' : 'badge-danger' ?>"><?= ucfirst($l['status']) ?></span></td>
-                    <td>
-                        <div class="btn-group">
-                            <?php if ($l['status'] === 'ditutup'): ?>
-                                <a href="?buka=<?= $l['id_lelang'] ?>" class="btn btn-sm btn-success">🔓 Buka</a>
-                            <?php else: ?>
-                                <a href="?tutup=<?= $l['id_lelang'] ?>" class="btn btn-sm btn-warning" onclick="return confirm('Tutup lelang ini?')">🔒 Tutup</a>
-                            <?php endif; ?>
-                            <a href="?hapus=<?= $l['id_lelang'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus?')">🗑️</a>
-                        </div>
-                    </td>
-                </tr>
-                <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
-```
-
----
-
-## 📄 File 13: `pages/lelang_form.php`
-
-```php
-<?php
-require_once __DIR__ . '/../includes/session.php';
-require_once __DIR__ . '/../config/database.php';
-
-requireRole(['administrator', 'petugas']);
-
-$pageTitle = 'Buat Lelang';
-$baseUrl = '../';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $id_barang = (int)$_POST['id_barang'];
-    $tgl_lelang = $_POST['tgl_lelang'];
-    $id_petugas = $_SESSION['user_id'];
-
-    $stmt = $pdo->prepare("INSERT INTO tb_lelang (id_barang, tgl_lelang, id_petugas, status) VALUES (?, ?, ?, 'ditutup')");
-    $stmt->execute([$id_barang, $tgl_lelang, $id_petugas]);
-    setFlash('success', 'Lelang berhasil dibuat! Klik "Buka" untuk memulai.');
-    header('Location: lelang.php');
-    exit;
-}
-
-require_once __DIR__ . '/../includes/header.php';
-
-$barang = $pdo->query("SELECT * FROM tb_barang ORDER BY nama_barang")->fetchAll();
-?>
-
-<div class="page-header">
-    <h1>➕ Buat Lelang</h1>
-    <a href="lelang.php" class="btn btn-secondary">← Kembali</a>
-</div>
-
-<div class="card">
-    <div class="card-body">
-        <?php if (empty($barang)): ?>
-            <div class="alert alert-danger">
-                Belum ada barang. <a href="barang_form.php">Tambah barang dulu</a>.
-            </div>
-        <?php else: ?>
-        <form method="POST">
-            <div class="form-group">
-                <label>Pilih Barang *</label>
-                <select name="id_barang" class="form-control" required>
-                    <option value="">-- Pilih Barang --</option>
-                    <?php foreach ($barang as $b): ?>
-                        <option value="<?= $b['id_barang'] ?>">
-                            <?= htmlspecialchars($b['nama_barang']) ?> — Rp <?= number_format($b['harga_awal'], 0, ',', '.') ?>
-                        </option>
-                    <?php endforeach; ?>
+                <label>Daftar Sebagai *</label>
+                <select name="role" class="form-control" required>
+                    <option value="">-- Pilih Role --</option>
+                    <option value="masyarakat" {{ old('role') == 'masyarakat' ? 'selected' : '' }}>👤 Masyarakat (Peserta Lelang)</option>
+                    <option value="petugas" {{ old('role') == 'petugas' ? 'selected' : '' }}>🔨 Petugas Lelang</option>
+                    <option value="administrator" {{ old('role') == 'administrator' ? 'selected' : '' }}>👑 Administrator</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>Tanggal Lelang *</label>
-                <input type="date" name="tgl_lelang" class="form-control" value="<?= date('Y-m-d') ?>" required>
+                <label>Nama Lengkap *</label>
+                <input type="text" name="nama" class="form-control" value="{{ old('nama') }}" required>
             </div>
-            <button type="submit" class="btn btn-success">💾 Simpan</button>
+            <div class="form-group">
+                <label>Username *</label>
+                <input type="text" name="username" class="form-control" value="{{ old('username') }}" required>
+            </div>
+            <div class="form-group">
+                <label>No. Telepon</label>
+                <input type="text" name="telp" class="form-control" value="{{ old('telp') }}">
+            </div>
+            <div class="form-group">
+                <label>Password * (min. 6 karakter)</label>
+                <input type="password" name="password" class="form-control" required minlength="6">
+            </div>
+            <div class="form-group">
+                <label>Konfirmasi Password *</label>
+                <input type="password" name="password_confirmation" class="form-control" required minlength="6">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Daftar →</button>
         </form>
-        <?php endif; ?>
-    </div>
-</div>
 
-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
+        <div class="register-link">
+            <p>Sudah punya akun?</p>
+            <a href="{{ route('login') }}" class="btn btn-success btn-block">🔐 Login Sekarang</a>
+        </div>
+    </div>
+</body>
+</html>
 ```
 
 ---
 
-## 📄 File 14: `pages/lelang_masyarakat.php`
+## 📄 File 29: `resources/views/dashboard.blade.php`
 
-```php
-<?php
-require_once __DIR__ . '/../includes/session.php';
-require_once __DIR__ . '/../config/database.php';
+```blade
+@extends('layouts.app')
 
-requireRole('masyarakat');
+@section('title', 'Dashboard')
 
-$pageTitle = 'Lelang Aktif';
-$baseUrl = '../';
+@section('content')
+    <div class="page-header">
+        <h1>🏠 Dashboard</h1>
+        <p>Selamat datang, <strong>{{ session('nama') }}</strong> (<span class="badge">{{ session('role') }}</span>)</p>
+    </div>
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id_lelang'])) {
-    $id_lelang = (int)$_POST['id_lelang'];
-    $id_barang = (int)$_POST['id_barang'];
-    $penawaran = (int)$_POST['penawaran_harga'];
-    $id_user = $_SESSION['user_id'];
+    <div class="stats-grid">
+        <div class="stat-card gradient-primary">
+            <div class="stat-icon">📦</div>
+            <div class="stat-info"><h3>{{ $totalBarang }}</h3><p>Total Barang</p></div>
+        </div>
+        <div class="stat-card gradient-success">
+            <div class="stat-icon">🔨</div>
+            <div class="stat-info"><h3>{{ $totalLelang }}</h3><p>Total Lelang</p></div>
+        </div>
+        <div class="stat-card gradient-warning">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-info"><h3>{{ $totalLelangAktif }}</h3><p>Lelang Aktif</p></div>
+        </div>
+        <div class="stat-card gradient-danger">
+            <div class="stat-icon">👥</div>
+            <div class="stat-info"><h3>{{ $totalUser }}</h3><p>Masyarakat</p></div>
+        </div>
+    </div>
 
-    try {
-        $stmt = $pdo->prepare("CALL sp_tambah_penawaran(?, ?, ?, ?)");
-        $stmt->execute([$id_lelang, $id_barang, $id_user, $penawaran]);
-        $stmt->closeCursor();
-        setFlash('success', 'Penawaran berhasil! Rp ' . number_format($penawaran, 0, ',', '.'));
-    } catch (Exception $e) {
-        setFlash('danger', 'Gagal: ' . $e->getMessage());
-    }
-    header('Location: lelang_masyarakat.php');
-    exit;
-}
-
-require_once __DIR__ . '/../includes/header.php';
-
-$stmt = $pdo->query("
-    SELECT l.*, b.nama_barang, b.harga_awal, b.deskripsi_barang,
-           (SELECT MAX(penawaran_harga) FROM tb_history_lelang WHERE id_lelang = l.id_lelang) AS penawaran_tertinggi
-    FROM tb_lelang l
-    JOIN tb_barang b ON l.id_barang = b.id_barang
-    WHERE l.status = 'dibuka'
-    ORDER BY l.id_lelang DESC
-");
-$lelang = $stmt->fetchAll();
-?>
-
-<div class="page-header">
-    <h1>🔨 Lelang Aktif</h1>
-    <p>Ikuti lelang dengan memberikan penawaran tertinggi!</p>
-</div>
-
-<?php if (empty($lelang)): ?>
     <div class="card">
-        <div class="card-body" style="text-align:center; padding: 40px;">
-            <p style="font-size: 48px;">😴</p>
-            <p>Belum ada lelang yang dibuka saat ini.</p>
+        <div class="card-header"><h2>🔨 Lelang Terbaru</h2></div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr><th>Barang</th><th>Harga Awal</th><th>Harga Akhir</th><th>Tanggal</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    @forelse($lelangTerbaru as $l)
+                    <tr>
+                        <td><strong>{{ $l->barang->nama_barang ?? '-' }}</strong></td>
+                        <td>Rp {{ number_format($l->barang->harga_awal ?? 0, 0, ',', '.') }}</td>
+                        <td>Rp {{ number_format($l->harga_akhir ?? 0, 0, ',', '.') }}</td>
+                        <td>{{ $l->tgl_lelang }}</td>
+                        <td><span class="badge {{ $l->status == 'dibuka' ? 'badge-success' : 'badge-danger' }}">{{ ucfirst($l->status) }}</span></td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="5" style="text-align:center;">Belum ada lelang</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
-<?php endif; ?>
-
-<div class="lelang-grid">
-    <?php foreach ($lelang as $l): ?>
-    <div class="lelang-card">
-        <div class="lelang-header">
-            <h3><?= htmlspecialchars($l['nama_barang']) ?></h3>
-            <span class="badge badge-success">🔥 Dibuka</span>
-        </div>
-        <p class="lelang-desc"><?= htmlspecialchars($l['deskripsi_barang']) ?></p>
-        <div class="lelang-info">
-            <p><span>Harga Awal:</span> <strong>Rp <?= number_format($l['harga_awal'], 0, ',', '.') ?></strong></p>
-            <p><span>Penawaran Tertinggi:</span> <strong style="color: #28a745;">Rp <?= number_format($l['penawaran_tertinggi'] ?? $l['harga_awal'], 0, ',', '.') ?></strong></p>
-        </div>
-        <form method="POST" class="lelang-form">
-            <input type="hidden" name="id_lelang" value="<?= $l['id_lelang'] ?>">
-            <input type="hidden" name="id_barang" value="<?= $l['id_barang'] ?>">
-            <input type="number" name="penawaran_harga" class="form-control" 
-                   placeholder="Penawaran Anda" required
-                   min="<?= ($l['penawaran_tertinggi'] ?? $l['harga_awal']) + 1 ?>">
-            <button type="submit" class="btn btn-success btn-block">💵 Tawar</button>
-        </form>
-    </div>
-    <?php endforeach; ?>
-</div>
-
-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
+@endsection
 ```
 
 ---
 
-## 📄 File 15: `pages/history_saya.php`
+## 📄 File 30: `resources/views/barang/index.blade.php`
 
-```php
-<?php
-require_once __DIR__ . '/../includes/session.php';
-require_once __DIR__ . '/../config/database.php';
+```blade
+@extends('layouts.app')
 
-requireRole('masyarakat');
+@section('title', 'Kelola Barang')
 
-$pageTitle = 'Riwayat Saya';
-$baseUrl = '../';
+@section('content')
+    <div class="page-header">
+        <h1>📦 Kelola Barang</h1>
+        <a href="{{ route('barang.create') }}" class="btn btn-primary">+ Tambah Barang</a>
+    </div>
 
-require_once __DIR__ . '/../includes/header.php';
+    <div class="card">
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr><th>ID</th><th>Nama Barang</th><th>Harga Awal</th><th>Deskripsi</th><th>Tanggal</th><th>Aksi</th></tr>
+                </thead>
+                <tbody>
+                    @forelse($barang as $b)
+                    <tr>
+                        <td>{{ $b->id_barang }}</td>
+                        <td><strong>{{ $b->nama_barang }}</strong></td>
+                        <td>Rp {{ number_format($b->harga_awal, 0, ',', '.') }}</td>
+                        <td>{{ $b->deskripsi_barang }}</td>
+                        <td>{{ $b->tgl }}</td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{{ route('barang.edit', $b) }}" class="btn btn-sm btn-warning">✏️</a>
+                                <form action="{{ route('barang.destroy', $b) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin hapus?')">
+                                    @csrf @method('DELETE')
+                                    <button class="btn btn-sm btn-danger">🗑️</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="6" style="text-align:center;">Belum ada barang. Klik "Tambah Barang" untuk menambahkan.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+@endsection
+```
 
-$stmt = $pdo->prepare("
-    SELECT h.*, b.nama_barang, l.status
-    FROM tb_history_lelang h
-    JOIN tb_barang b ON h.id_barang = b.id_barang
-    JOIN tb_lelang l ON h.id_lelang = l.id_lelang
-    WHERE h.id_user = ?
-    ORDER BY h.id_history DESC
-");
-$stmt->execute([$_SESSION['user_id']]);
-$history = $stmt->fetchAll();
-?>
+---
 
-<div class="page-header">
-    <h1>📜 Riwayat Penawaran Saya</h1>
-</div>
+## 📄 File 31: `resources/views/barang/form.blade.php`
 
-<div class="card">
-    <div class="card-body">
-        <table class="table">
-            <thead>
-                <tr><th>ID</th><th>Barang</th><th>Penawaran</th><th>Status Lelang</th></tr>
-            </thead>
-            <tbody>
-                <?php if (empty($history)): ?>
+```blade
+@extends('layouts.app')
+
+@section('title', isset($barang) ? 'Edit Barang' : 'Tambah Barang')
+
+@section('content')
+    <div class="page-header">
+        <h1>{{ isset($barang) ? '✏️ Edit' : '➕ Tambah' }} Barang</h1>
+        <a href="{{ route('barang.index') }}" class="btn btn-secondary">← Kembali</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" action="{{ isset($barang) ? route('barang.update', $barang) : route('barang.store') }}">
+                @csrf
+                @if(isset($barang)) @method('PUT') @endif
+
+                <div class="form-group">
+                    <label>Nama Barang *</label>
+                    <input type="text" name="nama_barang" class="form-control" value="{{ old('nama_barang', $barang->nama_barang ?? '') }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Harga Awal *</label>
+                    <input type="number" name="harga_awal" class="form-control" value="{{ old('harga_awal', $barang->harga_awal ?? '') }}" required min="0">
+                </div>
+                <div class="form-group">
+                    <label>Deskripsi</label>
+                    <textarea name="deskripsi_barang" class="form-control" rows="3">{{ old('deskripsi_barang', $barang->deskripsi_barang ?? '') }}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Tanggal *</label>
+                    <input type="date" name="tgl" class="form-control" value="{{ old('tgl', $barang->tgl ?? date('Y-m-d')) }}" required>
+                </div>
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-success">💾 Simpan</button>
+                    <a href="{{ route('barang.index') }}" class="btn btn-secondary">Batal</a>
+                </div>
+            </form>
+        </div>
+    </div>
+@endsection
+```
+
+---
+
+## 📄 File 32: `resources/views/lelang/index.blade.php`
+
+```blade
+@extends('layouts.app')
+
+@section('title', 'Kelola Lelang')
+
+@section('content')
+    <div class="page-header">
+        <h1>🔨 Kelola Lelang</h1>
+        <a href="{{ route('lelang.create') }}" class="btn btn-primary">+ Buat Lelang</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Barang</th><th>Harga Awal</th><th>Harga Akhir</th>
+                        <th>Pemenang</th><th>Petugas</th><th>Tanggal</th><th>Status</th><th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($lelang as $l)
+                    <tr>
+                        <td>{{ $l->id_lelang }}</td>
+                        <td><strong>{{ $l->barang->nama_barang ?? '-' }}</strong></td>
+                        <td>Rp {{ number_format($l->barang->harga_awal ?? 0, 0, ',', '.') }}</td>
+                        <td>Rp {{ number_format($l->harga_akhir ?? 0, 0, ',', '.') }}</td>
+                        <td>{{ $l->pemenang->nama_lengkap ?? '-' }}</td>
+                        <td>{{ $l->petugas->nama_petugas ?? '-' }}</td>
+                        <td>{{ $l->tgl_lelang }}</td>
+                        <td><span class="badge {{ $l->status == 'dibuka' ? 'badge-success' : 'badge-danger' }}">{{ ucfirst($l->status) }}</span></td>
+                        <td>
+                            <div class="btn-group">
+                                @if($l->status == 'ditutup')
+                                    <a href="{{ route('lelang.buka', $l->id_lelang) }}" class="btn btn-sm btn-success">🔓 Buka</a>
+                                @else
+                                    <a href="{{ route('lelang.tutup', $l->id_lelang) }}" class="btn btn-sm btn-warning" onclick="return confirm('Tutup lelang ini?')">🔒 Tutup</a>
+                                @endif
+                                <form action="{{ route('lelang.destroy', $l) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin hapus?')">
+                                    @csrf @method('DELETE')
+                                    <button class="btn btn-sm btn-danger">🗑️</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr><td colspan="9" style="text-align:center;">Belum ada lelang. Klik "Buat Lelang" untuk memulai.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+@endsection
+```
+
+---
+
+## 📄 File 33: `resources/views/lelang/form.blade.php`
+
+```blade
+@extends('layouts.app')
+
+@section('title', 'Buat Lelang')
+
+@section('content')
+    <div class="page-header">
+        <h1>➕ Buat Lelang</h1>
+        <a href="{{ route('lelang.index') }}" class="btn btn-secondary">← Kembali</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            @if($barang->isEmpty())
+                <div class="alert alert-danger">
+                    Belum ada barang. <a href="{{ route('barang.create') }}">Tambah barang dulu</a>.
+                </div>
+            @else
+            <form method="POST" action="{{ route('lelang.store') }}">
+                @csrf
+                <div class="form-group">
+                    <label>Pilih Barang *</label>
+                    <select name="id_barang" class="form-control" required>
+                        <option value="">-- Pilih Barang --</option>
+                        @foreach($barang as $b)
+                            <option value="{{ $b->id_barang }}">{{ $b->nama_barang }} — Rp {{ number_format($b->harga_awal, 0, ',', '.') }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tanggal Lelang *</label>
+                    <input type="date" name="tgl_lelang" class="form-control" value="{{ date('Y-m-d') }}" required>
+                </div>
+                <button type="submit" class="btn btn-success">💾 Simpan</button>
+            </form>
+            @endif
+        </div>
+    </div>
+@endsection
+```
+
+---
+
+## 📄 File 34: `resources/views/lelang/aktif.blade.php`
+
+```blade
+@extends('layouts.app')
+
+@section('title', 'Lelang Aktif')
+
+@section('content')
+    <div class="page-header">
+        <h1>🔨 Lelang Aktif</h1>
+        <p>Ikuti lelang dengan memberikan penawaran tertinggi!</p>
+    </div>
+
+    @if($lelang->isEmpty())
+        <div class="card">
+            <div class="card-body" style="text-align:center; padding: 40px;">
+                <p style="font-size: 48px;">😴</p>
+                <p>Belum ada lelang yang dibuka saat ini.</p>
+            </div>
+        </div>
+    @endif
+
+    <div class="lelang-grid">
+        @foreach($lelang as $l)
+        <div class="lelang-card">
+            <div class="lelang-header">
+                <h3>{{ $l->barang->nama_barang }}</h3>
+                <span class="badge badge-success">🔥 Dibuka</span>
+            </div>
+            <p class="lelang-desc">{{ $l->barang->deskripsi_barang }}</p>
+            <div class="lelang-info">
+                <p><span>Harga Awal:</span> <strong>Rp {{ number_format($l->barang->harga_awal, 0, ',', '.') }}</strong></p>
+                <p><span>Penawaran Tertinggi:</span> <strong style="color: #28a745;">Rp {{ number_format($l->penawaran_tertinggi ?? $l->barang->harga_awal, 0, ',', '.') }}</strong></p>
+            </div>
+            <form method="POST" action="{{ route('lelang.tawar') }}" class="lelang-form">
+                @csrf
+                <input type="hidden" name="id_lelang" value="{{ $l->id_lelang }}">
+                <input type="hidden" name="id_barang" value="{{ $l->id_barang }}">
+                <input type="number" name="penawaran_harga" class="form-control" 
+                       placeholder="Penawaran Anda" required
+                       min="{{ ($l->penawaran_tertinggi ?? $l->barang->harga_awal) + 1 }}">
+                <button type="submit" class="btn btn-success btn-block">💵 Tawar</button>
+            </form>
+        </div>
+        @endforeach
+    </div>
+@endsection
+```
+
+---
+
+## 📄 File 35: `resources/views/lelang/riwayat.blade.php`
+
+```blade
+@extends('layouts.app')
+
+@section('title', 'Riwayat Saya')
+
+@section('content')
+    <div class="page-header">
+        <h1>📜 Riwayat Penawaran Saya</h1>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr><th>ID</th><th>Barang</th><th>Penawaran</th><th>Status Lelang</th></tr>
+                </thead>
+                <tbody>
+                    @forelse($history as $h)
+                    <tr>
+                        <td>#{{ $h->id_history }}</td>
+                        <td><strong>{{ $h->barang->nama_barang ?? '-' }}</strong></td>
+                        <td>Rp {{ number_format($h->penawaran_harga, 0, ',', '.') }}</td>
+                        <td><span class="badge {{ ($h->lelang->status ?? '') == 'dibuka' ? 'badge-success' : 'badge-danger' }}">{{ ucfirst($h->lelang->status ?? '-') }}</span></td>
+                    </tr>
+                    @empty
                     <tr><td colspan="4" style="text-align:center;">Belum ada penawaran</td></tr>
-                <?php else: ?>
-                    <?php foreach ($history as $h): ?>
-                    <tr>
-                        <td>#<?= $h['id_history'] ?></td>
-                        <td><strong><?= htmlspecialchars($h['nama_barang']) ?></strong></td>
-                        <td>Rp <?= number_format($h['penawaran_harga'], 0, ',', '.') ?></td>
-                        <td><span class="badge <?= $h['status'] === 'dibuka' ? 'badge-success' : 'badge-danger' ?>"><?= ucfirst($h['status']) ?></span></td>
-                    </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
-
-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
+@endsection
 ```
 
 ---
 
-## 📄 File 16: `pages/laporan.php`
+## 📄 File 36: `resources/views/laporan/index.blade.php`
 
-```php
-<?php
-require_once __DIR__ . '/../includes/session.php';
-require_once __DIR__ . '/../config/database.php';
+```blade
+@extends('layouts.app')
 
-requireRole(['administrator', 'petugas']);
+@section('title', 'Laporan Lelang')
 
-$pageTitle = 'Laporan Lelang';
-$baseUrl = '../';
-
-$start = $_GET['start'] ?? date('Y-m-01');
-$end = $_GET['end'] ?? date('Y-m-d');
-
-require_once __DIR__ . '/../includes/header.php';
-
-try {
-    $stmt = $pdo->prepare("CALL sp_laporan_lelang(?, ?)");
-    $stmt->execute([$start, $end]);
-    $laporan = $stmt->fetchAll();
-    $stmt->closeCursor();
-} catch (Exception $e) {
-    $laporan = [];
-}
-
-$totalPendapatan = array_sum(array_column($laporan, 'harga_akhir'));
-?>
-
-<div class="page-header">
-    <h1>📊 Laporan Lelang</h1>
-    <button onclick="window.print()" class="btn btn-secondary">🖨️ Print</button>
-</div>
-
-<div class="card">
-    <div class="card-body">
-        <form method="GET" style="display:flex; gap:15px; align-items:flex-end; flex-wrap:wrap;">
-            <div class="form-group" style="margin-bottom:0;">
-                <label>Dari Tanggal</label>
-                <input type="date" name="start" class="form-control" value="<?= $start ?>">
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-                <label>Sampai Tanggal</label>
-                <input type="date" name="end" class="form-control" value="<?= $end ?>">
-            </div>
-            <button type="submit" class="btn btn-primary">🔍 Tampilkan</button>
-        </form>
+@section('content')
+    <div class="page-header">
+        <h1>📊 Laporan Lelang</h1>
+        <button onclick="window.print()" class="btn btn-secondary">🖨️ Print</button>
     </div>
-</div>
 
-<div class="stats-grid">
-    <div class="stat-card gradient-primary">
-        <div class="stat-icon">📊</div>
-        <div class="stat-info"><h3><?= count($laporan) ?></h3><p>Total Lelang</p></div>
+    <div class="card">
+        <div class="card-body">
+            <form method="GET" style="display:flex; gap:15px; align-items:flex-end; flex-wrap:wrap;">
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Dari Tanggal</label>
+                    <input type="date" name="start" class="form-control" value="{{ $start }}">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                    <label>Sampai Tanggal</label>
+                    <input type="date" name="end" class="form-control" value="{{ $end }}">
+                </div>
+                <button type="submit" class="btn btn-primary">🔍 Tampilkan</button>
+            </form>
+        </div>
     </div>
-    <div class="stat-card gradient-success">
-        <div class="stat-icon">💰</div>
-        <div class="stat-info"><h3>Rp <?= number_format($totalPendapatan, 0, ',', '.') ?></h3><p>Total Pendapatan</p></div>
-    </div>
-</div>
 
-<div class="card">
-    <div class="card-header"><h2>Detail Laporan</h2></div>
-    <div class="card-body">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>ID</th><th>Barang</th><th>Harga Awal</th><th>Harga Akhir</th>
-                    <th>Pemenang</th><th>Petugas</th><th>Tanggal</th><th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($laporan)): ?>
+    <div class="stats-grid">
+        <div class="stat-card gradient-primary">
+            <div class="stat-icon">📊</div>
+            <div class="stat-info"><h3>{{ count($laporan) }}</h3><p>Total Lelang</p></div>
+        </div>
+        <div class="stat-card gradient-success">
+            <div class="stat-icon">💰</div>
+            <div class="stat-info"><h3>Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</h3><p>Total Pendapatan</p></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header"><h2>Detail Laporan</h2></div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th><th>Barang</th><th>Harga Awal</th><th>Harga Akhir</th>
+                        <th>Pemenang</th><th>Petugas</th><th>Tanggal</th><th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($laporan as $l)
+                    <tr>
+                        <td>#{{ $l->id_lelang }}</td>
+                        <td><strong>{{ $l->nama_barang }}</strong></td>
+                        <td>Rp {{ number_format($l->harga_awal, 0, ',', '.') }}</td>
+                        <td>Rp {{ number_format($l->harga_akhir ?? 0, 0, ',', '.') }}</td>
+                        <td>{{ $l->pemenang ?? '-' }}</td>
+                        <td>{{ $l->nama_petugas ?? '-' }}</td>
+                        <td>{{ $l->tgl_lelang }}</td>
+                        <td><span class="badge {{ $l->status == 'dibuka' ? 'badge-success' : 'badge-danger' }}">{{ ucfirst($l->status) }}</span></td>
+                    </tr>
+                    @empty
                     <tr><td colspan="8" style="text-align:center;">Tidak ada data</td></tr>
-                <?php else: ?>
-                    <?php foreach ($laporan as $l): ?>
-                    <tr>
-                        <td>#<?= $l['id_lelang'] ?></td>
-                        <td><strong><?= htmlspecialchars($l['nama_barang']) ?></strong></td>
-                        <td>Rp <?= number_format($l['harga_awal'], 0, ',', '.') ?></td>
-                        <td>Rp <?= number_format($l['harga_akhir'] ?? 0, 0, ',', '.') ?></td>
-                        <td><?= htmlspecialchars($l['pemenang'] ?? '-') ?></td>
-                        <td><?= htmlspecialchars($l['nama_petugas'] ?? '-') ?></td>
-                        <td><?= $l['tgl_lelang'] ?></td>
-                        <td><span class="badge <?= $l['status'] === 'dibuka' ? 'badge-success' : 'badge-danger' ?>"><?= ucfirst($l['status']) ?></span></td>
-                    </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
-
-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
+@endsection
 ```
 
 ---
 
-# 📝 BAGIAN 6: ASSETS
+# 📝 BAGIAN 10: CSS & JS
 
-## 📄 File 17: `assets/css/style.css`
+## 📄 File 37: `public/css/style.css`
 
 ```css
-/* ============================================
-   RESET & GLOBAL
-   ============================================ */
+/* RESET */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
@@ -1379,105 +1840,32 @@ $totalPendapatan = array_sum(array_column($laporan, 'harga_akhir'));
     --radius: 10px;
 }
 
-body {
-    font-family: 'Segoe UI', Tahoma, sans-serif;
-    background: var(--light);
-    color: #333;
-    font-size: 14px;
-    line-height: 1.6;
-}
-
+body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--light); color: #333; font-size: 14px; line-height: 1.6; }
 a { text-decoration: none; color: inherit; }
 
 /* NAVBAR */
-.navbar {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 15px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: var(--shadow);
-    flex-wrap: wrap;
-    gap: 10px;
-}
+.navbar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); flex-wrap: wrap; gap: 10px; }
 .navbar-brand { font-size: 20px; }
-.navbar-menu {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    flex-wrap: wrap;
-}
-.navbar-menu a {
-    color: rgba(255,255,255,0.9);
-    padding: 8px 12px;
-    border-radius: 6px;
-    transition: 0.3s;
-    font-size: 14px;
-}
-.navbar-menu a:hover {
-    background: rgba(255,255,255,0.2);
-    color: white;
-}
-.navbar-user {
-    padding: 8px 12px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 6px;
-}
-.btn-logout {
-    background: #ff4757 !important;
-    padding: 8px 15px !important;
-    border-radius: 6px;
-}
+.navbar-menu { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+.navbar-menu a { color: rgba(255,255,255,0.9); padding: 8px 12px; border-radius: 6px; transition: 0.3s; font-size: 14px; }
+.navbar-menu a:hover { background: rgba(255,255,255,0.2); color: white; }
+.navbar-user { padding: 8px 12px; background: rgba(255,255,255,0.15); border-radius: 6px; }
+.btn-logout { background: #ff4757; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: 600; font-family: inherit; }
 
 /* MAIN */
-.main-container {
-    max-width: 1200px;
-    margin: 30px auto;
-    padding: 0 20px;
-}
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-    flex-wrap: wrap;
-    gap: 15px;
-}
+.main-container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
 .page-header h1 { font-size: 24px; color: var(--dark); }
 
 /* CARDS */
-.card {
-    background: white;
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    margin-bottom: 20px;
-    overflow: hidden;
-}
-.card-header {
-    padding: 18px 25px;
-    background: #f8f9fa;
-    border-bottom: 1px solid var(--border);
-}
+.card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+.card-header { padding: 18px 25px; background: #f8f9fa; border-bottom: 1px solid var(--border); }
 .card-header h2 { font-size: 16px; }
 .card-body { padding: 25px; }
 
 /* STAT CARDS */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-    margin-bottom: 25px;
-}
-.stat-card {
-    padding: 25px;
-    border-radius: var(--radius);
-    color: white;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    box-shadow: var(--shadow);
-}
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px; }
+.stat-card { padding: 25px; border-radius: var(--radius); color: white; display: flex; align-items: center; gap: 20px; box-shadow: var(--shadow); }
 .gradient-primary { background: linear-gradient(135deg, #667eea, #764ba2); }
 .gradient-success { background: linear-gradient(135deg, #11998e, #38ef7d); }
 .gradient-warning { background: linear-gradient(135deg, #f2994a, #f2c94c); }
@@ -1488,33 +1876,12 @@ a { text-decoration: none; color: inherit; }
 
 /* TABLES */
 .table { width: 100%; border-collapse: collapse; }
-.table th {
-    background: #f1f3f5;
-    padding: 12px 15px;
-    text-align: left;
-    font-size: 13px;
-    text-transform: uppercase;
-    color: #495057;
-}
-.table td {
-    padding: 12px 15px;
-    border-bottom: 1px solid #f0f0f0;
-}
+.table th { background: #f1f3f5; padding: 12px 15px; text-align: left; font-size: 13px; text-transform: uppercase; color: #495057; }
+.table td { padding: 12px 15px; border-bottom: 1px solid #f0f0f0; }
 .table tbody tr:hover { background: #f8faff; }
 
 /* BUTTONS */
-.btn {
-    display: inline-block;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.3s;
-    text-decoration: none;
-    font-family: inherit;
-}
+.btn { display: inline-block; padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.3s; text-decoration: none; font-family: inherit; }
 .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
 .btn-success { background: var(--success); color: white; }
 .btn-danger { background: var(--danger); color: white; }
@@ -1527,158 +1894,62 @@ a { text-decoration: none; color: inherit; }
 
 /* FORMS */
 .form-group { margin-bottom: 18px; }
-.form-group label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 600;
-    color: #495057;
-    font-size: 13px;
-}
-.form-control {
-    width: 100%;
-    padding: 10px 14px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: inherit;
-}
-.form-control:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
-}
+.form-group label { display: block; margin-bottom: 6px; font-weight: 600; color: #495057; font-size: 13px; }
+.form-control { width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
+.form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15); }
 
 /* BADGES */
-.badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-}
+.badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
 .badge-success { background: #d4edda; color: #155724; }
 .badge-danger { background: #f8d7da; color: #721c24; }
 .badge-warning { background: #fff3cd; color: #856404; }
 
 /* ALERTS */
-.alert {
-    padding: 15px 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    animation: slideIn 0.3s;
-}
-@keyframes slideIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+.alert { padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; animation: slideIn 0.3s; }
+@keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 .alert-success { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
 .alert-danger { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
-.alert .close {
-    background: none;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    opacity: 0.5;
-}
+.alert .close { background: none; border: none; font-size: 20px; cursor: pointer; opacity: 0.5; }
 
 /* LOGIN / REGISTER */
-.login-page {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 20px;
-}
-.login-box {
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    width: 100%;
-    max-width: 450px;
-    padding: 40px;
-}
+.login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; }
+.login-box { background: white; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 100%; max-width: 450px; padding: 40px; }
 .login-logo { text-align: center; margin-bottom: 30px; }
 .login-logo .logo-icon { font-size: 60px; }
 .login-logo h1 { font-size: 24px; margin-bottom: 5px; color: var(--dark); }
 .login-logo p { color: var(--gray); font-size: 13px; }
-
-.register-link {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border);
-    text-align: center;
-}
+.register-link { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; }
 .register-link p { color: var(--gray); font-size: 13px; margin-bottom: 10px; }
 
 /* LELANG GRID */
-.lelang-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 20px;
-}
-.lelang-card {
-    background: white;
-    border-radius: var(--radius);
-    padding: 25px;
-    box-shadow: var(--shadow);
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-.lelang-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: start;
-    gap: 10px;
-}
+.lelang-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+.lelang-card { background: white; border-radius: var(--radius); padding: 25px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 15px; }
+.lelang-header { display: flex; justify-content: space-between; align-items: start; gap: 10px; }
 .lelang-header h3 { font-size: 18px; color: var(--dark); }
 .lelang-desc { color: var(--gray); font-size: 13px; }
-.lelang-info p {
-    display: flex;
-    justify-content: space-between;
-    padding: 5px 0;
-}
+.lelang-info p { display: flex; justify-content: space-between; padding: 5px 0; }
 .lelang-form { display: flex; flex-direction: column; gap: 10px; }
 
 /* FOOTER */
-.footer {
-    text-align: center;
-    padding: 20px;
-    color: var(--gray);
-    font-size: 12px;
-}
+.footer { text-align: center; padding: 20px; color: var(--gray); font-size: 12px; }
 
 /* RESPONSIVE */
 @media (max-width: 768px) {
-    .navbar {
-        flex-direction: column;
-        padding: 15px;
-    }
-    .navbar-menu {
-        flex-direction: column;
-        width: 100%;
-    }
+    .navbar { flex-direction: column; padding: 15px; }
+    .navbar-menu { flex-direction: column; width: 100%; }
     .stats-grid { grid-template-columns: 1fr 1fr; }
     .table { font-size: 12px; }
     .table th, .table td { padding: 8px; }
 }
-
-@media print {
-    .navbar, .btn, .footer { display: none !important; }
-}
+@media print { .navbar, .btn, .footer { display: none !important; } }
 ```
 
 ---
 
-## 📄 File 18: `assets/js/script.js`
+## 📄 File 38: `public/js/script.js`
 
 ```javascript
-// Auto dismiss alert setelah 5 detik
+// Auto dismiss alert
 setTimeout(() => {
     document.querySelectorAll('.alert').forEach(alert => {
         alert.style.transition = 'opacity 0.5s';
@@ -1686,295 +1957,20 @@ setTimeout(() => {
         setTimeout(() => alert.remove(), 500);
     });
 }, 5000);
-
-// Format Rupiah helper
-function formatRupiah(angka) {
-    return 'Rp ' + parseInt(angka).toLocaleString('id-ID');
-}
 ```
 
 ---
 
-# 📝 BAGIAN 7: LAPORAN.md
 
-## 📄 File 19: `laporan/LAPORAN.md`
-
-````markdown
-# 📋 LAPORAN TUGAS PRAKTIK DEMONSTRASI
-## FR.IA.02 TPD — Sistem Lelang Online
-
-**Nama:** Naufal Murtadho  
-**Kelas:** XII RPL 1  
-**Skema:** SKM.RPL.PJ/LSPSMK24/2023  
-**Judul:** Pemrogram Junior (Junior Coder)  
-**Asesor:** Yunita Sartika Sari  
-**Tanggal:** [Isi Tanggal]
 
 ---
 
-## 🎯 A. DESKRIPSI TUGAS
+# 🚀 BAGIAN 12: PERINTAH FINAL
 
-Berdasarkan FR.IA.02 TPD:
-1. **Kelompok 1** — Struktur data sesuai PDM + stored procedure
-2. **Kelompok 2** — Aplikasi Sistem Lelang Online (OOP)
-3. **Kelompok 3** — Debugging & pengujian
-
-**Aplikasi:** Sistem Lelang Online berbasis web (PHP + MySQL)
-
----
-
-## 📊 B. PDM (Physical Data Model)
-
-### Struktur Tabel (6 Tabel)
-
-| Tabel | Kolom Utama | Kegunaan |
-|-------|-------------|----------|
-| tb_level | id_level, level | Master level akses |
-| tb_petugas | id_petugas, nama, username, password, id_level | Data petugas/admin |
-| tb_masyarakat | id_user, nama_lengkap, username, password, telp | Data peserta lelang |
-| tb_barang | id_barang, nama_barang, harga_awal, deskripsi, tgl | Data barang |
-| tb_lelang | id_lelang, id_barang, tgl_lelang, harga_akhir, id_user, id_petugas, status | Proses lelang |
-| tb_history_lelang | id_history, id_lelang, id_barang, id_user, penawaran_harga | Riwayat penawaran |
-
-### Relasi (ERD)
-```
-[tb_level] ──< [tb_petugas]
-                    │
-[tb_barang] ──< [tb_lelang] >── [tb_masyarakat]
-                    │
-              [tb_history_lelang]
-```
-
----
-
-## ⚙️ C. STORED PROCEDURE (6 SP)
-
-| SP | Fungsi | Parameter |
-|----|--------|-----------|
-| sp_register_petugas | Registrasi petugas/admin | nama, username, password, id_level |
-| sp_register_masyarakat | Registrasi masyarakat | nama, username, password, telp |
-| sp_buka_lelang | Buka lelang | id_lelang |
-| sp_tutup_lelang | Tutup & set pemenang | id_lelang |
-| sp_tambah_penawaran | Tambah penawaran + validasi | id_lelang, id_barang, id_user, penawaran |
-| sp_laporan_lelang | Laporan per periode | start_date, end_date |
-
----
-
-## 💻 D. FITUR APLIKASI
-
-### Matriks Privilege
-
-| Fitur | Administrator | Petugas | Masyarakat |
-|-------|:-------------:|:-------:|:----------:|
-| Login | ✅ | ✅ | ✅ |
-| Logout | ✅ | ✅ | ✅ |
-| Registrasi | ✅ | ✅ | ✅ |
-| Pendataan Barang | ✅ | ✅ | ❌ |
-| Penawaran | ❌ | ❌ | ✅ |
-| Buka/Tutup Lelang | ✅ | ✅ | ❌ |
-| Generate Laporan | ✅ | ✅ | ❌ |
-
-### Flow Penggunaan (TANPA DATA DUMMY)
-
-1. User buka aplikasi → redirect ke **Login**
-2. Klik **"Registrasi Sekarang"** → daftar akun
-3. Pilih role: Masyarakat / Petugas / Administrator
-4. Isi form registrasi
-5. Login dengan akun yang baru dibuat
-6. Mulai gunakan aplikasi sesuai role
-
----
-
-## 🔧 E. TEKNOLOGI
-
-| Komponen | Teknologi |
-|----------|-----------|
-| Bahasa | PHP 8.2 (OOP) |
-| Database | MySQL + Stored Procedure |
-| Frontend | HTML5, CSS3 Custom, JavaScript |
-| Server | XAMPP (Apache + MySQL) |
-| IDE | VS Code |
-
----
-
-## 🐛 F. DEBUGGING & PENGUJIAN
-
-### Error yang Ditemukan & Diperbaiki
-
-#### ERROR #1: Koneksi Database Gagal
-- **Error:** `SQLSTATE[HY000] [1049] Unknown database`
-- **Solusi:** `CREATE DATABASE sistem_lelang;`
-
-#### ERROR #2: Tabel Tidak Ditemukan
-- **Solusi:** Import SQL lengkap
-
-#### ERROR #3: Hash Password Tidak Match
-- **Error:** Login gagal
-- **Penyebab:** Password hash salah
-- **Solusi:** Gunakan `password_hash()` di register
-
-#### ERROR #4: Penawaran Ditolak (Business Logic)
-- **Error:** "Penawaran harus lebih tinggi!"
-- **Penyebab:** SP validasi — ini behavior benar
-
-#### ERROR #5: Role Tidak Sesuai
-- **Error:** "Role tidak sesuai dengan akun Anda!"
-- **Solusi:** Login pakai role yang benar
-
----
-
-## ✅ G. PENGUJIAN FUNGSIONAL
-
-| No | Test Case | Expected | Hasil |
-|:--:|-----------|----------|:-----:|
-| 1 | Register masyarakat | Berhasil | ✅ |
-| 2 | Register petugas | Berhasil | ✅ |
-| 3 | Register admin | Berhasil | ✅ |
-| 4 | Login dengan akun baru | Berhasil | ✅ |
-| 5 | Login role salah | Ditolak | ✅ |
-| 6 | Tambah barang (admin) | Berhasil | ✅ |
-| 7 | Buat lelang (petugas) | Berhasil | ✅ |
-| 8 | Buka lelang | Status berubah | ✅ |
-| 9 | Tutup lelang | Pemenang ditentukan | ✅ |
-| 10 | Masyarakat tawar | Tersimpan | ✅ |
-| 11 | Penawaran lebih rendah | Ditolak | ✅ |
-| 12 | Laporan per periode | Data tampil | ✅ |
-| 13 | Logout | Session destroyed | ✅ |
-| 14 | Akses tanpa login | Redirect ke login | ✅ |
-| 15 | Akses role salah | 403 / redirect | ✅ |
-
----
-
-## 📝 H. KESIMPULAN
-
-1. Struktur data berhasil dibuat sesuai PDM (6 tabel + 6 SP)
-2. Aplikasi berjalan dengan PHP OOP + MySQL
-3. **Tidak ada data dummy** — user register sendiri
-4. Password di-hash dengan `password_hash()`
-5. Semua fitur berjalan sesuai privilege
-6. 15 test case lulus 100%
-
----
-
-## 🎯 I. CARA MENJALANKAN
-
-1. **Setup database:**
-   ```cmd
-   mysql -u root -e "CREATE DATABASE sistem_lelang;"
-   mysql -u root sistem_lelang < database/sistem_lelang.sql
-   ```
-
-2. **Jalankan aplikasi:**
-   ```cmd
-   cd C:\xampp\htdocs\sistem-lelang
-   php -S localhost:8000
-   ```
-
-3. **Buka:** http://localhost:8000
-
-4. **Register dulu**, baru login!
-
----
-
-**Laporan disusun sebagai bukti Tugas Praktik Demonstrasi FR.IA.02 TPD.**  
-**Tanggal:** [Isi Tanggal]  
-**Tanda Tangan:** _______________
-````
-
----
-
-# 🚀 BAGIAN 8: PERINTAH FINAL
-
-## 🎯 LANGKAH FINAL — Import DB & Jalankan Server
+## 🎯 LANGKAH FINAL — Migrate & Serve
 
 ```cmd
-cd /d C:\xampp\htdocs\sistem-lelang && mysql -u root sistem_lelang < database\sistem_lelang.sql && php -S localhost:8000
+cd /d C:\xampp\htdocs\lelang-online && php artisan migrate:fresh --seed && php artisan route:clear && php artisan config:clear && php artisan cache:clear && php artisan view:clear && php artisan serve
 ```
 
 **Buka browser:** http://localhost:8000
-
----
-
-# 🎯 ALUR PEMAKAIAN (FINAL)
-
-```
-┌─────────────────────────────────────────┐
-│ 1. Buka http://localhost:8000           │
-│    → Redirect ke login.php              │
-└─────────────────────────────────────────┘
-              ↓
-┌─────────────────────────────────────────┐
-│ 2. Klik "📝 Registrasi Sekarang"        │
-│    → Buka register.php                  │
-└─────────────────────────────────────────┘
-              ↓
-┌─────────────────────────────────────────┐
-│ 3. Pilih role:                          │
-│    - 👤 Masyarakat (peserta lelang)     │
-│    - 🔨 Petugas (kelola lelang)         │
-│    - 👑 Administrator (full akses)      │
-│    Isi form + klik "Daftar"             │
-└─────────────────────────────────────────┘
-              ↓
-┌─────────────────────────────────────────┐
-│ 4. Setelah sukses → Login pakai akun    │
-└─────────────────────────────────────────┘
-              ↓
-┌─────────────────────────────────────────┐
-│ 5. Mulai pakai aplikasi:                │
-│    - Admin/Petugas: barang & lelang     │
-│    - Masyarakat: tawar barang           │
-└─────────────────────────────────────────┘
-```
-
----
-
-# ✅ CEKLIST FILE (19 FILE)
-
-- [ ] File 1: `database/sistem_lelang.sql`
-- [ ] File 2: `config/database.php`
-- [ ] File 3: `includes/session.php`
-- [ ] File 4: `includes/header.php`
-- [ ] File 5: `includes/footer.php`
-- [ ] File 6: **`register.php`** ⭐
-- [ ] File 7: `login.php`
-- [ ] File 8: `logout.php`
-- [ ] File 9: `index.php`
-- [ ] File 10: `pages/barang.php`
-- [ ] File 11: `pages/barang_form.php`
-- [ ] File 12: `pages/lelang.php`
-- [ ] File 13: `pages/lelang_form.php`
-- [ ] File 14: `pages/lelang_masyarakat.php`
-- [ ] File 15: `pages/history_saya.php`
-- [ ] File 16: `pages/laporan.php`
-- [ ] File 17: `assets/css/style.css`
-- [ ] File 18: `assets/js/script.js`
-- [ ] File 19: `laporan/LAPORAN.md`
-
----
-
-# 🎉 SELESAI!
-
-**Yang sudah FIX:**
-- ✅ **Tidak ada data dummy** — user register sendiri
-- ✅ **Register → Login** flow
-- ✅ Password di-hash dengan `password_hash()`
-- ✅ Role dipilih saat registrasi
-- ✅ Login cek role sesuai
-- ✅ 6 Stored Procedure
-- ✅ 3 role: Administrator, Petugas, Masyarakat
-- ✅ CSS custom (tanpa Bootstrap)
-- ✅ LAPORAN.md lengkap untuk USK
-
-**Langkah pakai:**
-1. Jalankan **LANGKAH 1.1 – 1.3** di CMD (buat folder + DB + import)
-2. Copy semua file ke lokasi masing-masing (pakai VS Code)
-3. Jalankan **BAGIAN 8** di CMD
-4. Buka http://localhost:8000
-5. **Klik "Registrasi Sekarang"** → daftar akun
-6. Login & test semua role
-7. Serahkan `LAPORAN.md` ke penguji
-
-**Semoga USK-nya sukses!** 🚀🎓
-
-Kalau ada error atau butuh tambahan fitur, bilang ke saya! 
