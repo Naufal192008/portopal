@@ -1033,3 +1033,5 @@ Untuk memenuhi kriteria tugas praktik demonstrasi (Kode Unit J.620100.025.02 ten
    - Kesalahan penulisan nama variabel atau properti class.
    - Koneksi database gagal karena password root yang berbeda.
    Perbaiki kode sesuai dengan pesan error yang tertera, lalu lakukan validasi ulang hingga aplikasi berjalan tanpa error.
+
+   ;;;;
