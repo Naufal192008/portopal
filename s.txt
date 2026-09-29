@@ -1,52 +1,910 @@
-Berikut adalah daftar **Username** dan **Password** untuk login ke aplikasi kasir restoran yang sudah dibuat. Data ini diambil dari tabel `user` yang ada di file `database.sql`.
-
-| No | Username | Password | Role | Hak Akses |
-|---|---|---|---|---|
-| 1 | `admin` | `admin123` | Administrator | Semua fitur (Entri Meja, Entri Barang, Entri Order, Generate Laporan) |
-| 2 | `waiter1` | `waiter123` | Waiter | Entri Barang, Entri Order |
-| 3 | `kasir1` | `kasir123` | Kasir | Entri Transaksi, Generate Laporan |
-| 4 | `owner1` | `owner123` | Owner | Generate Laporan |
+Baik, saya berikan **VERSI FINAL LENGKAP** khusus untuk **XAMPP + PHP Native**. Semua kode di bawah ini sudah saya sesuaikan agar **langsung jalan** di XAMPP tanpa perlu ubah apa-apa (kecuali kalau MySQL Anda pakai password).
 
 ---
 
-### Cara Login
+## LANGKAH 1 — PERSIAPAN XAMPP
 
-1. Buka browser, akses: `http://localhost/kasir_restoran/`
-2. Masukkan salah satu **Username** dan **Password** dari tabel di atas.
-3. Klik tombol **Login**.
+1. Buka **XAMPP Control Panel**
+2. Klik **Start** pada **Apache** → tunggu sampai hijau
+3. Klik **Start** pada **MySQL** → tunggu sampai hijau
+4. Buka folder `C:\xampp\htdocs\`
+5. Buat folder baru: **`kasir_restoran`**
+6. Di dalam `kasir_restoran`, buat folder: **`config`**, **`classes`**, **`views`**
 
 ---
 
-### Catatan Penting
+## LANGKAH 2 — BUAT DATABASE
 
-Jika login **gagal** atau muncul pesan error, kemungkinan penyebabnya adalah:
-
-1. **Database belum di-import.** Pastikan Anda sudah menjalankan seluruh isi file `database.sql` di phpMyAdmin. Periksa apakah tabel `user` sudah berisi 4 baris data di atas.
-2. **Password di database berbeda.** Jika Anda sebelumnya sudah pernah membuat tabel `user` dengan password lain, jalankan query berikut di phpMyAdmin untuk mengisi ulang datanya:
+1. Buka browser → **`http://localhost/phpmyadmin`**
+2. Klik tab **SQL** di bagian atas
+3. Copy paste **SEMUA** kode di bawah, klik **Go/Kirim**:
 
 ```sql
+DROP DATABASE IF EXISTS db_kasir_restoran;
+CREATE DATABASE db_kasir_restoran;
 USE db_kasir_restoran;
 
-DELETE FROM user;
+CREATE TABLE user (
+    iduser INT AUTO_INCREMENT PRIMARY KEY,
+    namauser VARCHAR(50) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    role ENUM('administrator','waiter','kasir','owner') NOT NULL
+);
+
+CREATE TABLE meja (
+    idmeja INT AUTO_INCREMENT PRIMARY KEY,
+    nomeja VARCHAR(10) NOT NULL,
+    kapasitas INT NOT NULL,
+    status ENUM('Tersedia','Terisi') DEFAULT 'Tersedia'
+);
+
+CREATE TABLE menu (
+    idmenu INT AUTO_INCREMENT PRIMARY KEY,
+    namamenu VARCHAR(100) NOT NULL,
+    harga INT NOT NULL
+);
+
+CREATE TABLE pelanggan (
+    idpelanggan INT AUTO_INCREMENT PRIMARY KEY,
+    namapelanggan VARCHAR(100) NOT NULL,
+    jeniskamin TINYINT(1) NOT NULL,
+    nohp CHAR(13),
+    alamat CHAR(95)
+);
+
+CREATE TABLE pesanan (
+    idpesanan INT AUTO_INCREMENT PRIMARY KEY,
+    idmenu INT,
+    idpelanggan INT,
+    jumlah INT NOT NULL,
+    iduser INT,
+    FOREIGN KEY (idmenu) REFERENCES menu(idmenu) ON DELETE SET NULL,
+    FOREIGN KEY (idpelanggan) REFERENCES pelanggan(idpelanggan) ON DELETE SET NULL,
+    FOREIGN KEY (iduser) REFERENCES user(iduser) ON DELETE SET NULL
+);
+
+CREATE TABLE transaksi (
+    idtransaksi INT AUTO_INCREMENT PRIMARY KEY,
+    idpesanan INT,
+    total INT NOT NULL,
+    bayar INT NOT NULL,
+    FOREIGN KEY (idpesanan) REFERENCES pesanan(idpesanan) ON DELETE CASCADE
+);
+
+DELIMITER //
+CREATE PROCEDURE ProsesTransaksi(
+    IN p_idpesanan INT,
+    IN p_total INT,
+    IN p_bayar INT
+)
+BEGIN
+    INSERT INTO transaksi (idpesanan, total, bayar) 
+    VALUES (p_idpesanan, p_total, p_bayar);
+END //
+DELIMITER ;
 
 INSERT INTO user (namauser, password, role) VALUES 
-('admin', 'admin123', 'administrator'),
+('admin',   'admin123',  'administrator'),
 ('waiter1', 'waiter123', 'waiter'),
-('kasir1', 'kasir123', 'kasir'),
-('owner1', 'owner123', 'owner');
+('kasir1',  'kasir123',  'kasir'),
+('owner1',  'owner123',  'owner');
+
+INSERT INTO meja (nomeja, kapasitas) VALUES 
+('M01',4),('M02',2),('M03',6);
+
+INSERT INTO menu (namamenu, harga) VALUES 
+('Nasi Goreng Spesial', 25000),
+('Mie Ayam Bakso', 20000),
+('Ayam Bakar Madu', 30000),
+('Es Teh Manis', 5000);
+
+INSERT INTO pelanggan (namapelanggan, jeniskamin, nohp, alamat) VALUES 
+('Budi Santoso', 1, '081234567890', 'Jl. Merdeka No. 1'),
+('Siti Aminah',  0, '089876543210', 'Jl. Sudirman No. 2');
 ```
 
-3. **Nama database berbeda.** Cek file `config/Database.php`, pastikan `$db_name = "db_kasir_restoran";` sesuai dengan nama database yang Anda buat.
+Jika muncul **"Your SQL query has been executed successfully"** → database siap.
 
 ---
 
-### Cara Menguji Setiap Role
+## LANGKAH 3 — BUAT SEMUA FILE
 
-Setelah login, perhatikan **sidebar menu** di sebelah kiri. Menu yang muncul akan berbeda tergantung role:
+### FILE 1 — `config/Database.php`
 
-- **Login sebagai `admin`**: Akan muncul menu **Dashboard, Entri Meja, Entri Barang (Menu), Entri Pelanggan, Entri Order, Generate Laporan**.
-- **Login sebagai `waiter1`**: Akan muncul menu **Dashboard, Entri Barang (Menu), Entri Pelanggan, Entri Order**. Menu Entri Meja dan Laporan **tidak muncul**.
-- **Login sebagai `kasir1`**: Akan muncul menu **Dashboard, Entri Transaksi, Generate Laporan**. Menu lainnya **tidak muncul**.
-- **Login sebagai `owner1`**: Hanya muncul menu **Dashboard, Generate Laporan**. Menu lainnya **tidak muncul**.
+```php
+<?php
+class Database {
+    private $host = "localhost";
+    private $db_name = "db_kasir_restoran";
+    private $username = "root";
+    private $password = "";
+    public $conn;
 
-Jika Anda mencoba mengakses URL secara paksa (contoh: login sebagai `waiter1` lalu ketik `http://localhost/kasir_restoran/form_meja.php` di address bar), maka aplikasi akan menolak dan menampilkan pesan **"Anda tidak memiliki akses ke halaman ini."** Ini membuktikan bahwa sistem hak akses berjalan dengan benar.
+    public function getConnection() {
+        $this->conn = null;
+        try {
+            $this->conn = new PDO("mysql:host=".$this->host.";dbname=".$this->db_name.";charset=utf8mb4", $this->username, $this->password);
+            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+        } catch(PDOException $e) {
+            die("Koneksi gagal: " . $e->getMessage());
+        }
+        return $this->conn;
+    }
+}
+?>
+```
+
+---
+
+### FILE 2 — `classes/User.php`
+
+```php
+<?php
+class User {
+    private $conn;
+    public $iduser, $namauser, $password, $role;
+
+    public function __construct($db) { $this->conn = $db; }
+
+    public function login() {
+        $q = "SELECT iduser, namauser, role FROM user WHERE namauser=:u AND password=:p LIMIT 1";
+        $s = $this->conn->prepare($q);
+        $s->bindParam(':u', $this->namauser);
+        $s->bindParam(':p', $this->password);
+        $s->execute();
+        if($s->rowCount() > 0) {
+            $r = $s->fetch();
+            $this->iduser = $r['iduser'];
+            $this->role = $r['role'];
+            return true;
+        }
+        return false;
+    }
+}
+?>
+```
+
+---
+
+### FILE 3 — `classes/Menu.php`
+
+```php
+<?php
+class Menu {
+    private $conn;
+    public $idmenu, $namamenu, $harga;
+
+    public function __construct($db) { $this->conn = $db; }
+
+    public function create() {
+        $q = "INSERT INTO menu (namamenu, harga) VALUES (:n, :h)";
+        $s = $this->conn->prepare($q);
+        return $s->execute([':n'=>$this->namamenu, ':h'=>$this->harga]);
+    }
+
+    public function readAll() {
+        return $this->conn->query("SELECT * FROM menu ORDER BY idmenu DESC");
+    }
+}
+?>
+```
+
+---
+
+### FILE 4 — `classes/Meja.php`
+
+```php
+<?php
+class Meja {
+    private $conn;
+    public $idmeja, $nomeja, $kapasitas, $status;
+
+    public function __construct($db) { $this->conn = $db; }
+
+    public function create() {
+        $q = "INSERT INTO meja (nomeja, kapasitas, status) VALUES (:n, :k, :s)";
+        $s = $this->conn->prepare($q);
+        return $s->execute([':n'=>$this->nomeja, ':k'=>$this->kapasitas, ':s'=>$this->status]);
+    }
+
+    public function readAll() {
+        return $this->conn->query("SELECT * FROM meja ORDER BY idmeja DESC");
+    }
+}
+?>
+```
+
+---
+
+### FILE 5 — `classes/Pelanggan.php`
+
+```php
+<?php
+class Pelanggan {
+    private $conn;
+    public $idpelanggan, $namapelanggan, $jeniskamin, $nohp, $alamat;
+
+    public function __construct($db) { $this->conn = $db; }
+
+    public function create() {
+        $q = "INSERT INTO pelanggan (namapelanggan, jeniskamin, nohp, alamat) VALUES (:n, :j, :h, :a)";
+        $s = $this->conn->prepare($q);
+        return $s->execute([':n'=>$this->namapelanggan, ':j'=>$this->jeniskamin, ':h'=>$this->nohp, ':a'=>$this->alamat]);
+    }
+
+    public function readAll() {
+        return $this->conn->query("SELECT * FROM pelanggan ORDER BY idpelanggan DESC");
+    }
+}
+?>
+```
+
+---
+
+### FILE 6 — `classes/Pesanan.php`
+
+```php
+<?php
+class Pesanan {
+    private $conn;
+    public $idpesanan, $idmenu, $idpelanggan, $jumlah, $iduser;
+
+    public function __construct($db) { $this->conn = $db; }
+
+    public function create() {
+        $q = "INSERT INTO pesanan (idmenu, idpelanggan, jumlah, iduser) VALUES (:m, :p, :j, :u)";
+        $s = $this->conn->prepare($q);
+        return $s->execute([':m'=>$this->idmenu, ':p'=>$this->idpelanggan, ':j'=>$this->jumlah, ':u'=>$this->iduser]);
+    }
+
+    public function readAllWithDetails() {
+        $q = "SELECT p.idpesanan, m.namamenu, m.harga, p.jumlah, pl.namapelanggan, u.namauser 
+              FROM pesanan p
+              JOIN menu m ON p.idmenu = m.idmenu
+              JOIN pelanggan pl ON p.idpelanggan = pl.idpelanggan
+              JOIN user u ON p.iduser = u.iduser
+              ORDER BY p.idpesanan DESC";
+        return $this->conn->query($q);
+    }
+}
+?>
+```
+
+---
+
+### FILE 7 — `classes/Transaksi.php`
+
+```php
+<?php
+class Transaksi {
+    private $conn;
+    public $idtransaksi, $idpesanan, $total, $bayar;
+
+    public function __construct($db) { $this->conn = $db; }
+
+    public function prosesTransaksi() {
+        $q = "CALL ProsesTransaksi(:i, :t, :b)";
+        $s = $this->conn->prepare($q);
+        return $s->execute([':i'=>$this->idpesanan, ':t'=>$this->total, ':b'=>$this->bayar]);
+    }
+
+    public function readLaporan() {
+        $q = "SELECT t.idtransaksi, m.namamenu, p.jumlah, t.total, t.bayar, pl.namapelanggan, u.namauser
+              FROM transaksi t
+              JOIN pesanan p ON t.idpesanan = p.idpesanan
+              JOIN menu m ON p.idmenu = m.idmenu
+              JOIN pelanggan pl ON p.idpelanggan = pl.idpelanggan
+              JOIN user u ON p.iduser = u.iduser
+              ORDER BY t.idtransaksi DESC";
+        return $this->conn->query($q);
+    }
+}
+?>
+```
+
+---
+
+### FILE 8 — `views/layout_header.php`
+
+```php
+<?php
+if (session_status() === PHP_SESSION_NONE) session_start();
+if (!isset($_SESSION['namauser'])) { header("Location: index.php"); exit; }
+$role = $_SESSION['role'];
+$current_page = basename($_SERVER['PHP_SELF']);
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Sistem Kasir Restoran</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; }
+.sidebar { min-height: 100vh; background: linear-gradient(180deg,#1e3c72,#2a5298); color:#fff; width:260px; position:fixed; top:0; left:0; padding-top:20px; }
+.sidebar h4 { text-align:center; padding:10px 0 20px; border-bottom:1px solid rgba(255,255,255,.1); margin-bottom:10px; }
+.sidebar a { color:#d1d8e0; text-decoration:none; padding:12px 20px; display:block; border-left:4px solid transparent; transition:.2s; }
+.sidebar a:hover, .sidebar a.active { background:rgba(255,255,255,.1); color:#fff; border-left:4px solid #f39c12; }
+.sidebar a i { margin-right:12px; width:20px; }
+.content { margin-left:260px; padding:25px; }
+.card { border:none; border-radius:10px; box-shadow:0 3px 15px rgba(0,0,0,.05); }
+.card-header { border-radius:10px 10px 0 0 !important; font-weight:600; }
+.btn { border-radius:8px; }
+.topbar { background:#fff; padding:15px 20px; border-radius:10px; margin-bottom:20px; box-shadow:0 2px 8px rgba(0,0,0,.05); display:flex; justify-content:space-between; align-items:center; }
+</style>
+</head>
+<body>
+<div class="sidebar">
+    <h4><i class="fas fa-utensils"></i> Resto App</h4>
+    <a href="dashboard.php" class="<?= $current_page=='dashboard.php'?'active':'' ?>"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+    <?php if($role=='administrator'): ?>
+        <a href="form_meja.php" class="<?= $current_page=='form_meja.php'?'active':'' ?>"><i class="fas fa-chair"></i> Entri Meja</a>
+    <?php endif; ?>
+    <?php if($role=='administrator' || $role=='waiter'): ?>
+        <a href="form_menu.php" class="<?= $current_page=='form_menu.php'?'active':'' ?>"><i class="fas fa-book"></i> Entri Barang</a>
+        <a href="form_pelanggan.php" class="<?= $current_page=='form_pelanggan.php'?'active':'' ?>"><i class="fas fa-users"></i> Entri Pelanggan</a>
+        <a href="form_order.php" class="<?= $current_page=='form_order.php'?'active':'' ?>"><i class="fas fa-clipboard-list"></i> Entri Order</a>
+    <?php endif; ?>
+    <?php if($role=='kasir'): ?>
+        <a href="form_transaksi.php" class="<?= $current_page=='form_transaksi.php'?'active':'' ?>"><i class="fas fa-cash-register"></i> Entri Transaksi</a>
+    <?php endif; ?>
+    <?php if($role=='administrator' || $role=='kasir' || $role=='owner'): ?>
+        <a href="laporan.php" class="<?= $current_page=='laporan.php'?'active':'' ?>"><i class="fas fa-chart-line"></i> Generate Laporan</a>
+    <?php endif; ?>
+    <a href="logout.php" style="color:#ff6b6b;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+</div>
+<div class="content">
+    <div class="topbar">
+        <span><i class="fas fa-user-circle"></i> <b><?= $_SESSION['namauser'] ?></b> <span class="badge bg-primary"><?= ucfirst($role) ?></span></span>
+        <span class="text-muted"><?= date('d M Y') ?></span>
+    </div>
+```
+
+---
+
+### FILE 9 — `views/layout_footer.php`
+
+```php
+</div>
+</body>
+</html>
+```
+
+---
+
+### FILE 10 — `index.php`
+
+```php
+<?php
+session_start();
+require_once 'config/Database.php';
+require_once 'classes/User.php';
+
+if(isset($_SESSION['namauser'])) { header("Location: dashboard.php"); exit; }
+
+$error = '';
+if($_SERVER['REQUEST_METHOD']=='POST') {
+    $db = (new Database())->getConnection();
+    $u = new User($db);
+    $u->namauser = $_POST['namauser'];
+    $u->password = $_POST['password'];
+    if($u->login()) {
+        $_SESSION['iduser'] = $u->iduser;
+        $_SESSION['namauser'] = $u->namauser;
+        $_SESSION['role'] = $u->role;
+        header("Location: dashboard.php"); exit;
+    } else { $error = "Username atau password salah!"; }
+}
+?>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Login - Resto App</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+body { min-height:100vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#1e3c72,#2a5298); font-family:'Segoe UI',sans-serif; margin:0; }
+.card { border:none; border-radius:15px; box-shadow:0 15px 35px rgba(0,0,0,.2); width:100%; max-width:400px; }
+.card-header { background:#fff; border:none; text-align:center; padding:30px 20px 10px; border-radius:15px 15px 0 0 !important; }
+.card-body { padding:30px; }
+</style>
+</head>
+<body>
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-utensils fa-3x text-primary mb-3"></i>
+        <h4 class="fw-bold">Resto App</h4>
+        <p class="text-muted small">Silakan login</p>
+    </div>
+    <div class="card-body">
+        <?php if($error): ?><div class="alert alert-danger"><?= $error ?></div><?php endif; ?>
+        <form method="POST">
+            <div class="mb-3">
+                <label class="form-label fw-bold small">Username</label>
+                <input type="text" name="namauser" class="form-control" required autofocus>
+            </div>
+            <div class="mb-4">
+                <label class="form-label fw-bold small">Password</label>
+                <input type="password" name="password" class="form-control" required>
+            </div>
+            <button class="btn btn-primary w-100 py-2"><i class="fas fa-sign-in-alt me-2"></i> Login</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>
+```
+
+---
+
+### FILE 11 — `dashboard.php`
+
+```php
+<?php require_once 'views/layout_header.php'; ?>
+<h3 class="fw-bold mb-4"><i class="fas fa-tachometer-alt me-2"></i> Dashboard</h3>
+<div class="card">
+    <div class="card-body">
+        <h5>Selamat Datang, <?= $_SESSION['namauser'] ?>!</h5>
+        <p>Anda login sebagai <b><?= ucfirst($role) ?></b>.</p>
+    </div>
+</div>
+<?php require_once 'views/layout_footer.php'; ?>
+```
+
+---
+
+### FILE 12 — `form_meja.php`
+
+```php
+<?php
+require_once 'config/Database.php';
+require_once 'classes/Meja.php';
+require_once 'views/layout_header.php';
+
+if($role != 'administrator') { echo "<div class='alert alert-danger'>Akses ditolak.</div>"; require_once 'views/layout_footer.php'; exit; }
+
+$db = (new Database())->getConnection();
+$pesan = '';
+if($_SERVER['REQUEST_METHOD']=='POST') {
+    $m = new Meja($db);
+    $m->nomeja = $_POST['nomeja'];
+    $m->kapasitas = $_POST['kapasitas'];
+    $m->status = $_POST['status'];
+    $pesan = $m->create() ? "<div class='alert alert-success'>Data meja disimpan.</div>" : "<div class='alert alert-danger'>Gagal.</div>";
+}
+$stmt = (new Meja($db))->readAll();
+?>
+<h3 class="fw-bold mb-4"><i class="fas fa-chair me-2"></i> Entri Meja</h3>
+<?= $pesan ?>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">Tambah Meja</div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3"><label class="form-label">Nomor Meja</label><input type="text" name="nomeja" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">Kapasitas</label><input type="number" name="kapasitas" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">Status</label>
+                        <select name="status" class="form-select"><option>Tersedia</option><option>Terisi</option></select>
+                    </div>
+                    <button class="btn btn-primary w-100">Simpan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-white fw-bold">Daftar Meja</div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead><tr><th>ID</th><th>Nomor</th><th>Kapasitas</th><th>Status</th></tr></thead>
+                    <tbody>
+                    <?php while($r = $stmt->fetch()): ?>
+                        <tr><td><?= $r['idmeja'] ?></td><td><?= $r['nomeja'] ?></td><td><?= $r['kapasitas'] ?></td><td><?= $r['status'] ?></td></tr>
+                    <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<?php require_once 'views/layout_footer.php'; ?>
+```
+
+---
+
+### FILE 13 — `form_menu.php`
+
+```php
+<?php
+require_once 'config/Database.php';
+require_once 'classes/Menu.php';
+require_once 'views/layout_header.php';
+
+if($role != 'administrator' && $role != 'waiter') { echo "<div class='alert alert-danger'>Akses ditolak.</div>"; require_once 'views/layout_footer.php'; exit; }
+
+$db = (new Database())->getConnection();
+$pesan = '';
+if($_SERVER['REQUEST_METHOD']=='POST') {
+    $m = new Menu($db);
+    $m->namamenu = $_POST['namamenu'];
+    $m->harga = $_POST['harga'];
+    $pesan = $m->create() ? "<div class='alert alert-success'>Menu disimpan.</div>" : "<div class='alert alert-danger'>Gagal.</div>";
+}
+$stmt = (new Menu($db))->readAll();
+?>
+<h3 class="fw-bold mb-4"><i class="fas fa-book me-2"></i> Entri Barang (Menu)</h3>
+<?= $pesan ?>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">Tambah Menu</div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3"><label class="form-label">Nama Menu</label><input type="text" name="namamenu" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">Harga</label><input type="number" name="harga" class="form-control" required></div>
+                    <button class="btn btn-primary w-100">Simpan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-white fw-bold">Daftar Menu</div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead><tr><th>ID</th><th>Nama</th><th>Harga</th></tr></thead>
+                    <tbody>
+                    <?php while($r = $stmt->fetch()): ?>
+                        <tr><td><?= $r['idmenu'] ?></td><td><?= $r['namamenu'] ?></td><td>Rp <?= number_format($r['harga'],0,',','.') ?></td></tr>
+                    <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<?php require_once 'views/layout_footer.php'; ?>
+```
+
+---
+
+### FILE 14 — `form_pelanggan.php`
+
+```php
+<?php
+require_once 'config/Database.php';
+require_once 'classes/Pelanggan.php';
+require_once 'views/layout_header.php';
+
+if($role != 'administrator' && $role != 'waiter') { echo "<div class='alert alert-danger'>Akses ditolak.</div>"; require_once 'views/layout_footer.php'; exit; }
+
+$db = (new Database())->getConnection();
+$pesan = '';
+if($_SERVER['REQUEST_METHOD']=='POST') {
+    $p = new Pelanggan($db);
+    $p->namapelanggan = $_POST['namapelanggan'];
+    $p->jeniskamin = $_POST['jeniskamin'];
+    $p->nohp = $_POST['nohp'];
+    $p->alamat = $_POST['alamat'];
+    $pesan = $p->create() ? "<div class='alert alert-success'>Pelanggan disimpan.</div>" : "<div class='alert alert-danger'>Gagal.</div>";
+}
+$stmt = (new Pelanggan($db))->readAll();
+?>
+<h3 class="fw-bold mb-4"><i class="fas fa-users me-2"></i> Entri Pelanggan</h3>
+<?= $pesan ?>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">Tambah Pelanggan</div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3"><label class="form-label">Nama</label><input type="text" name="namapelanggan" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">Jenis Kelamin</label>
+                        <select name="jeniskamin" class="form-select"><option value="1">Laki-laki</option><option value="0">Perempuan</option></select>
+                    </div>
+                    <div class="mb-3"><label class="form-label">No HP</label><input type="text" name="nohp" class="form-control" maxlength="13"></div>
+                    <div class="mb-3"><label class="form-label">Alamat</label><input type="text" name="alamat" class="form-control" maxlength="95"></div>
+                    <button class="btn btn-primary w-100">Simpan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-white fw-bold">Daftar Pelanggan</div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead><tr><th>ID</th><th>Nama</th><th>JK</th><th>HP</th><th>Alamat</th></tr></thead>
+                    <tbody>
+                    <?php while($r = $stmt->fetch()): ?>
+                        <tr><td><?= $r['idpelanggan'] ?></td><td><?= $r['namapelanggan'] ?></td><td><?= $r['jeniskamin']?'L':'P' ?></td><td><?= $r['nohp'] ?></td><td><?= $r['alamat'] ?></td></tr>
+                    <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<?php require_once 'views/layout_footer.php'; ?>
+```
+
+---
+
+### FILE 15 — `form_order.php`
+
+```php
+<?php
+require_once 'config/Database.php';
+require_once 'classes/Pesanan.php';
+require_once 'classes/Menu.php';
+require_once 'classes/Pelanggan.php';
+require_once 'views/layout_header.php';
+
+if($role != 'administrator' && $role != 'waiter') { echo "<div class='alert alert-danger'>Akses ditolak.</div>"; require_once 'views/layout_footer.php'; exit; }
+
+$db = (new Database())->getConnection();
+$pesan = '';
+if($_SERVER['REQUEST_METHOD']=='POST') {
+    $p = new Pesanan($db);
+    $p->idmenu = $_POST['idmenu'];
+    $p->idpelanggan = $_POST['idpelanggan'];
+    $p->jumlah = $_POST['jumlah'];
+    $p->iduser = $_SESSION['iduser'];
+    $pesan = $p->create() ? "<div class='alert alert-success'>Order dibuat.</div>" : "<div class='alert alert-danger'>Gagal.</div>";
+}
+$menuList = (new Menu($db))->readAll();
+$pelList = (new Pelanggan($db))->readAll();
+$pesananList = (new Pesanan($db))->readAllWithDetails();
+?>
+<h3 class="fw-bold mb-4"><i class="fas fa-clipboard-list me-2"></i> Entri Order</h3>
+<?= $pesan ?>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">Buat Order</div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3"><label class="form-label">Menu</label>
+                        <select name="idmenu" class="form-select" required>
+                            <option value="">-- Pilih --</option>
+                            <?php while($r = $menuList->fetch()): ?>
+                                <option value="<?= $r['idmenu'] ?>"><?= $r['namamenu'] ?> - Rp <?= number_format($r['harga'],0,',','.') ?></option>
+                            <?php endwhile; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3"><label class="form-label">Pelanggan</label>
+                        <select name="idpelanggan" class="form-select" required>
+                            <option value="">-- Pilih --</option>
+                            <?php while($r = $pelList->fetch()): ?>
+                                <option value="<?= $r['idpelanggan'] ?>"><?= $r['namapelanggan'] ?></option>
+                            <?php endwhile; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3"><label class="form-label">Jumlah</label><input type="number" name="jumlah" class="form-control" required min="1"></div>
+                    <button class="btn btn-success w-100">Buat Order</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-white fw-bold">Daftar Order</div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead><tr><th>ID</th><th>Menu</th><th>Pelanggan</th><th>Jumlah</th><th>Waiter</th></tr></thead>
+                    <tbody>
+                    <?php while($r = $pesananList->fetch()): ?>
+                        <tr><td><?= $r['idpesanan'] ?></td><td><?= $r['namamenu'] ?></td><td><?= $r['namapelanggan'] ?></td><td><?= $r['jumlah'] ?></td><td><?= $r['namauser'] ?></td></tr>
+                    <?php endwhile; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<?php require_once 'views/layout_footer.php'; ?>
+```
+
+---
+
+### FILE 16 — `form_transaksi.php`
+
+```php
+<?php
+require_once 'config/Database.php';
+require_once 'classes/Transaksi.php';
+require_once 'views/layout_header.php';
+
+if($role != 'kasir') { echo "<div class='alert alert-danger'>Akses ditolak.</div>"; require_once 'views/layout_footer.php'; exit; }
+
+$db = (new Database())->getConnection();
+$pesan = '';
+if($_SERVER['REQUEST_METHOD']=='POST') {
+    $t = new Transaksi($db);
+    $t->idpesanan = $_POST['idpesanan'];
+    $t->total = $_POST['total'];
+    $t->bayar = $_POST['bayar'];
+    $pesan = $t->prosesTransaksi() ? "<div class='alert alert-success'>Transaksi berhasil.</div>" : "<div class='alert alert-danger'>Gagal.</div>";
+}
+$q = "SELECT p.idpesanan, m.namamenu, m.harga, p.jumlah, pl.namapelanggan 
+      FROM pesanan p 
+      JOIN menu m ON p.idmenu = m.idmenu 
+      JOIN pelanggan pl ON p.idpelanggan = pl.idpelanggan
+      LEFT JOIN transaksi t ON p.idpesanan = t.idpesanan
+      WHERE t.idtransaksi IS NULL";
+$stmt = $db->query($q);
+?>
+<h3 class="fw-bold mb-4"><i class="fas fa-cash-register me-2"></i> Entri Transaksi</h3>
+<?= $pesan ?>
+<div class="row">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header bg-warning text-white">Proses Pembayaran</div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3"><label class="form-label">Pesanan</label>
+                        <select name="idpesanan" id="idpesanan" class="form-select" required onchange="updateTotal()">
+                            <option value="">-- Pilih --</option>
+                            <?php while($r = $stmt->fetch()): $tot = $r['harga']*$r['jumlah']; ?>
+                                <option value="<?= $r['idpesanan'] ?>" data-total="<?= $tot ?>">
+                                    <?= $r['namapelanggan'] ?> - <?= $r['namamenu'] ?> (<?= $r['jumlah'] ?>x)
+                                </option>
+                            <?php endwhile; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3"><label class="form-label">Total</label><input type="number" name="total" id="total" class="form-control" readonly></div>
+                    <div class="mb-3"><label class="form-label">Bayar</label><input type="number" name="bayar" class="form-control" required></div>
+                    <button class="btn btn-warning w-100 text-white">Proses</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function updateTotal() {
+    var s = document.getElementById('idpesanan');
+    var t = s.options[s.selectedIndex].getAttribute('data-total');
+    document.getElementById('total').value = t ? t : '';
+}
+</script>
+<?php require_once 'views/layout_footer.php'; ?>
+```
+
+---
+
+### FILE 17 — `laporan.php`
+
+```php
+<?php
+require_once 'config/Database.php';
+require_once 'classes/Transaksi.php';
+require_once 'views/layout_header.php';
+
+if(!in_array($role, ['administrator','kasir','owner'])) { echo "<div class='alert alert-danger'>Akses ditolak.</div>"; require_once 'views/layout_footer.php'; exit; }
+
+$db = (new Database())->getConnection();
+$stmt = (new Transaksi($db))->readLaporan();
+?>
+<h3 class="fw-bold mb-4"><i class="fas fa-chart-line me-2"></i> Laporan Transaksi</h3>
+<div class="card">
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead class="table-dark"><tr><th>ID</th><th>Menu</th><th>Pelanggan</th><th>Jumlah</th><th>Total</th><th>Bayar</th><th>Kasir</th></tr></thead>
+            <tbody>
+            <?php $gt=0; while($r = $stmt->fetch()): $gt += $r['total']; ?>
+                <tr>
+                    <td><?= $r['idtransaksi'] ?></td>
+                    <td><?= $r['namamenu'] ?></td>
+                    <td><?= $r['namapelanggan'] ?></td>
+                    <td><?= $r['jumlah'] ?></td>
+                    <td>Rp <?= number_format($r['total'],0,',','.') ?></td>
+                    <td>Rp <?= number_format($r['bayar'],0,',','.') ?></td>
+                    <td><?= $r['namauser'] ?></td>
+                </tr>
+            <?php endwhile; ?>
+            </tbody>
+            <tfoot><tr><th colspan="4" class="text-end">TOTAL</th><th colspan="3">Rp <?= number_format($gt,0,',','.') ?></th></tr></tfoot>
+        </table>
+    </div>
+</div>
+<?php require_once 'views/layout_footer.php'; ?>
+```
+
+---
+
+### FILE 18 — `logout.php`
+
+```php
+<?php
+session_start();
+session_destroy();
+header("Location: index.php");
+exit;
+?>
+```
+
+---
+
+## LANGKAH 4 — JALANKAN
+
+1. Buka browser
+2. Akses: **`http://localhost/kasir_restoran/`**
+3. Login pakai akun ini:
+
+| Username | Password | Role |
+|---|---|---|
+| `admin` | `admin123` | Administrator |
+| `waiter1` | `waiter123` | Waiter |
+| `kasir1` | `kasir123` | Kasir |
+| `owner1` | `owner123` | Owner |
+
+---
+
+## LANGKAH 5 — CEK MASALAH UMUM
+
+**Kalau muncul "Koneksi gagal: SQLSTATE[HY000] [1045]"**
+→ MySQL Anda pakai password. Buka `config/Database.php`, ganti:
+```php
+private $password = "";
+```
+Jadi password MySQL Anda, misalnya:
+```php
+private $password = "root";
+```
+
+**Kalau muncul "Koneksi gagal: SQLSTATE[HY000] [1049] Unknown database"**
+→ Database belum dibuat. Ulangi **Langkah 2**.
+
+**Kalau muncul "Object not found" / 404**
+→ Folder salah tempat. Pastikan ada di `C:\xampp\htdocs\kasir_restoran\` (huruf kecil semua, tanpa spasi).
+
+**Kalau halaman putih kosong**
+→ Buka `C:\xampp\php\php.ini`, cari `display_errors = Off`, ganti jadi `display_errors = On`. Restart Apache. Refresh halaman.
+
+**Kalau login berhasil tapi blank putih**
+→ Buka file `config/Database.php`, tambahkan di baris paling atas:
+```php
+<?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+```
+Lalu refresh, akan muncul pesan error detail. Kirim ke saya errornya.
+
+---
+
+## CARA TES SEMUA FITUR
+
+**1. Login sebagai `admin` / `admin123`:**
+- Coba isi Entri Meja (M04, 8 orang, Tersedia)
+- Coba isi Entri Barang (Sate Ayam, 35000)
+- Coba isi Entri Pelanggan (Andi, L, 08123, Jakarta)
+- Coba isi Entri Order (pilih menu + pelanggan + jumlah)
+- Buka Laporan
+
+**2. Login sebagai `waiter1` / `waiter123`:**
+- Entri Meja **TIDAK MUNCUL** di sidebar
+- Bisa akses Entri Barang, Pelanggan, Order
+
+**3. Login sebagai `kasir1` / `kasir123`:**
+- Hanya bisa Entri Transaksi + Laporan
+- Pilih pesanan yang dibuat waiter1 tadi, isi jumlah bayar, klik Proses
+
+**4. Login sebagai `owner1` / `owner123`:**
+- Hanya bisa lihat Laporan
+
+**5. Uji debugging (sesuai Kode Unit J.620100.025.02):**
+- Login sebagai `waiter1`, coba ketik URL `http://localhost/kasir_restoran/form_transaksi.php` → harus muncul "Akses ditolak."
+- Login sebagai `kasir1`, coba ketik URL `http://localhost/kasir_restoran/form_meja.php` → harus muncul "Akses ditolak."
+
+---
+
+**Silakan jalankan LANGKAH 1 sampai 5 secara urut.** Kalau masih ada yang gagal, kirim ke saya:
+1. Screenshot layar errornya
+2. URL yang dibuka
+3. Pesan error yang muncul
+
+Nanti saya bantu perbaiki baris per baris.
