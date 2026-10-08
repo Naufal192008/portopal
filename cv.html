@@ -15,7 +15,7 @@
     <meta property="og:type" content="website">
     <meta property="og:title" content="CV | Naufal Murtadho - Software Engineer & Strategic Investor">
     <meta property="og:description" content="Professional CV and Resume of Naufal Murtadho - 17-year-old Software Engineer, Pencak Silat National Athlete, and Strategic Investor.">
-    <meta property="og:image" content="naufalbiru.png">
+    <meta property="og:image" content="https://i.ibb.co.com/L0Hd5z2/naufal-photo.jpg">
     
     <title>CV | Naufal Murtadho - Software Engineer & Strategic Investor</title>
     
@@ -173,7 +173,7 @@
             box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
         }
         
-        /* Profile Photo - FIXED: Full visible, no cutoff, centered */
+        /* Profile Photo */
         .profile-photo-wrapper {
             width: 140px;
             height: 140px;
@@ -241,22 +241,29 @@
             display: block;
         }
         
-        /* Print Styles - Optimized for A4 */
+        /* ============================================ */
+        /* PRINT STYLES - FIXED TOTAL                  */
+        /* ============================================ */
         @media print {
             @page {
-                size: A4;
-                margin: 0.5cm;
+                size: A4 portrait;
+                margin: 0;
             }
             
-            body {
+            html, body {
                 background: white !important;
                 padding: 0 !important;
                 margin: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                overflow: visible !important;
             }
             
             .cv-container {
                 max-width: 100% !important;
+                width: 100% !important;
                 margin: 0 !important;
+                padding: 0 !important;
                 border-radius: 0 !important;
                 box-shadow: none !important;
                 page-break-after: avoid;
@@ -266,6 +273,31 @@
                 display: none !important;
             }
             
+            .cv-header {
+                background: #0f172a !important;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+                padding: 1.5rem !important;
+                padding-top: 1.5rem !important;
+            }
+            
+            .profile-photo-wrapper {
+                border: 3px solid #10b981 !important;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+                width: 110px !important;
+                height: 110px !important;
+                overflow: hidden !important;
+                margin: 0 !important;
+            }
+            
+            .profile-photo {
+                width: 100% !important;
+                height: 100% !important;
+                object-fit: cover !important;
+                object-position: center center !important;
+            }
+            
             .skill-tag {
                 background: #e2e8f0 !important;
                 color: #1e293b !important;
@@ -273,16 +305,14 @@
                 -webkit-print-color-adjust: exact;
             }
             
-            .cv-header {
-                background: #0f172a !important;
-                print-color-adjust: exact;
-                -webkit-print-color-adjust: exact;
-                padding: 1.5rem !important;
-                padding-top: 2rem !important;
-            }
-            
             .cert-card {
                 border-left-color: #10b981 !important;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+            
+            .timeline-item::before {
+                background: #10b981 !important;
                 print-color-adjust: exact;
                 -webkit-print-color-adjust: exact;
             }
@@ -292,24 +322,8 @@
                 color: black;
             }
             
-            .timeline-item::before {
-                background: #10b981 !important;
-                print-color-adjust: exact;
-                -webkit-print-color-adjust: exact;
-            }
-            
-            .profile-photo-wrapper {
-                border: 3px solid #10b981 !important;
-                print-color-adjust: exact;
-                -webkit-print-color-adjust: exact;
-                width: 120px !important;
-                height: 120px !important;
-                overflow: hidden !important;
-                margin-top: 0 !important;
-            }
-            
             .cv-container > .p-8 {
-                padding: 1.5rem !important;
+                padding: 1rem !important;
             }
             
             .grid {
@@ -408,10 +422,10 @@
             <div class="flex flex-col md:flex-row justify-between items-center md:items-start gap-6">
                 <!-- Left: Photo + Name -->
                 <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
-                    <!-- Profile Photo - Fully visible, no cutoff -->
+                    <!-- Profile Photo -->
                     <div class="profile-photo-wrapper">
                         <img 
-                            src="naufalbiru.png" 
+                            src="e.jpeg" 
                             alt="Naufal Murtadho - Profile Photo" 
                             class="profile-photo"
                             loading="lazy"
