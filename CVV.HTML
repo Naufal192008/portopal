@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CV | Naufal Murtadho</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #e5e7eb;
+    padding: 20px;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  .cv {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto;
+    background: white;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    display: grid;
+    grid-template-columns: 32% 68%;
+    overflow: hidden;
+  }
+  
+  /* ==================== SIDEBAR KIRI ==================== */
+  .sidebar {
+    background: #f3f4f6;
+    padding: 30px 22px;
+    color: #1f2937;
+  }
+  
+  .photo-wrapper {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 25px;
+    border: 4px solid #fff;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  
+  .photo-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 25%;
+  }
+  
+  .sidebar-section {
+    margin-bottom: 28px;
+  }
+  
+  .sidebar-title {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #111827;
+    text-transform: uppercase;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #111827;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .sidebar-title i {
+    font-size: 12px;
+    color: #111827;
+  }
+  
+  .contact-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 11px;
+    color: #374151;
+    line-height: 1.5;
+    word-break: break-word;
+  }
+  
+  .contact-item i {
+    color: #111827;
+    font-size: 12px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    width: 14px;
+  }
+  
+  .contact-item a {
+    color: #374151;
+    text-decoration: none;
+  }
+  
+  .skill-list {
+    list-style: none;
+    font-size: 11px;
+    color: #374151;
+    line-height: 1.9;
+  }
+  
+  .skill-list li {
+    padding-left: 14px;
+    position: relative;
+  }
+  
+  .skill-list li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: #111827;
+    font-weight: bold;
+  }
+  
+  .lang-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #374151;
+    margin-bottom: 6px;
+  }
+  
+  .lang-item strong {
+    color: #111827;
+    font-weight: 600;
+  }
+  
+  .ref-item {
+    font-size: 11px;
+    color: #374151;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  
+  .ref-item strong {
+    color: #111827;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 2px;
+  }
+  
+  /* ==================== KONTEN KANAN ==================== */
+  .main {
+    padding: 40px 35px 30px 35px;
+  }
+  
+  .header {
+    margin-bottom: 28px;
+    border-bottom: 3px solid #111827;
+    padding-bottom: 18px;
+  }
+  
+  .header h1 {
+    font-size: 34px;
+    font-weight: 900;
+    color: #111827;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+  
+  .header h2 {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6b7280;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  
+  .section {
+    margin-bottom: 22px;
+  }
+  
+  .section-title {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #111827;
+    text-transform: uppercase;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #111827;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .section-title i {
+    font-size: 13px;
+  }
+  
+  .profile-text {
+    font-size: 11.5px;
+    color: #374151;
+    line-height: 1.75;
+    text-align: justify;
+  }
+  
+  .experience-item {
+    margin-bottom: 16px;
+    padding-left: 18px;
+    position: relative;
+  }
+  
+  .experience-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #111827;
+  }
+  
+  .experience-item::after {
+    content: '';
+    position: absolute;
+    left: 3.5px;
+    top: 14px;
+    bottom: -16px;
+    width: 1px;
+    background: #d1d5db;
+  }
+  
+  .experience-item:last-child::after {
+    display: none;
+  }
+  
+  .exp-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 3px;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  
+  .exp-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #111827;
+  }
+  
+  .exp-date {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #6b7280;
+  }
+  
+  .exp-role {
+    font-size: 11px;
+    font-weight: 500;
+    color: #4b5563;
+    margin-bottom: 5px;
+    font-style: italic;
+  }
+  
+  .exp-desc {
+    font-size: 11px;
+    color: #4b5563;
+    line-height: 1.65;
+  }
+  
+  .exp-desc ul {
+    list-style: none;
+    padding-left: 0;
+  }
+  
+  .exp-desc li {
+    padding-left: 12px;
+    position: relative;
+    margin-bottom: 3px;
+  }
+  
+  .exp-desc li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: #111827;
+  }
+  
+  /* ==================== PRINT ==================== */
+  @media print {
+    @page {
+      size: A4;
+      margin: 0;
+    }
+    
+    body {
+      background: white;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .cv {
+      width: 100%;
+      min-height: 100vh;
+      box-shadow: none;
+      margin: 0;
+    }
+    
+    .photo-wrapper img,
+    .sidebar,
+    .header,
+    .section-title,
+    .experience-item::before,
+    .experience-item::after {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="cv">
+  
+  <!-- ==================== SIDEBAR ==================== -->
+  <aside class="sidebar">
+    
+    <div class="photo-wrapper">
+      <img src="e.jpeg" alt="Naufal Murtadho">
+    </div>
+    
+    <!-- CONTACT -->
+    <div class="sidebar-section">
+      <div class="sidebar-title"><i class="fas fa-address-book"></i> Contact</div>
+      <div class="contact-item">
+        <i class="fas fa-phone-alt"></i>
+        <span>+62 857 1078 5244</span>
+      </div>
+      <div class="contact-item">
+        <i class="fas fa-envelope"></i>
+        <a href="mailto:nmurtadho1905@gmail.com">nmurtadho1905@gmail.com</a>
+      </div>
+      <div class="contact-item">
+        <i class="fas fa-map-marker-alt"></i>
+        <span>Jakarta, Indonesia</span>
+      </div>
+      <div class="contact-item">
+        <i class="fab fa-linkedin"></i>
+        <a href="https://www.linkedin.com/in/naufal-murtadho-0ab587358" target="_blank">linkedin.com/in/naufal-murtadho</a>
+      </div>
+      <div class="contact-item">
+        <i class="fab fa-github"></i>
+        <a href="https://github.com/Naufal192008" target="_blank">github.com/Naufal192008</a>
+      </div>
+      <div class="contact-item">
+        <i class="fas fa-globe"></i>
+        <a href="https://konssultasiweb.vercel.app/" target="_blank">konssultasiweb.vercel.app</a>
+      </div>
+    </div>
+    
+    <!-- SKILLS -->
+    <div class="sidebar-section">
+      <div class="sidebar-title"><i class="fas fa-tools"></i> Skills</div>
+      <ul class="skill-list">
+        <li>React.js &amp; Next.js</li>
+        <li>Node.js &amp; Express.js</li>
+        <li>TypeScript &amp; JavaScript</li>
+        <li>Kotlin (Android)</li>
+        <li>Tailwind CSS &amp; HTML5/CSS3</li>
+        <li>Git &amp; GitHub</li>
+        <li>REST APIs</li>
+        <li>Figma &amp; UI/UX Design</li>
+        <li>Android Studio &amp; MVVM</li>
+        <li>3ds Max &amp; MaxScript</li>
+      </ul>
+    </div>
+    
+    <!-- LANGUAGES -->
+    <div class="sidebar-section">
+      <div class="sidebar-title"><i class="fas fa-language"></i> Languages</div>
+      <div class="lang-item">
+        <span>Indonesian</span>
+        <strong>Native · UKBI Unggul</strong>
+      </div>
+      <div class="lang-item">
+        <span>English</span>
+        <strong>Professional (TBI 88%)</strong>
+      </div>
+    </div>
+    
+    <!-- CERTIFICATIONS -->
+    <div class="sidebar-section">
+      <div class="sidebar-title"><i class="fas fa-certificate"></i> Certifications</div>
+      <div class="ref-item">
+        <strong>Cybersecurity Essentials</strong>
+        IDCamp · Cisco Networking Academy<br>
+        2026
+      </div>
+      <div class="ref-item">
+        <strong>Full-Stack Developer</strong>
+        DBS Foundation &amp; Dicoding<br>
+        2026
+      </div>
+      <div class="ref-item">
+        <strong>UKBI Unggul (583)</strong>
+        Badan Bahasa<br>
+        2024
+      </div>
+    </div>
+    
+    <!-- INVESTMENT -->
+    <div class="sidebar-section">
+      <div class="sidebar-title"><i class="fas fa-chart-line"></i> Investment</div>
+      <div class="ref-item">
+        <strong>Stock Investor (IDX)</strong>
+        Sejak 2023
+      </div>
+      <div class="ref-item">
+        <strong>Gold Trader</strong>
+        Sejak 2023
+      </div>
+    </div>
+    
+  </aside>
+  
+  <!-- ==================== MAIN ==================== -->
+  <main class="main">
+    
+    <!-- HEADER -->
+    <header class="header">
+      <h1>NAUFAL MURTADHO</h1>
+      <h2>Software Engineer · Strategic Investor · Pencak Silat Athlete</h2>
+    </header>
+    
+    <!-- PROFILE -->
+    <section class="section">
+      <div class="section-title"><i class="fas fa-user"></i> Profile</div>
+      <p class="profile-text">
+        Insinyur Perangkat Lunak berusia 17 tahun yang disiplin dan kreatif, lahir tahun 2008, menggabungkan pola pikir atlet Pencak Silat nasional dengan literasi keuangan aktif di pasar saham dan emas. Spesialisasi dalam Pengembangan Web dan Mobile (React, Node.js, Kotlin), terdorong untuk merancang solusi digital yang estetis, skalabel, dan cerdas. Memiliki kemampuan komunikasi yang disertifikasi UKBI dan kemampuan pemecahan masalah yang terbukti dari olahraga bela diri kompetitif.
+      </p>
+    </section>
+    
+    <!-- EXPERIENCE / EDUCATION -->
+    <section class="section">
+      <div class="section-title"><i class="fas fa-briefcase"></i> Experience &amp; Education</div>
+      
+      <div class="experience-item">
+        <div class="exp-header">
+          <span class="exp-title">Full-Stack Developer Graduate</span>
+          <span class="exp-date">2026</span>
+        </div>
+        <div class="exp-role">Coding Camp · DBS Foundation &amp; Dicoding</div>
+        <div class="exp-desc">
+          Program full-stack intensif yang mencakup React, Node.js, dan praktik terbaik rekayasa perangkat lunak.
+        </div>
+      </div>
+      
+      <div class="experience-item">
+        <div class="exp-header">
+          <span class="exp-title">Software Engineering Academy</span>
+          <span class="exp-date">2024 - Present</span>
+        </div>
+        <div class="exp-role">Dicoding</div>
+        <div class="exp-desc">
+          Program komprehensif yang mencakup Kotlin, pengembangan Android, arsitektur bersih, dan praktik industri.
+        </div>
+      </div>
+      
+      <div class="experience-item">
+        <div class="exp-header">
+          <span class="exp-title">SMKN 24 Jakarta · Rekayasa Perangkat Lunak</span>
+          <span class="exp-date">2024 - 2026</span>
+        </div>
+        <div class="exp-role">Software Engineering (RPL)</div>
+        <div class="exp-desc">
+          Spesialisasi dalam rekayasa perangkat lunak dengan fokus pada pengembangan full-stack dan arsitektur sistem.
+        </div>
+      </div>
+      
+      <div class="experience-item">
+        <div class="exp-header">
+          <span class="exp-title">Atlet &amp; Pelatih Pencak Silat</span>
+          <span class="exp-date">Sejak 2017</span>
+        </div>
+        <div class="exp-role">Kompetitor Nasional</div>
+        <div class="exp-desc">
+          Mengelola keuangan cabang dan melatih anggota. Medali Emas Nasional (Kemenpora RI Cup 2025), Juara Regional.
+        </div>
+      </div>
+      
+    </section>
+    
+    <!-- FEATURED PROJECTS -->
+    <section class="section">
+      <div class="section-title"><i class="fas fa-code"></i> Featured Projects</div>
+      
+      <div class="experience-item">
+        <div class="exp-header">
+          <span class="exp-title">Fintrix (Finance &amp; Matrix)</span>
+          <span class="exp-date">React · Next.js</span>
+        </div>
+        <div class="exp-desc">
+          Solusi fintech untuk literasi keuangan pemuda. Membangun RESTful API dengan Node.js dan antarmuka interaktif dengan React/Next.js.
+        </div>
+      </div>
+      
+      <div class="experience-item">
+        <div class="exp-header">
+          <span class="exp-title">Mobile Inventory Management App</span>
+          <span class="exp-date">Kotlin</span>
+        </div>
+        <div class="exp-desc">
+          Aplikasi Android berbasis Kotlin menggunakan Room Database dan arsitektur MVVM untuk pelacakan inventaris real-time.
+        </div>
+      </div>
+      
+      <div class="experience-item">
+        <div class="exp-header">
+          <span class="exp-title">Restoran Senayan &amp; TB Mobile Solution</span>
+          <span class="exp-date">React · Tailwind</span>
+        </div>
+        <div class="exp-desc">
+          Solusi UI/UX untuk bisnis dan dampak sosial (UNICEF/Markoding Challenge) dengan fokus pada aksesibilitas.
+        </div>
+      </div>
+      
+    </section>
+    
+  </main>
+  
+</div>
+
+</body>
+</html>
